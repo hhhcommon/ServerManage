@@ -2,7 +2,6 @@ package com.woting.crawler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.spiritdata.framework.core.cache.CacheEle;
 import com.spiritdata.framework.core.cache.SystemCache;
 import com.woting.crawler.core.scheme.control.SchemeController;
@@ -63,7 +62,9 @@ public class Booter {
         SpringShell.init();
         logger.info("加载Spring配置，用时[{}]毫秒", System.currentTimeMillis()-_begin);
 
+        //开始抓取数据
         SchemeController sc = new SchemeController();
         sc.runningScheme();
+        
 	}
 }

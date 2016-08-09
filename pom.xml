@@ -16,6 +16,12 @@
   </parent>
 
   <dependencies>
+    <!-- Redis -->
+    <dependency>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>2.8.0</version>
+    </dependency>
     <!-- html转义字符 -->
     <dependency>
       <groupId>org.apache.commons</groupId>

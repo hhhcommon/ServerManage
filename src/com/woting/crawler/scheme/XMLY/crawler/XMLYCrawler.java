@@ -16,7 +16,7 @@ import com.spiritdata.framework.util.SpiritRandom;
 import com.spiritdata.framework.util.StringUtils;
 
 
-public class Crawler extends WebCrawler {
+public class XMLYCrawler extends WebCrawler {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private String tempStorePath="";
@@ -29,7 +29,6 @@ public class Crawler extends WebCrawler {
     public void onStart() {
 //        tempStorePath=(String)((Map<String, Object>)(this.getMyController().getCustomData())).get("storeUrl");
         needStoreWeb=!StringUtils.isNullOrEmptyOrSpace(tempStorePath);
-  
     }
 
     /**
@@ -41,7 +40,7 @@ public class Crawler extends WebCrawler {
         href=href.trim().toLowerCase();
         //url判断
         if (!href.startsWith("http://www.ximalaya.com")) return false;
-        if (ParseUtils.getType(href)<=0) return false;
+        if (XMLYParseUtils.getType(href)<=0) return false;
         return true;
     }
 
@@ -55,9 +54,9 @@ public class Crawler extends WebCrawler {
         String href = page.getWebURL().getURL().toLowerCase();
         href=href.trim().toLowerCase();
      
-        int pageType=ParseUtils.getType(href);
+        int pageType=XMLYParseUtils.getType(href);
         if (pageType>0) {
-            logger.info("分析网页：{}", href);
+            logger.info("分析网页：[{}]", href);
             //保存文件
             if (needStoreWeb) {
                 if (href.indexOf("?")!=-1) {
@@ -76,15 +75,16 @@ public class Crawler extends WebCrawler {
             //分析内容
             Map<String, Object> parseData=new HashMap<String, Object>();
             parseData.put("visitUrl", href);
+            parseData.put("CrawlerNum", 0);
             parseData.put("parentUrl", StringUtils.isNullOrEmptyOrSpace(page.getWebURL().getParentUrl())?"":page.getWebURL().getParentUrl());
-            parseData.put("assetType", ParseUtils.getType(href));
+            parseData.put("assetType", XMLYParseUtils.getType(href));
 
             switch (pageType) {
             case 1:
-                ParseUtils.parseAlbum(page.getContentData(), parseData);
+                XMLYParseUtils.parseAlbum(page.getContentData(), parseData);
                 break;
             case 2:
-                ParseUtils.parseSond(page.getContentData(), parseData);
+                XMLYParseUtils.parseSond(page.getContentData(), parseData);
                 break;
 /*            case 3:
                 ParseUtils.parseZhubo(page.getContentData(), parseData);

@@ -11,9 +11,10 @@ import org.jsoup.select.Elements;
 
 import com.spiritdata.framework.util.JsonUtils;
 import com.spiritdata.framework.util.StringUtils;
-import com.woting.crawler.core.HttpUtils;
+import com.woting.crawler.scheme.util.HttpUtils;
+import com.woting.crawler.scheme.util.RedisUtils;
 
-public abstract class ParseUtils {
+public abstract class XMLYParseUtils {
     /**
      * 得到内容类型，喜马拉雅采用Rest风格
      * @param href
@@ -90,7 +91,7 @@ public abstract class ParseUtils {
         try {
             eles=doc.select("div.detailContent_playcountDetail");
             if (eles!=null&&!eles.isEmpty()) {
-                parseData.put("playCount", ParseUtils.getFirstNum(eles.select("span").html()));
+                parseData.put("playCount", XMLYParseUtils.getFirstNum(eles.select("span").html()));
             }
         } catch(Exception ex) {ex.printStackTrace();}
         //描述
@@ -106,7 +107,7 @@ public abstract class ParseUtils {
             //声音数
             eles=doc.select("span.albumSoundcount");
             if (eles!=null&&!eles.isEmpty()) {
-                extInfo.put("seqCount", ParseUtils.getFirstNum(eles.html()));
+                extInfo.put("seqCount", XMLYParseUtils.getFirstNum(eles.html()));
             }
             eles=doc.select("a.shareLink");
             if (eles!=null&&!eles.isEmpty()) {
@@ -117,9 +118,11 @@ public abstract class ParseUtils {
         //扩展内容
         try {
             if (!extInfo.isEmpty()) {
-                parseData.put("extInfo", StringEscapeUtils.unescapeHtml4(JsonUtils.objToJson(extInfo)));
+                parseData.put("extInfo", HttpUtils.cleanTag(JsonUtils.objToJson(extInfo)));
             }
         } catch(Exception ex) {ex.printStackTrace();}
+        
+        RedisUtils.addXMLYOriginalSeq(parseData.get("CrawlerNum")+"", parseData.get("seqId")+"", parseData);
     }
 
     /**
@@ -183,14 +186,14 @@ public abstract class ParseUtils {
         try {
             eles=doc.select("div.soundContent_playcount");
             if (eles!=null&&!eles.isEmpty()) {
-                parseData.put("playCount", ParseUtils.getFirstNum(eles.get(0).html()));
+                parseData.put("playCount", XMLYParseUtils.getFirstNum(eles.get(0).html()));
             }
         } catch(Exception ex) {ex.printStackTrace();}
         //描述
         try {
             eles=doc.select("div.detailContent_intro");
             if (eles!=null&&!eles.isEmpty()) {
-                parseData.put("descript", eles.get(0).select("article").get(0).html().trim());
+                parseData.put("descript", HttpUtils.cleanTag(eles.get(0).select("article").get(0).html().trim()));
             }
         } catch(Exception ex) {ex.printStackTrace();}
         //专辑
@@ -209,7 +212,7 @@ public abstract class ParseUtils {
                         if (_s.length==3) {
                             extInfo.put("zhuboId", _s[0].trim());
                             parseData.put("seqId", _s[2].trim());
-                            extInfo.put("seqCount", ParseUtils.getFirstNum(e.select("span").first().html()));
+                            extInfo.put("seqCount", XMLYParseUtils.getFirstNum(e.select("span").first().html()));
                         }
                     }
                 }
@@ -218,9 +221,10 @@ public abstract class ParseUtils {
         //扩展内容
         try {
             if (!extInfo.isEmpty()) {
-                parseData.put("extInfo", JsonUtils.objToJson(extInfo));
+                parseData.put("extInfo", HttpUtils.cleanTag(JsonUtils.objToJson(extInfo)));
             }
         } catch(Exception ex) {ex.printStackTrace();}
+        RedisUtils.addXMLYOriginalMa(parseData.get("CrawlerNum")+"", parseData);
     }
 
     /**

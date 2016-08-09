@@ -1,6 +1,12 @@
 package com.woting.crawler.core.scheme.control;
 
-import com.woting.crawler.scheme.XMLY.crawler.Crawler;
+import java.util.List;
+import java.util.Map;
+
+import com.spiritdata.framework.util.JsonUtils;
+import com.woting.crawler.scheme.QT.crawler.QTCrawler;
+import com.woting.crawler.scheme.XMLY.crawler.XMLYCrawler;
+import com.woting.crawler.scheme.util.RedisUtils;
 
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
 import edu.uci.ics.crawler4j.crawler.CrawlController;
@@ -42,8 +48,14 @@ public class SchemeMoniter extends Thread {
 			RobotstxtServer robotstxtServer = new RobotstxtServer(robotstxtConfig, pageFetcher);
 			CrawlController controller = new CrawlController(config, pageFetcher, robotstxtServer);
 			controller.getCrawlersLocalData();
-			controller.addSeed("http://www.ximalaya.com/explore/");	
-			controller.start(Crawler.class, numberOfCrawlers);
+//			controller.addSeed("http://www.ximalaya.com/explore/");	
+			controller.addSeed("http://www.qingting.fm/s/home");
+//			controller.start(XMLYCrawler.class, numberOfCrawlers);
+			controller.start(QTCrawler.class, numberOfCrawlers);
+			
+			controller.waitUntilFinish();
+//			List<Map<String, Object>> malist = RedisUtils.getMaList("XMLYOriginalMaList_0");
+//			System.out.println(JsonUtils.objToJson(malist));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
