@@ -47,16 +47,13 @@ public abstract class XMLYParseUtils {
     public static void parseAlbum(byte[] htmlByteArray, Map<String, Object> parseData) {
         Elements eles=null;
         Element e=null;
-        Map<String, Object> extInfo=new HashMap<String, Object>();
         Document doc=Jsoup.parse(new String(htmlByteArray), "UTF-8");
-
         //得到名称、ID、img
         try {
             eles=doc.select("div.personal_body").select("div.left").select("img");
             if (eles!=null&&!eles.isEmpty()) {
                 e=eles.get(0);
-                parseData.put("seqName", e.attr("alt").trim());
-                extInfo.put("seqLageImg", e.attr("popsrc").trim());
+                parseData.put("albumName", e.attr("alt").trim());
                 parseData.put("imgUrl", e.attr("src").trim());
             }
         } catch(Exception ex) {ex.printStackTrace();}
@@ -67,11 +64,6 @@ public abstract class XMLYParseUtils {
                 e=eles.get(0);
                 parseData.put("catalog", e.select("a").get(0).html().trim());
                 parseData.put("playUrl", e.select("a").get(0).attr("href").trim());
-                String lastUpdateDay=e.select("span").html();
-                if (!StringUtils.isNullOrEmptyOrSpace(lastUpdateDay)) {
-                    lastUpdateDay=lastUpdateDay.substring(lastUpdateDay.lastIndexOf(":")+1);
-                    extInfo.put("lastUpdateTime", lastUpdateDay.trim());
-                }
             }
         } catch(Exception ex) {ex.printStackTrace();}
         //标签
@@ -99,30 +91,16 @@ public abstract class XMLYParseUtils {
             eles=doc.select("div.detailContent_intro");
             if (eles!=null&&!eles.isEmpty()) {
                 parseData.put("descript", StringEscapeUtils.unescapeHtml4(eles.select("div.mid_intro").select("article").get(0).html().trim()) );
-                extInfo.put("seqDescn", eles.select("div.rich_intro").select("article").get(0).html().trim());
             }
         } catch(Exception ex) {ex.printStackTrace();}
         //专辑
         try {
-            //声音数
-            eles=doc.select("span.albumSoundcount");
-            if (eles!=null&&!eles.isEmpty()) {
-                extInfo.put("seqCount", XMLYParseUtils.getFirstNum(eles.html()));
-            }
             eles=doc.select("a.shareLink");
             if (eles!=null&&!eles.isEmpty()) {
-                extInfo.put("zhuboId", eles.get(0).attr("album_uid").trim());
                 parseData.put("seqId", eles.get(0).attr("album_id").trim());
             }
         } catch(Exception ex) {ex.printStackTrace();}
-        //扩展内容
-        try {
-            if (!extInfo.isEmpty()) {
-                parseData.put("extInfo", HttpUtils.cleanTag(JsonUtils.objToJson(extInfo)));
-            }
-        } catch(Exception ex) {ex.printStackTrace();}
-        
-        RedisUtils.addXMLYOriginalSeq(parseData.get("CrawlerNum")+"", parseData.get("seqId")+"", parseData);
+        RedisUtils.addXMLYOriginalSeq(parseData.get("CrawlerNum")+"", parseData);
     }
 
     /**
@@ -133,7 +111,6 @@ public abstract class XMLYParseUtils {
     public static void parseSond(byte[] htmlByteArray, Map<String, Object> parseData) {
         Elements eles=null;
         Element e=null;
-        Map<String, Object> extInfo=new HashMap<String, Object>();
         Document doc=Jsoup.parse(new String(htmlByteArray), "UTF-8");
 
         //得到名称、ID、img
@@ -149,12 +126,10 @@ public abstract class XMLYParseUtils {
         //声音
         try {
             eles=doc.select("div.detail_soundBox2");
-            extInfo.put("sound_duration", eles.select("span.sound_duration").first().html());
             //播放URL
             Map<String, Object> m=HttpUtils.getJsonMapFromURL("http://www.ximalaya.com/tracks/"+parseData.get("assetId")+".json");
             if (m!=null) {
                 if ((parseData.get("assetName")+"").equals(m.get("title")+"")) {
-                    extInfo.putAll(m);
                     parseData.put("playUrl", m.get("play_path"));
                 }
             }
@@ -166,7 +141,6 @@ public abstract class XMLYParseUtils {
             if (eles!=null&&!eles.isEmpty()) {
                 e=eles.get(0);
                 parseData.put("catalog", e.select("a").get(0).html().trim());
-                extInfo.put("seqUrl", e.select("a").get(0).attr("href").trim());
             }
         } catch(Exception ex) {ex.printStackTrace();}
         //标签
@@ -210,18 +184,10 @@ public abstract class XMLYParseUtils {
                         if (s.startsWith("/")) s=s.substring(1);
                         String[] _s=s.split("/");
                         if (_s.length==3) {
-                            extInfo.put("zhuboId", _s[0].trim());
                             parseData.put("seqId", _s[2].trim());
-                            extInfo.put("seqCount", XMLYParseUtils.getFirstNum(e.select("span").first().html()));
                         }
                     }
                 }
-            }
-        } catch(Exception ex) {ex.printStackTrace();}
-        //扩展内容
-        try {
-            if (!extInfo.isEmpty()) {
-                parseData.put("extInfo", HttpUtils.cleanTag(JsonUtils.objToJson(extInfo)));
             }
         } catch(Exception ex) {ex.printStackTrace();}
         RedisUtils.addXMLYOriginalMa(parseData.get("CrawlerNum")+"", parseData);

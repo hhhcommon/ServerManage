@@ -3,9 +3,7 @@ package com.woting.crawler.scheme.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import com.spiritdata.framework.util.JsonUtils;
-
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -46,16 +44,64 @@ public class RedisUtils {
 	public static void addXMLYOriginalMa(String num,Object str){
 		Jedis jedis = jedisPool.getResource();
 		try {
-			jedis.lpush("XMLYOriginalMaList_"+num, JsonUtils.objToJson(str));
+			jedis.lpush("XMLY_Ma_"+num, JsonUtils.objToJson(str));
 		} catch (Exception e) {} finally {
 			release(jedis);
 		}
 	}
 	
-	public static void addXMLYOriginalSeq(String num, String seqnum,Object str){
+	public static void addXMLYOriginalSeq(String num, Object str){
 		Jedis jedis = jedisPool.getResource();
 		try {
-			jedis.set("XMLY_Seq_"+seqnum+"_"+num, JsonUtils.objToJson(str));
+			jedis.lpush("XMLY_Seq_"+num, JsonUtils.objToJson(str));
+		} catch (Exception e) {} finally {
+			release(jedis);
+		}
+	}
+	
+	public static void addQTMa(String num,Object str){
+		Jedis jedis = jedisPool.getResource();
+		try {
+			jedis.select(1);
+			jedis.lpush("QT_Ma_"+num, JsonUtils.objToJson(str));
+		} catch (Exception e) {} finally {
+			release(jedis);
+		}
+	}
+	
+	public static void addQTSeq(String num,Object str){
+		Jedis jedis = jedisPool.getResource();
+		try {
+			jedis.select(1);
+			jedis.lpush("QT_Seq_"+num, JsonUtils.objToJson(str));
+		} catch (Exception e) {} finally {
+			release(jedis);
+		}
+	}
+	
+	public static void addQTCategory(String num,Object cate){
+		Jedis jedis = jedisPool.getResource();
+		try {
+			jedis.select(1);
+			jedis.set("QT_Cate_"+num, JsonUtils.objToJson(cate));
+		} catch (Exception e) {} finally {
+			release(jedis);
+		}
+	}
+	
+	public static void addKLSeq(String num, Object seq){
+		Jedis jedis = jedisPool.getResource();
+		try {
+			jedis.lpush("KL_Seq_"+num, JsonUtils.objToJson(seq));
+		} catch (Exception e) {} finally {
+			release(jedis);
+		}
+	}
+	
+	public static void addKLMa(String num,Object malist){
+		Jedis jedis = jedisPool.getResource();
+		try {
+			jedis.lpush("KL_Ma_"+num, JsonUtils.objToJson(malist));
 		} catch (Exception e) {} finally {
 			release(jedis);
 		}
@@ -71,11 +117,5 @@ public class RedisUtils {
 			}
 		} catch (Exception e) {e.printStackTrace();}finally {release(jedis);}
 		return malist;
-	}
-	
-	public static void multiPhoneCheckInfo(String phonenum) {
-		Jedis jedis = jedisPool.getResource();
-		jedis.del("phoneCheckInfo_"+phonenum);
-		release(jedis);
 	}
 }

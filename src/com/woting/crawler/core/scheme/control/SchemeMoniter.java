@@ -1,13 +1,6 @@
 package com.woting.crawler.core.scheme.control;
 
-import java.util.List;
-import java.util.Map;
-
-import com.spiritdata.framework.util.JsonUtils;
-import com.woting.crawler.scheme.KL.crawler.KLCrawler;
-import com.woting.crawler.scheme.QT.crawler.QTCrawler;
-import com.woting.crawler.scheme.XMLY.crawler.XMLYCrawler;
-import com.woting.crawler.scheme.util.RedisUtils;
+import com.woting.crawler.scheme.crawler.Crawler;
 
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
 import edu.uci.ics.crawler4j.crawler.CrawlController;
@@ -21,7 +14,7 @@ public class SchemeMoniter extends Thread {
 	public void run() {
 		try {
 			String crawlStorageFolder = "./tmp";
-			int numberOfCrawlers = 10;
+			int numberOfCrawlers = 50;
 			CrawlConfig config = new CrawlConfig();
 			// 文明请求web：确保我们不发送超过1每秒请求数（1000毫秒之间的请求）。
 //			config.setPolitenessDelay(1000);	
@@ -30,11 +23,9 @@ public class SchemeMoniter extends Thread {
 //			config.setUserAgentString("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36");
 			//设置最大的抓取页面数。默认值为1，页面的数量不限
 //			config.setMaxPagesToFetch(1);
-
 			 // 如果需要代理服务器的话
 			 //config.setProxyHost("proxyserver.example.com");  //设置代理域名
 			 //config.setProxyPort(8080);//端口
-
 			 // 如果代理服务器需要认证
 			 //config.setProxyUsername(username); config.getProxyPassword(password);  //设置代理
 			/*
@@ -50,12 +41,10 @@ public class SchemeMoniter extends Thread {
 			RobotstxtServer robotstxtServer = new RobotstxtServer(robotstxtConfig, pageFetcher);
 			CrawlController controller = new CrawlController(config, pageFetcher, robotstxtServer);
 			controller.getCrawlersLocalData();
-//			controller.addSeed("http://www.ximalaya.com/explore/");	
+			controller.addSeed("http://www.ximalaya.com/explore/");
 			controller.addSeed("http://www.qingting.fm/s/home");
-//			controller.addSeed("http://www.kaolafm.com");
-//			controller.start(XMLYCrawler.class, numberOfCrawlers);
-			controller.start(QTCrawler.class, numberOfCrawlers);
-//			controller.start(KLCrawler.class, numberOfCrawlers);
+			controller.addSeed("http://www.kaolafm.com");
+			controller.start(Crawler.class, numberOfCrawlers);
 			
 			controller.waitUntilFinish();
 //			List<Map<String, Object>> malist = RedisUtils.getMaList("XMLYOriginalMaList_0");
