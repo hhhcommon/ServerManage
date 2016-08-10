@@ -26,7 +26,7 @@ public class Booter {
                     if (_s[i].length()>0) rootPath+=_s[i]+"/";
                 }
             }
-        } else {//class
+        } else {
             rootPath=rootPath.substring(0, rootPath.length()-"com.woting.crawler".length()-1);
             String[] _s=rootPath.split("/");
             if (_s.length>1) {
