@@ -23,6 +23,7 @@ public class KLParseUtils {
 		return 0;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static void parseAlbum(byte[] htmlByteArray, Map<String, Object> parseData){
 		Elements els = null;
 		Element el = null;
@@ -74,15 +75,16 @@ public class KLParseUtils {
 		try {
       	    Map<String, Object> m = HttpUtils.getJsonMapFromURL("http://www.kaolafm.com/webapi/albumdetail/get?albumid="+parseData.get("albumId"));
       	    Map<String, Object> result = (Map<String, Object>) m.get("result");
-      	    parseData.put("playCount",result.get("listenNum")+"");
+      	    parseData.put("playCount",result.get("listenNum")+""); //播放次数
       	    parseData.put("categoryName", result.get("categoryName"));
     	    parseData.put("categoryId", result.get("categoryId"));
-    	    parseData.put("subscribeNum", result.get("followedNum"));
-    	    parseData.put("countNum", result.get("countNum"));
+    	    parseData.put("subscribeNum", result.get("followedNum")); //订阅数目
+    	    parseData.put("countNum", result.get("countNum")); //下级单体数目
       	} catch (Exception e) {e.printStackTrace();}
 		RedisUtils.addKLSeq(parseData.get("CrawlerNum")+"", parseData);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static void parseSond(byte[] htmlByteArray, Map<String, Object> parseData){
 		Elements els=null;
         Element el=null;

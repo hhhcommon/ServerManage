@@ -1,5 +1,7 @@
 package com.woting.crawler.core.scheme.control;
 
+import com.woting.crawler.core.scheme.model.Scheme;
+import com.woting.crawler.scheme.KL.crawler.KLCrawler;
 import com.woting.crawler.scheme.crawler.Crawler;
 
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
@@ -10,8 +12,23 @@ import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
 
 public class SchemeMoniter extends Thread {
 
+	private Scheme scheme;
+	
+	public SchemeMoniter(Scheme scheme) {
+		this.scheme = scheme;
+	}
+	
 	@Override
 	public void run() {
+		startCrawler4j(); //开启Crawler4j抓取 
+		startCustomCrawler(); //开启辅助信息抓取
+	}
+	
+	private void startCustomCrawler() {
+		new KLCrawler(scheme.getSchemenum()).start(); //开启考拉分类信息加载线程
+	}
+
+	private void startCrawler4j(){
 		try {
 			String crawlStorageFolder = "./tmp";
 			int numberOfCrawlers = 50;
@@ -33,10 +50,8 @@ public class SchemeMoniter extends Thread {
 			 * 注意：如果启用恢复特征，想开始一个新的抓取，你需要删除的内容手动rootfolder。
 			 */
 			config.setResumableCrawling(false);
-			
 			config.setCrawlStorageFolder(crawlStorageFolder);
 			PageFetcher pageFetcher = new PageFetcher(config);
-			
 			RobotstxtConfig robotstxtConfig = new RobotstxtConfig();
 			RobotstxtServer robotstxtServer = new RobotstxtServer(robotstxtConfig, pageFetcher);
 			CrawlController controller = new CrawlController(config, pageFetcher, robotstxtServer);
@@ -45,10 +60,7 @@ public class SchemeMoniter extends Thread {
 			controller.addSeed("http://www.qingting.fm/s/home");
 			controller.addSeed("http://www.kaolafm.com");
 			controller.start(Crawler.class, numberOfCrawlers);
-			
-			controller.waitUntilFinish();
-//			List<Map<String, Object>> malist = RedisUtils.getMaList("XMLYOriginalMaList_0");
-//			System.out.println(JsonUtils.objToJson(malist));
+//			controller.waitUntilFinish();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

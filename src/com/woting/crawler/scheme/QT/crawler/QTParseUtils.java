@@ -83,7 +83,7 @@ public class QTParseUtils {
 					String jsonstr = e.attr("data-play-info");
 					jsonstr = HttpUtils.getTextByDispose(jsonstr);
 					if (jsonstr.contains("<a href=")) {
-						int begnum = jsonstr.indexOf("thumb")-2;
+						int begnum = jsonstr.indexOf("thumb")-3;
 						int lbegnum = jsonstr.indexOf("{", begnum);
 						if (lbegnum!=-1) {
 							int lendnum = jsonstr.indexOf("}", lbegnum)+1;

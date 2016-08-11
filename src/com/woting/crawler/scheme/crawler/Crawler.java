@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Random;
 
 import com.spiritdata.framework.util.SpiritRandom;
+import com.woting.crawler.scheme.KL.crawler.KLCrawler;
 import com.woting.crawler.scheme.KL.crawler.KLParseUtils;
 import com.woting.crawler.scheme.QT.crawler.QTParseUtils;
 import com.woting.crawler.scheme.XMLY.crawler.XMLYParseUtils;
@@ -17,7 +18,7 @@ public class Crawler extends WebCrawler {
 
 	@Override
 	public void onStart() {
-		
+		String num = "1";
 	}
 	
 	@Override

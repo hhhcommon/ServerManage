@@ -62,7 +62,7 @@ public class RedisUtils {
 	public static void addQTMa(String num,Object str){
 		Jedis jedis = jedisPool.getResource();
 		try {
-			jedis.select(1);
+			jedis.select(1); //选择redis db1 库，其余未标明的默认db0库
 			jedis.lpush("QT_Ma_"+num, JsonUtils.objToJson(str));
 		} catch (Exception e) {} finally {
 			release(jedis);
@@ -107,6 +107,16 @@ public class RedisUtils {
 		}
 	}
 	
+	public static void addKLCategory(String num,Object catelist){
+		Jedis jedis = jedisPool.getResource();
+		try {
+			jedis.lpush("KL_Category_"+num, JsonUtils.objToJson(catelist));
+		} catch (Exception e) {} finally {
+			release(jedis);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
 	public static List<Map<String, Object>> getMaList(String listkey){
 		Jedis jedis = jedisPool.getResource();
 		List<Map<String, Object>> malist = new ArrayList<Map<String,Object>>();
