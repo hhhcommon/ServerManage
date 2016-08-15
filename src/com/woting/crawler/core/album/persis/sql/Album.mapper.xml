@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- Etl与资源对应关系 -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="A_ALBUM">
+  <!-- 对应关系 -->
+  <resultMap id="BaseResultMap" type="album">
+    <id      column="id"             property="id"             jdbcType="VARCHAR"/>
+    <result  column="albumId"        property="albumId"        jdbcType="VARCHAR"/>
+    <result  column="albumName"      property="albumName"      jdbcType="VARCHAR"/>
+    <result  column="albumPublisher" property="albumPublisher" jdbcType="VARCHAR"/>
+    <result  column="albumImg"       property="albumImg"       jdbcType="VARCHAR"/>
+    <result  column="albumTags"      property="albumTags"      jdbcType="VARCHAR"/>
+    <result  column="categoryId"     property="categoryId"     jdbcType="VARCHAR"/>
+    <result  column="categoryName"   property="categoryName"   jdbcType="VARCHAR"/>
+    <result  column="descn"          property="descn"          jdbcType="VARCHAR"/>
+    <result  column="visitUrl"       property="visitUrl"       jdbcType="VARCHAR"/>
+    <result  column="playCount"      property="playCount"      jdbcType="VARCHAR"/>
+    <result  column="crawlerNum"     property="crawlerNum"     jdbcType="VARCHAR"/>
+    <result  column="schemeId"       property="schemeId"       jdbcType="VARCHAR"/>
+    <result  column="schemeName"     property="schemeName"     jdbcType="VARCHAR"/>
+    <result  column="cTime"          property="cTime"          jdbcType="TIMESTAMP"/>
+  </resultMap>
+
+  <!-- 所有列 -->
+  <sql id="Base_Column_List">
+    id, albumId, albumName, albumPublisher, albumImg, albumTags, categoryId, categoryName, descn, visitUrl, playCount, crawlerName, schemeId, schemeName, cTime
+  </sql>
+
+  <insert id="insertList" parameterType="java.util.List">
+    insert into hotspot_album(id,albumId,albumName,albumPublisher,albumImg,albumTags,categoryId,categoryName,descn,visitUrl,playCount,crawlerName,schemeId,schemeName,cTime) values
+    <foreach collection="list" item="list" index="index" separator=",">
+     (#{list.id},#{list.albumId},#{list.albumName},#{list.albumPublisher},#{list.albumImg},#{list.albumTags},#{list.categoryId},#{list.categoryName},#{list.descn},#{list.visitUrl},#{list.playCount},#{list.crawlerName},#{list.schemeId},#{list.schemeName},#{list.cTime})
+    </foreach>
+  </insert>
+  
+</mapper>

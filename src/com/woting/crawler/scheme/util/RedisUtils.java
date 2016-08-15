@@ -1,6 +1,8 @@
 package com.woting.crawler.scheme.util;
 
 import java.util.ArrayList;
+import java.util.FormatFlagsConversionMismatchException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import com.spiritdata.framework.util.JsonUtils;
@@ -44,7 +46,7 @@ public class RedisUtils {
 	public static void addXMLYOriginalMa(String num,Object str){
 		Jedis jedis = jedisPool.getResource();
 		try {
-			jedis.lpush("XMLY_Ma_"+num, JsonUtils.objToJson(str));
+			jedis.lpush("XMLY_Audio_"+num, JsonUtils.objToJson(str));
 		} catch (Exception e) {} finally {
 			release(jedis);
 		}
@@ -53,27 +55,35 @@ public class RedisUtils {
 	public static void addXMLYOriginalSeq(String num, Object str){
 		Jedis jedis = jedisPool.getResource();
 		try {
-			jedis.lpush("XMLY_Seq_"+num, JsonUtils.objToJson(str));
+			jedis.lpush("XMLY_Album_"+num, JsonUtils.objToJson(str));
 		} catch (Exception e) {} finally {
 			release(jedis);
 		}
 	}
 	
-	public static void addQTMa(String num,Object str){
+	public static void addXMLYCategory(String num, Object str){
 		Jedis jedis = jedisPool.getResource();
 		try {
-			jedis.select(1); //选择redis db1 库，其余未标明的默认db0库
-			jedis.lpush("QT_Ma_"+num, JsonUtils.objToJson(str));
+			jedis.set("XMLY_Category_"+num, JsonUtils.objToJson(str));
 		} catch (Exception e) {} finally {
 			release(jedis);
 		}
 	}
 	
-	public static void addQTSeq(String num,Object str){
+	public static void addQTAudio(String num,Object str){
 		Jedis jedis = jedisPool.getResource();
 		try {
-			jedis.select(1);
-			jedis.lpush("QT_Seq_"+num, JsonUtils.objToJson(str));
+//			jedis.select(1); //选择redis db1 库，其余未标明的默认db0库
+			jedis.lpush("QT_Audio_"+num, JsonUtils.objToJson(str));
+		} catch (Exception e) {} finally {
+			release(jedis);
+		}
+	}
+	
+	public static void addQTAlbum(String num,Object str){
+		Jedis jedis = jedisPool.getResource();
+		try {
+			jedis.lpush("QT_Album_"+num, JsonUtils.objToJson(str));
 		} catch (Exception e) {} finally {
 			release(jedis);
 		}
@@ -82,26 +92,25 @@ public class RedisUtils {
 	public static void addQTCategory(String num,Object cate){
 		Jedis jedis = jedisPool.getResource();
 		try {
-			jedis.select(1);
-			jedis.set("QT_Cate_"+num, JsonUtils.objToJson(cate));
+			jedis.set("QT_Category_"+num, JsonUtils.objToJson(cate));
 		} catch (Exception e) {} finally {
 			release(jedis);
 		}
 	}
 	
-	public static void addKLSeq(String num, Object seq){
+	public static void addKLAlbum(String num, Object seq){
 		Jedis jedis = jedisPool.getResource();
 		try {
-			jedis.lpush("KL_Seq_"+num, JsonUtils.objToJson(seq));
+			jedis.lpush("KL_Album_"+num, JsonUtils.objToJson(seq));
 		} catch (Exception e) {} finally {
 			release(jedis);
 		}
 	}
 	
-	public static void addKLMa(String num,Object malist){
+	public static void addKLAudio(String num,Object malist){
 		Jedis jedis = jedisPool.getResource();
 		try {
-			jedis.lpush("KL_Ma_"+num, JsonUtils.objToJson(malist));
+			jedis.lpush("KL_Audio_"+num, JsonUtils.objToJson(malist));
 		} catch (Exception e) {} finally {
 			release(jedis);
 		}
@@ -110,22 +119,76 @@ public class RedisUtils {
 	public static void addKLCategory(String num,Object catelist){
 		Jedis jedis = jedisPool.getResource();
 		try {
-			jedis.lpush("KL_Category_"+num, JsonUtils.objToJson(catelist));
+			jedis.set("KL_Category_"+num, JsonUtils.objToJson(catelist));
 		} catch (Exception e) {} finally {
 			release(jedis);
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static List<Map<String, Object>> getMaList(String listkey){
+	public static Map<String, Object> getOrigData(String key){
 		Jedis jedis = jedisPool.getResource();
-		List<Map<String, Object>> malist = new ArrayList<Map<String,Object>>();
+		Map<String, Object> m = new HashMap<String,Object>();
 		try {
-			List<String> l = jedis.lrange(listkey, 0, -1);
+			String str = jedis.get(key);
+			m = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
+		} catch (Exception e) {e.printStackTrace();} finally {
+			release(jedis);
+		}
+		return m;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static List<Map<String, Object>> getOrigDataList(String key){
+		Jedis jedis = jedisPool.getResource();
+		List<Map<String, Object>> list = new ArrayList<Map<String,Object>>();
+		try {
+			List<String> l = jedis.lrange(key, 0, -1);
 			for (String str : l) {
-				malist.add((Map<String, Object>) JsonUtils.jsonToObj(str, Map.class));
+				list.add((Map<String, Object>) JsonUtils.jsonToObj(str, Map.class));
 			}
-		} catch (Exception e) {e.printStackTrace();}finally {release(jedis);}
-		return malist;
+		} catch (Exception e) {e.printStackTrace();} finally {
+			release(jedis);
+		}
+		return list;
+	}
+	
+	public static long getOrigDataListSize(String key){
+		Jedis jedis = jedisPool.getResource();
+		long num = 0;
+		try {
+			num = jedis.llen(key);
+		} catch (Exception e) {e.printStackTrace();} finally {
+			release(jedis);
+		}
+		return num;
+	}
+	
+	public static void writeCrawlerFinishInfo(String num){
+		Jedis jedis = jedisPool.getResource();
+		try {
+			Map<String, Object> m = new HashMap<String,Object>();
+			m.put("KLAudio.size", getOrigDataListSize("KL_Audio_"+num));
+			m.put("KLAlbum.size", getOrigDataListSize("KL_Album_"+num));
+			m.put("QTAudio.size", getOrigDataListSize("QT_Audio_"+num));
+			m.put("QTAlbum.size", getOrigDataListSize("QT_Album_"+num));
+			m.put("XMLYAudio.size", getOrigDataListSize("XMLY_Audio_"+num));
+			m.put("XMLYAlbum.size", getOrigDataListSize("XMLY_Album_"+num));
+			m.put("cTime", System.currentTimeMillis());
+			jedis.set("Scheme_CrawlerInfo_"+num, JsonUtils.objToJson(m));
+		} catch (Exception e) {e.printStackTrace();} finally {
+			release(jedis);
+		}
+	}
+	
+	public static boolean isOrNoCrawlerFinish(String num){
+		Jedis jedis = jedisPool.getResource();
+		boolean isok = false;
+		try {
+			isok = jedis.exists("Scheme_CrawlerInfo_"+num);
+		} catch (Exception e) {e.printStackTrace();} finally {
+			release(jedis);
+		}
+		return isok;
 	}
 }

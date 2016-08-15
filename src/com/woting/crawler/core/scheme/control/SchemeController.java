@@ -7,7 +7,7 @@ public class SchemeController {
 	private Scheme scheme;
 	
 	public SchemeController() {
-		
+		scheme = new Scheme("");
 	}
 	
 	public void runningScheme(){

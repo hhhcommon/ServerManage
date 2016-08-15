@@ -81,7 +81,7 @@ public class KLParseUtils {
     	    parseData.put("subscribeNum", result.get("followedNum")); //订阅数目
     	    parseData.put("countNum", result.get("countNum")); //下级单体数目
       	} catch (Exception e) {e.printStackTrace();}
-		RedisUtils.addKLSeq(parseData.get("CrawlerNum")+"", parseData);
+		RedisUtils.addKLAlbum(parseData.get("CrawlerNum")+"", parseData);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -138,9 +138,10 @@ public class KLParseUtils {
       	        parseData.put("cTime",result.get("createTime"));
       	        parseData.put("albumId",result.get("albumId"));
       	        parseData.put("albumName",result.get("albumName"));
+      	        parseData.put("audioName",result.get("audioName"));
       	        parseData.put("audioImg",result.get("audioPic"));
       	    }
       	} catch (Exception e) {e.printStackTrace();}
-      	RedisUtils.addKLMa(parseData.get("CrawlerNum")+"", parseData);
+      	RedisUtils.addKLAudio(parseData.get("CrawlerNum")+"", parseData);
 	}
 }

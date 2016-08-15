@@ -1,8 +1,8 @@
 package com.woting.crawler.scheme.XMLY.crawler;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -10,7 +10,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.spiritdata.framework.util.JsonUtils;
-import com.spiritdata.framework.util.StringUtils;
 import com.woting.crawler.scheme.util.HttpUtils;
 import com.woting.crawler.scheme.util.RedisUtils;
 
@@ -54,7 +53,7 @@ public abstract class XMLYParseUtils {
             if (eles!=null&&!eles.isEmpty()) {
                 e=eles.get(0);
                 parseData.put("albumName", e.attr("alt").trim());
-                parseData.put("imgUrl", e.attr("src").trim());
+                parseData.put("albumImg", e.attr("src").trim());
             }
         } catch(Exception ex) {ex.printStackTrace();}
         //类别
@@ -62,7 +61,7 @@ public abstract class XMLYParseUtils {
             eles=doc.select("div.detailContent_category");
             if (eles!=null&&!eles.isEmpty()) {
                 e=eles.get(0);
-                parseData.put("catalog", e.select("a").get(0).html().trim());
+                parseData.put("categoryName", e.select("a").get(0).html().trim().replace("【", "").replace("】", ""));
                 parseData.put("playUrl", e.select("a").get(0).attr("href").trim());
             }
         } catch(Exception ex) {ex.printStackTrace();}
@@ -97,7 +96,7 @@ public abstract class XMLYParseUtils {
         try {
             eles=doc.select("a.shareLink");
             if (eles!=null&&!eles.isEmpty()) {
-                parseData.put("seqId", eles.get(0).attr("album_id").trim());
+                parseData.put("albumId", eles.get(0).attr("album_id").trim());
             }
         } catch(Exception ex) {ex.printStackTrace();}
         RedisUtils.addXMLYOriginalSeq(parseData.get("CrawlerNum")+"", parseData);
@@ -112,25 +111,26 @@ public abstract class XMLYParseUtils {
         Elements eles=null;
         Element e=null;
         Document doc=Jsoup.parse(new String(htmlByteArray), "UTF-8");
-
+        Map<String, Object> pData = parseData;
         //得到名称、ID、img
         try {
             eles=doc.select("img[sound_popsrc]");
             if (eles!=null&&!eles.isEmpty()) {
                 e=eles.get(0);
-                parseData.put("assetId", e.attr("sound_popsrc").trim());
-                parseData.put("assetName", e.attr("alt").trim());
-                parseData.put("imgUrl", e.attr("src").trim());
+                parseData.put("audioId", e.attr("sound_popsrc").trim());
+                parseData.put("audioName", e.attr("alt").trim());
+                parseData.put("audioImg", e.attr("src").trim());
             }
         } catch(Exception ex) {ex.printStackTrace();}
         //声音
         try {
             eles=doc.select("div.detail_soundBox2");
             //播放URL
-            Map<String, Object> m=HttpUtils.getJsonMapFromURL("http://www.ximalaya.com/tracks/"+parseData.get("assetId")+".json");
+            Map<String, Object> m=HttpUtils.getJsonMapFromURL("http://www.ximalaya.com/tracks/"+parseData.get("audioId")+".json");
             if (m!=null) {
-                if ((parseData.get("assetName")+"").equals(m.get("title")+"")) {
+                if ((parseData.get("audioName")+"").equals(m.get("title")+"")) {
                     parseData.put("playUrl", m.get("play_path"));
+                    parseData.put("duration", m.get("duration"));
                 }
             }
         } catch(Exception ex) {ex.printStackTrace();}
@@ -140,7 +140,7 @@ public abstract class XMLYParseUtils {
             eles=doc.select("div.detailContent_category");
             if (eles!=null&&!eles.isEmpty()) {
                 e=eles.get(0);
-                parseData.put("catalog", e.select("a").get(0).html().trim());
+                parseData.put("categoryName", e.select("a").get(0).html().trim().replace("【", "").replace("】", ""));
             }
         } catch(Exception ex) {ex.printStackTrace();}
         //标签
@@ -179,18 +179,35 @@ public abstract class XMLYParseUtils {
                     e=eles.first();
                     if (e!=null) {
                         e=e.select("div.right").get(0);
-                        parseData.put("seqName", e.select("a").get(0).attr("title").trim());
+                        parseData.put("albumName", e.select("a").get(0).attr("title").trim());
                         String s=e.select("a").get(0).attr("href");
                         if (s.startsWith("/")) s=s.substring(1);
                         String[] _s=s.split("/");
                         if (_s.length==3) {
-                            parseData.put("seqId", _s[2].trim());
+                            parseData.put("albumId", _s[2].trim());
                         }
                     }
                 }
             }
         } catch(Exception ex) {ex.printStackTrace();}
         RedisUtils.addXMLYOriginalMa(parseData.get("CrawlerNum")+"", parseData);
+        String url = "";
+        try {
+			eles = doc.select("link[rel=canonical]");
+			if(eles!=null&&!eles.isEmpty()) {
+				e = eles.get(0);
+				url = e.attr("href");
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+        url = url.replace(url.substring(url.indexOf("sound"),url.length()), "album/"+parseData.get("albumId"));
+        try {
+			doc = Jsoup.connect(url).ignoreContentType(true).get();
+			parseAlbum(doc.select("body").get(0).html().getBytes(), pData);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
     }
 
     /**

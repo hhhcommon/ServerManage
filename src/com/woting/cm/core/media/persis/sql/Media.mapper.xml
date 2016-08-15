@@ -17,7 +17,7 @@
     <result  column="keyWords"       property="keyWords"       jdbcType="VARCHAR"/>
     <result  column="langDid"        property="langDid"        jdbcType="VARCHAR"/>
     <result  column="language"       property="language"       jdbcType="VARCHAR"/>
-    <result  column="timeLong"       property="timeLong"       jdbcType="LONG"/>
+    <result  column="timeLong"       property="timeLong"       jdbcType="BIGINT"/>
     <result  column="descn"          property="descn"          jdbcType="VARCHAR"/>
     <result  column="pubCount"       property="pubCount"       jdbcType="INTEGER"/>
     <result  column="cTime"          property="CTime"          jdbcType="TIMESTAMP"/>
@@ -68,7 +68,7 @@
       <if test="keyWords!=null">#{keyWords,jdbcType=VARCHAR},</if>
       <if test="langDid!=null">#{langDid,jdbcType=VARCHAR},</if>
       <if test="language!=null">#{language,jdbcType=VARCHAR},</if>
-      <if test="timeLong!=null and timeLong>0">#{timeLong,jdbcType=VARCHAR},</if>
+      <if test="timeLong!=null and timeLong>0">#{timeLong,jdbcType=BIGINT},</if>
       <if test="descn!=null">#{descn,jdbcType=VARCHAR},</if>
       <if test="pubCount!=null and pubCount>0">#{pubCount,jdbcType=VARCHAR},</if>
     </trim>

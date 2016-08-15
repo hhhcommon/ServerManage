@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Random;
 
 import com.spiritdata.framework.util.SpiritRandom;
-import com.woting.crawler.scheme.KL.crawler.KLCrawler;
 import com.woting.crawler.scheme.KL.crawler.KLParseUtils;
 import com.woting.crawler.scheme.QT.crawler.QTParseUtils;
 import com.woting.crawler.scheme.XMLY.crawler.XMLYParseUtils;
@@ -18,7 +17,6 @@ public class Crawler extends WebCrawler {
 
 	@Override
 	public void onStart() {
-		String num = "1";
 	}
 	
 	@Override
@@ -49,14 +47,14 @@ public class Crawler extends WebCrawler {
     	String url = page.getWebURL().getURL().trim();
     	int pageType = ParseUtils.getType(url);
     	parseData.put("CrawlerNum", "1");
+    	parseData.put("visitUrl", url);
     	switch(pageType){
     	case 0: break;
     	case 1: KLParseUtils.parseAlbum(page.getContentData(), parseData);break;
     	case 2: KLParseUtils.parseSond(page.getContentData(), parseData);break;
-    	case 3: QTParseUtils.parseCategory(page.getContentData(), parseData);break;
-    	case 4: QTParseUtils.parseAlbum(page.getContentData(), parseData);break;
-    	case 5: XMLYParseUtils.parseAlbum(page.getContentData(), parseData);break;
-    	case 6: XMLYParseUtils.parseSond(page.getContentData(), parseData);break;
+    	case 3: QTParseUtils.parseAlbum(page.getContentData(), parseData);break;
+    	case 4: XMLYParseUtils.parseAlbum(page.getContentData(), parseData);break;
+    	case 5: XMLYParseUtils.parseSond(page.getContentData(), parseData);break;
     	}
 	}
 	

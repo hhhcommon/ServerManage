@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!-- 核心配置 -->
+<configuration>
+  <!-- 别名设置 -->
+  <typeAliases>
+    <typeAlias alias="album"      type="com.woting.crawler.core.album.persis.po.Album"/>
+    <typeAlias alias="audio"      type="com.woting.crawler.core.audio.persis.po.Audio"/>
+  </typeAliases>
+  <!-- SQL文件设置 -->
+  <mappers>
+    <mapper resource="com/woting/crawler/core/album/persis/sql/Album.mapper.xml"/>
+    <mapper resource="com/woting/crawler/core/audio/persis/sql/Audio.mapper.xml"/>
+  </mappers>
+</configuration>

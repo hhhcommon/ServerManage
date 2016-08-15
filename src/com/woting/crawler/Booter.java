@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.spiritdata.framework.core.cache.CacheEle;
 import com.spiritdata.framework.core.cache.SystemCache;
+import com.woting.crawler.core.etl.control.Etl1Controller;
+import com.woting.crawler.core.etl.model.Etl1Process;
 import com.woting.crawler.core.scheme.control.SchemeController;
 import com.woting.crawler.ext.SpringShell;
 
@@ -16,7 +18,7 @@ public class Booter {
 		long beginTime=System.currentTimeMillis();
         //获取运行路径
         String rootPath=Booter.class.getResource("").getPath();
-        if (rootPath.indexOf("!")!=-1) {//jar包
+        if (rootPath.indexOf("!")!=-1) {
             rootPath=rootPath.substring(0, rootPath.indexOf("!"));
             String[] _s=rootPath.split("/");
             if (_s.length>1) {
@@ -66,5 +68,10 @@ public class Booter {
         SchemeController sc = new SchemeController();
         sc.runningScheme();
         
+        Etl1Process etl1Process = new Etl1Process();
+        etl1Process.setEtlnum("1");
+        
+        Etl1Controller etl1 = new Etl1Controller(etl1Process);
+        etl1.runningScheme();
 	}
 }
