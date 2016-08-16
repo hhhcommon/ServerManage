@@ -2,6 +2,9 @@ package com.woting.crawler.core.scheme.control;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.spiritdata.framework.core.cache.SystemCache;
+import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.scheme.KL.crawler.KLCrawler;
 import com.woting.crawler.scheme.QT.crawler.QTCrawler;
@@ -16,9 +19,11 @@ import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
 
 public class SchemeMoniter extends Thread {
 	Logger logger = LoggerFactory.getLogger(this.getClass());
+	private String crawlernum;
 	private Scheme scheme;
 
 	public SchemeMoniter(Scheme scheme) {
+		this.crawlernum = SystemCache.getCache(CrawlerConstants.CRAWLERNUM).getContent()+"";
 		this.scheme = scheme;
 	}
 	
@@ -32,9 +37,9 @@ public class SchemeMoniter extends Thread {
 	}
 	
 	private void startCustomCrawler() {
-		new KLCrawler(scheme.getSchemenum()).start(); //开启考拉分类信息加载线程
-		new XMLYCrawler(scheme.getSchemenum()).start(); //开启喜马拉雅分类信息加载线程
-		new QTCrawler(scheme.getSchemenum()).start(); //开启蜻蜓分类信息加载线程
+		new KLCrawler(scheme).start(); //开启考拉分类信息加载线程
+		new XMLYCrawler(scheme).start(); //开启喜马拉雅分类信息加载线程
+		new QTCrawler(scheme).start(); //开启蜻蜓分类信息加载线程
 	}
 	
 	public void startCrawler4j(){
@@ -72,7 +77,7 @@ public class SchemeMoniter extends Thread {
 			controller.start(Crawler.class, numberOfCrawlers);
 			controller.waitUntilFinish();
 			//写入抓取完成信息
-			RedisUtils.writeCrawlerFinishInfo(scheme.getSchemenum());
+			RedisUtils.writeCrawlerFinishInfo(crawlernum);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

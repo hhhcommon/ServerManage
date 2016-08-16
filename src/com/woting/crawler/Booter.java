@@ -7,7 +7,9 @@ import com.spiritdata.framework.core.cache.SystemCache;
 import com.woting.crawler.core.etl.control.Etl1Controller;
 import com.woting.crawler.core.etl.model.Etl1Process;
 import com.woting.crawler.core.scheme.control.SchemeController;
+import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.ext.SpringShell;
+import com.woting.crawler.scheme.util.RedisUtils;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -64,13 +66,26 @@ public class Booter {
         SpringShell.init();
         logger.info("加载Spring配置，用时[{}]毫秒", System.currentTimeMillis()-_begin);
 
+        //加载抓取方案
+        Scheme scheme = new Scheme("");
+        String crawlernum = scheme.getSchemenum();
+		while (RedisUtils.isOrNoCrawlerFinish(crawlernum)) {
+			logger.info("开始判断redis里是否存在当前抓取序号[{}]是否已存在", crawlernum);
+			logger.info("抓取序号[{}]已存在", crawlernum);
+			int num = Integer.valueOf(crawlernum) + 1;
+			crawlernum = num + "";
+			logger.info("验证抓取序号[{}]是否存在", crawlernum);
+		}
+		logger.info("抓取序号[{}]不存在", crawlernum);
+		logger.info("开始进行序号为[{}]抓取", crawlernum);
+		scheme.setSchemenum(crawlernum);
+		SystemCache.setCache(new CacheEle<String>(CrawlerConstants.CRAWLERNUM, "抓取序号", crawlernum));
+        
         //开始抓取数据
-        SchemeController sc = new SchemeController();
+        SchemeController sc = new SchemeController(scheme);
         sc.runningScheme();
         
-        Etl1Process etl1Process = new Etl1Process();
-        etl1Process.setEtlnum("1");
-        
+        Etl1Process etl1Process = scheme.getEtl1Process();
         Etl1Controller etl1 = new Etl1Controller(etl1Process);
         etl1.runningScheme();
 	}

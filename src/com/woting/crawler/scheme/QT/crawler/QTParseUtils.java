@@ -1,5 +1,7 @@
 package com.woting.crawler.scheme.QT.crawler;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.jsoup.Jsoup;
@@ -17,13 +19,14 @@ public class QTParseUtils {
 		Elements els = null;
 		Element el = null;
 		Document doc = Jsoup.parse(new String(htmlByteArray),"UTF-8");
-		Map<String, Object> pDate = parseData;
+		Map<String, Object> pDate = new HashMap<String,Object>();
+		pDate.putAll(parseData);
 		//专辑名称,专辑id
 		try {
 			els = doc.select("a[data-switch-url]");
 			if(els!=null && !els.isEmpty()){
 				el = els.get(0);
-				parseData.put("albumName", el.html());
+				parseData.put("albumName", HttpUtils.getTextByDispose(el.html()));
 				parseData.put("albumId",el.attr("href").replace("/vchannels/", ""));
 			}
 		} catch (Exception e) {e.printStackTrace();}
@@ -40,7 +43,7 @@ public class QTParseUtils {
 			els = doc.select("div[class=abstract clearfix]").select("div[class=content]");
 			if(els!=null && !els.isEmpty()){
 				el = els.get(0);
-				parseData.put("descript", el.html());
+				parseData.put("descript", HttpUtils.getTextByDispose(el.html()));
 			}
 		} catch (Exception e) {e.printStackTrace();}
 		try {
@@ -99,4 +102,31 @@ public class QTParseUtils {
 	
 	//专辑播放次数http://i.qingting.fm/wapi/channel_playcount?cids=115850
 	//声音播放次数http://i.qingting.fm/wapi/program_playcount?pids=115850_5019265
+	
+	public static void parseQTResourceIdAndCategoryId(byte[] htmlByteArray, Map<String, Object> parseData) {
+		Elements els = null;
+		Map<String, Object> map = new HashMap<String,Object>();
+		try {
+			Document doc = Jsoup.parse(new String(htmlByteArray, "UTF-8"));
+			els = doc.select("div[class=category]");
+			if(els!=null&&!els.isEmpty()){
+				for (Element el : els) {
+					String str = el.select("div[class=title pull-left]").get(0).html();
+					if (!str.equals("正在直播")&&!str.equals("主播")) {
+						String cateName = str;
+						String cateId = el.select("a[class=more pull-left]").get(0).attr("href").replace("/supervcategories/", "");
+						Elements es = el.select("li[class=playable]");
+						for (Element e : es) {
+							Map<String, Object> m = (Map<String, Object>) JsonUtils.jsonToObj(HttpUtils.getTextByDispose(e.attr("data-play-info")), Map.class);
+							String albumId = m.get("parentid")+"";
+							if (!albumId.equals("null")) {
+								map.put(albumId, cateId+"::"+cateName);
+							}
+						}
+					}
+				}
+			}
+		} catch (Exception e) {e.printStackTrace();}
+		RedisUtils.addQTCategory(parseData.get("CrawlerNum")+"", map);
+	}
 }

@@ -6,14 +6,15 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.scheme.util.RedisUtils;
 
 public class XMLYCrawler extends Thread {
-	private String num;
 	private static String CategoryLink = "http://www.ximalaya.com/dq/all/";
-
-	public XMLYCrawler(String num) {
-		this.num = num;
+	private Scheme scheme;
+	public XMLYCrawler(Scheme scheme) {
+		this.scheme = scheme;
 	}
 
 	public void getXMLYCategory() {
@@ -27,7 +28,7 @@ public class XMLYCrawler extends Thread {
 					catemap.put(el.select("a").get(0).html(), el.attr("cid"));
 				}
 				if (catemap != null) {
-					RedisUtils.addXMLYCategory(num, catemap);
+					RedisUtils.addXMLYCategory(scheme.getSchemenum(), catemap);
 				}
 			}
 		} catch (Exception e) {e.printStackTrace();}

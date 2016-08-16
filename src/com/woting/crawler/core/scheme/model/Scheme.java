@@ -13,8 +13,9 @@ public class Scheme {
 	private Etl2Process etl2Process;
 	
 	public Scheme(String jsonpath) {
-		setSchemenum("1");
-		setcTimestamp(new Timestamp(System.currentTimeMillis()));
+		this.setSchemenum("1");
+		this.setcTimestamp(new Timestamp(System.currentTimeMillis()));
+		this.etl1Process = new Etl1Process();
 	}
 	
 	public String getSchemenum() {
@@ -30,6 +31,7 @@ public class Scheme {
 		this.cTimestamp = cTimestamp;
 	}
 	public Etl1Process getEtl1Process() {
+		etl1Process.setEtlnum(schemenum);
 		return etl1Process;
 	}
 	public void setEtl1Process(Etl1Process etl1Process) {

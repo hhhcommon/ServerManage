@@ -4,20 +4,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.scheme.util.HttpUtils;
 import com.woting.crawler.scheme.util.RedisUtils;
 
 public class KLCrawler extends Thread {
-
-	private String num;
 	private static String CategoryLink = "http://www.kaolafm.com/webapi/category/list?fid=";
+	private Scheme scheme;
 
-	public KLCrawler(String num) {
-		this.num = num;
+	public KLCrawler(Scheme scheme) {
+		this.scheme = scheme;
 	}
 
 	@SuppressWarnings("unchecked")
-	public void getKLCategory(String num) {
+	public void getKLCategory() {
 		List<Map<String, Object>> catelist = new ArrayList<Map<String, Object>>();
 		List<Map<String, Object>> errlist = new ArrayList<Map<String, Object>>();
 		try {
@@ -84,11 +85,11 @@ public class KLCrawler extends Thread {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		RedisUtils.addKLCategory(num, catelist);
+		RedisUtils.addKLCategory(scheme.getSchemenum(), catelist);
 	}
 
 	@Override
 	public void run() {
-		getKLCategory(num);
+		getKLCategory();
 	}
 }

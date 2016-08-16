@@ -1,7 +1,6 @@
 package com.woting.crawler.scheme.util;
 
 import java.util.ArrayList;
-import java.util.FormatFlagsConversionMismatchException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,9 +63,18 @@ public class RedisUtils {
 	public static void addXMLYCategory(String num, Object str){
 		Jedis jedis = jedisPool.getResource();
 		try {
-			jedis.set("XMLY_Category_"+num, JsonUtils.objToJson(str));
+			jedis.set("XMLY_FastGetCategoryId_"+num, JsonUtils.objToJson(str));
 		} catch (Exception e) {} finally {
 			release(jedis);
+		}
+	}
+	
+	public static void addXMLYCategorys(String num, Object str){
+		Jedis jedis = jedisPool.getResource();
+		try {
+			jedis.lpush("XMLY_Categorys_"+num, JsonUtils.objToJson(str));
+		} catch (Exception e) {
+			// TODO: handle exception
 		}
 	}
 	
@@ -92,7 +100,16 @@ public class RedisUtils {
 	public static void addQTCategory(String num,Object cate){
 		Jedis jedis = jedisPool.getResource();
 		try {
-			jedis.set("QT_Category_"+num, JsonUtils.objToJson(cate));
+			jedis.set("QT_ResourceIdAndCategoryId_"+num, JsonUtils.objToJson(cate));
+		} catch (Exception e) {} finally {
+			release(jedis);
+		}
+	}
+	
+	public static void addQTCategorys(String num,Object cate){
+		Jedis jedis = jedisPool.getResource();
+		try {
+			jedis.lpush("QT_Categorys_"+num, JsonUtils.objToJson(cate));
 		} catch (Exception e) {} finally {
 			release(jedis);
 		}
@@ -119,7 +136,7 @@ public class RedisUtils {
 	public static void addKLCategory(String num,Object catelist){
 		Jedis jedis = jedisPool.getResource();
 		try {
-			jedis.set("KL_Category_"+num, JsonUtils.objToJson(catelist));
+			jedis.set("KL_CategroyId_"+num, JsonUtils.objToJson(catelist));
 		} catch (Exception e) {} finally {
 			release(jedis);
 		}

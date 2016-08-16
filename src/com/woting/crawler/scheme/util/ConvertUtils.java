@@ -6,16 +6,16 @@ import java.util.List;
 import java.util.Map;
 
 import com.spiritdata.framework.util.SequenceUUID;
-import com.woting.crawler.core.album.persis.po.Album;
-import com.woting.crawler.core.audio.persis.po.Audio;
+import com.woting.crawler.core.album.persis.po.AlbumPo;
+import com.woting.crawler.core.audio.persis.po.AudioPo;
 
 public abstract class ConvertUtils {
 
-	public static List<Album> convert2Album(List<Map<String, Object>> list,String publisher){
-		List<Album> albums = new ArrayList<Album>();
+	public static List<AlbumPo> convert2Album(List<Map<String, Object>> list,String publisher){
+		List<AlbumPo> albums = new ArrayList<AlbumPo>();
 		if (list!=null&&!list.isEmpty()) {
 			for (Map<String, Object> m : list) {
-				Album al = new Album();
+				AlbumPo al = new AlbumPo();
 				al.setId(SequenceUUID.getPureUUID());
 				al.setAlbumId(m.get("albumId")+"");
 				al.setAlbumName(m.get("albumName")+"");
@@ -37,11 +37,11 @@ public abstract class ConvertUtils {
 		return albums;
 	}
 	
-	public static List<Audio> convert2Aludio(List<Map<String, Object>> list, String publisher){
-		List<Audio> audios = new ArrayList<Audio>();
+	public static List<AudioPo> convert2Aludio(List<Map<String, Object>> list, String publisher){
+		List<AudioPo> audios = new ArrayList<AudioPo>();
 		if(list!=null&&list.size()>0){
 			for (Map<String, Object> m : list) {
-				Audio audio = new Audio();
+				AudioPo audio = new AudioPo();
 				audio.setId(SequenceUUID.getPureUUID());
 				audio.setAudioId(m.get("audioId")+"");
 				audio.setAudioName(m.get("audioName")+"");
@@ -53,6 +53,7 @@ public abstract class ConvertUtils {
 				audio.setAudioURL(m.get("playUrl")+"");
 				audio.setAudioTags(m.get("tags")+"");
 				audio.setDuration(m.get("duration")+"");
+				audio.setPlayCount(m.get("playCount")+"");
 				audio.setDescn(m.get("descript")+"");
 				audio.setAudioPublisher(publisher);
 				audio.setVisitUrl(m.get("visitUrl")+"");

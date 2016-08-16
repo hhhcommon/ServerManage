@@ -6,22 +6,26 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import com.spiritdata.framework.core.dao.mybatis.MybatisDAO;
-import com.woting.crawler.core.album.persis.po.Album;
 
+import org.springframework.stereotype.Service;
+
+import com.spiritdata.framework.core.dao.mybatis.MybatisDAO;
+import com.woting.crawler.core.album.persis.po.AlbumPo;
+
+@Service
 public class AlbumService {
 
 	@Resource(name = "defaultDAO_CM")
-	private MybatisDAO<Album> albumDao;
+	private MybatisDAO<AlbumPo> albumDao;
 
 	@PostConstruct
 	public void initParam() {
 		albumDao.setNamespace("A_ALBUM");
 	}
 	
-	public void insertAlbumList(List<Album> albumlist){
+	public void insertAlbumList(List<AlbumPo> albumlist){
 		Map<String, Object> m = new HashMap<>();
 		m.put("list", albumlist);
-		albumDao.insert("insertList", albumlist);
+		albumDao.insert("insertList", m);
 	}
 }

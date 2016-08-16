@@ -3,6 +3,8 @@ package com.woting.crawler.core.etl.control;
 import java.util.List;
 import java.util.Map;
 
+import javax.jws.soap.InitParam;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.hp.hpl.sparta.xpath.ThisNodeTest;
@@ -16,11 +18,10 @@ import com.woting.crawler.scheme.util.RedisUtils;
 public class Etl1Controller {
 	private Logger logger = LoggerFactory.getLogger(ThisNodeTest.class);
 	private Etl1Process etl1Process;
-	Etl1Service etl1Service;
+	private Etl1Service etl1Service;
 	
 	public Etl1Controller(Etl1Process etl1Process) {
 		this.etl1Process = etl1Process;
-		this.etl1Process.setEtlnum("1");
 		etl1Service = (Etl1Service) SpringShell.getBean("etl1Service");
 	}
 	
@@ -29,7 +30,7 @@ public class Etl1Controller {
 			try {
 				logger.info("等待抓取完成");
 				Thread.sleep(5000);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {e.printStackTrace();}
 		}
 		Map<String, Object> qtm =  new QTEtl1Process(etl1Process).makeQTOrigDataList();
 		Map<String, Object> xmlym = new XMLYEtl1Process(etl1Process).makeXMLYOrigDataList();
