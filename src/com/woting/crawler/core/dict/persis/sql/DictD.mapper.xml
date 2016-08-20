@@ -2,24 +2,20 @@
 
 <!-- Etl与资源对应关系 -->
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="A_AUDIO">
+<mapper namespace="A_DICTD">
   <!-- 对应关系 -->
-  <resultMap id="BaseResultMap" type="audio">
+  <resultMap id="BaseResultMap" type="dictd">
     <id      column="id"             property="id"             jdbcType="VARCHAR"/>
-    <result  column="audioId"        property="audioId"        jdbcType="VARCHAR"/>
-    <result  column="audioName"      property="audioName"      jdbcType="VARCHAR"/>
-    <result  column="audioPublisher" property="audioPublisher" jdbcType="VARCHAR"/>
-    <result  column="audioImg"       property="audioImg"       jdbcType="VARCHAR"/>
-    <result  column="audioURL"       property="audioURL"       jdbcType="VARCHAR"/>
-    <result  column="audioTags"      property="audioTags"      jdbcType="VARCHAR"/>
-    <result  column="albumId"        property="albumId"        jdbcType="VARCHAR"/>
-    <result  column="albumName"      property="albumName"      jdbcType="VARCHAR"/>
-    <result  column="categoryId"     property="categoryId"     jdbcType="VARCHAR"/>
-    <result  column="categoryName"   property="categoryName"   jdbcType="VARCHAR"/>
-    <result  column="descn"          property="descn"          jdbcType="VARCHAR"/>
-    <result  column="duration"       property="duration"       jdbcType="VARCHAR"/>
+    <result  column="sourceId"       property="sourceId"       jdbcType="VARCHAR"/>
+    <result  column="mId"            property="mId"            jdbcType="VARCHAR"/>
+    <result  column="pId"            property="pId"            jdbcType="VARCHAR"/>
+    <result  column="publisher"      property="publisher"      jdbcType="VARCHAR"/>
+    <result  column="ddName"         property="ddName"         jdbcType="VARCHAR"/>
+    <result  column="nPy"            property="nPy"            jdbcType="VARCHAR"/>
+    <result  column="aliasName"      property="aliasName"      jdbcType="VARCHAR"/>
+    <result  column="anPy"           property="anPy"           jdbcType="VARCHAR"/>
     <result  column="visitUrl"       property="visitUrl"       jdbcType="VARCHAR"/>
-    <result  column="playCount"      property="playCount"      jdbcType="VARCHAR"/>
+    <result  column="descn"          property="descn"          jdbcType="VARCHAR"/>
     <result  column="crawlerNum"     property="crawlerNum"     jdbcType="VARCHAR"/>
     <result  column="schemeId"       property="schemeId"       jdbcType="VARCHAR"/>
     <result  column="schemeName"     property="schemeName"     jdbcType="VARCHAR"/>
@@ -28,14 +24,22 @@
 
   <!-- 所有列 -->
   <sql id="Base_Column_List">
-    id, audioId, audioName, audioPublisher, audioImg, audioURL, audioTags, albumId, albumName, categoryId, categoryName, descn, duration, visitUrl, crawlerNum, schemeId, schemeName, playCount, cTime
+    id, sourceId, mId, pId, publisher, ddName, nPy, aliasName, anPy, visitUrl, descn, crawlerNum, schemeId, schemeName, cTime
   </sql>
 
-  <insert id="insertList" parameterType="java.util.List">
-    insert into hotspot_audio(id, audioId, audioName, audioPublisher, audioImg, audioURL, audioTags, albumId, albumName, categoryId, categoryName, descn, duration, visitUrl, playCount, crawlerNum, schemeId, schemeName, cTime) values
+  <insert id="insertList" parameterType="java.util.Map">
+    insert into hotspot_DictD(id, sourceId, mId, pId, publisher, ddName, nPy, aliasName, anPy, visitUrl, descn, crawlerNum, schemeId, schemeName, cTime) values
     <foreach collection="list" item="list" index="index" separator=",">
-     (#{list.id},#{list.audioId},#{list.audioName},#{list.audioPublisher},#{list.audioImg},#{list.audioURL},#{list.audioTags},#{list.albumId},#{list.albumName},#{list.categoryId},#{list.categoryName},#{list.descn},#{list.duration},#{list.visitUrl},#{list.playCount},#{list.crawlerNum},#{list.schemeId},#{list.schemeName},#{list.cTime})
+     (#{list.id},#{list.sourceId},#{list.mId},#{list.pId},#{list.publisher},#{list.ddName},#{list.nPy},#{list.aliasName},#{list.anPy},#{list.visitUrl},#{list.descn},#{list.crawlerNum},#{list.schemeId},#{list.schemeName},#{list.cTime})
     </foreach>
   </insert>
+  
+  <select id="getListByPubAndCrawlerNum" resultMap="BaseResultMap" parameterType="java.util.Map">
+    select <include refid="Base_Column_List"/> from hotspot_DictD where publisher=#{publisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="getListByMid" resultMap="BaseResultMap" parameterType="java.lang.String">
+    select <include refid="Base_Column_List"/> from hotspot_DictD where mId=#{mId,jdbcType=VARCHAR} and pId = '0'
+  </select>
   
 </mapper>

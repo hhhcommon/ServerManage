@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.woting.crawler.core.scheme.model.Scheme;
-import com.woting.crawler.scheme.util.HttpUtils;
-import com.woting.crawler.scheme.util.RedisUtils;
+import com.woting.crawler.scheme.utils.HttpUtils;
+import com.woting.crawler.scheme.utils.RedisUtils;
 
 public class KLCrawler extends Thread {
 	private static String CategoryLink = "http://www.kaolafm.com/webapi/category/list?fid=";

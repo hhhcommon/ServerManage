@@ -1,4 +1,4 @@
-package com.woting.crawler.scheme.util;
+package com.woting.crawler.scheme.utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -207,5 +207,34 @@ public class RedisUtils {
 			release(jedis);
 		}
 		return isok;
+	}
+	
+	public static void writeEtl1Finish(String num,String jsonstr){
+		Jedis jedis = jedisPool.getResource();
+		try {
+			jedis.set("Scheme_Etl1Info_"+num, jsonstr);
+		} catch (Exception e) {e.printStackTrace();} finally {
+			release(jedis);
+		}
+	}
+	
+	public static boolean isOrNoEtl1Finish(String num){
+		Jedis jedis = jedisPool.getResource();
+		boolean isok = false;
+		try {
+			isok = jedis.exists("Scheme_Etl1Info_"+num);
+		} catch (Exception e) {e.printStackTrace();} finally {
+			release(jedis);
+		}
+		return isok;
+	}
+	
+	public static void addUrl(String url){
+		Jedis jedis = jedisPool.getResource();
+		try {
+			jedis.lpush("XMLYURL", url);
+		} catch (Exception e) {e.printStackTrace();} finally {
+			release(jedis);
+		}
 	}
 }

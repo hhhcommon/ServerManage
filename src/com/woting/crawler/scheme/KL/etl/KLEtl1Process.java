@@ -1,4 +1,4 @@
-package com.woting.crawler.scheme.KL.etl1;
+package com.woting.crawler.scheme.KL.etl;
 
 import java.util.HashMap;
 import java.util.List;
@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.woting.crawler.core.etl.model.Etl1Process;
-import com.woting.crawler.scheme.util.RedisUtils;
+import com.woting.crawler.scheme.utils.RedisUtils;
 
 public class KLEtl1Process {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -37,9 +37,6 @@ public class KLEtl1Process {
 			for (Map<String, Object> m : categorylist) {
 				dictmap.put(m.get("cateId")+"", m.get("cateName"));
 			}
-//			for (Map<String, Object> m : audiolist) {
-//				m.put("categoryName", dictmap.get(m.get("categoryId")));
-//			}
 		}
 		return null;
 	}

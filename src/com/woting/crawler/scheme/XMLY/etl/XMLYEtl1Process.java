@@ -1,14 +1,17 @@
-package com.woting.crawler.scheme.XMLY.etl1;
+package com.woting.crawler.scheme.XMLY.etl;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.woting.crawler.core.etl.model.Etl1Process;
-import com.woting.crawler.scheme.util.ConvertUtils;
-import com.woting.crawler.scheme.util.RedisUtils;
+import com.woting.crawler.scheme.crawler.Crawler;
+import com.woting.crawler.scheme.utils.ConvertUtils;
+import com.woting.crawler.scheme.utils.RedisUtils;
 
 public class XMLYEtl1Process {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -33,18 +36,42 @@ public class XMLYEtl1Process {
 
 	public Map<String, Object> makeXMLYOrigDataList() {
 		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> lackm = new HashMap<String, Object>();
+		for (Map<String, Object> m1 : audiolist) {
+			boolean isok = false;
+			String alid = m1.get("albumId") + "";
+			for (Map<String, Object> m2 : albumlist) {
+				if (alid.equals(m2.get("albumId")))
+					isok = true;
+			}
+			if (!isok) {
+				String url = m1.get("visitUrl") + "";
+				url = url.replace(url.substring(url.indexOf("sound"), url.length()), "album/" + alid);
+				if (!lackm.containsKey(alid)) {
+					lackm.put(alid, url);
+					try {
+						new Crawler().reloadUrl(url, Jsoup.connect(url).ignoreContentType(true).get().toString().getBytes(), etl1Process.getEtlnum());
+					} catch (IOException e) {
+						e.printStackTrace();
+						continue;
+					}
+				}
+			}
+		}
+		albumlist = RedisUtils.getOrigDataList("XMLY_Album_" + etl1Process.getEtlnum());
+		audiolist = RedisUtils.getOrigDataList("XMLY_Audio_" + etl1Process.getEtlnum());
 		if (loadOk) {
 			logger.info("喜玛拉雅开始第一次转换");
 			for (Map<String, Object> m : audiolist) {
 				String cateid = catemap.get(m.get("categoryName")) + "";
 				m.put("categoryId", cateid);
 			}
-			map.put("audioliat", ConvertUtils.convert2Aludio(audiolist, "喜马拉雅FM"));
+			map.put("audiolist", ConvertUtils.convert2Aludio(audiolist, "喜马拉雅"));
 			for (Map<String, Object> m : albumlist) {
 				String cateid = catemap.get(m.get("categoryName")) + "";
 				m.put("categoryId", cateid);
 			}
-			map.put("albumlist", ConvertUtils.convert2Album(albumlist, "喜马拉雅FM"));
+			map.put("albumlist", ConvertUtils.convert2Album(albumlist, "喜马拉雅"));
 		}
 		return map;
 	}

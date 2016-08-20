@@ -1,6 +1,5 @@
 package com.woting.crawler.scheme.QT.crawler;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,8 +8,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import com.spiritdata.framework.util.JsonUtils;
-import com.woting.crawler.scheme.util.HttpUtils;
-import com.woting.crawler.scheme.util.RedisUtils;
+import com.woting.crawler.scheme.utils.HttpUtils;
+import com.woting.crawler.scheme.utils.RedisUtils;
 
 public class QTParseUtils {
 	
@@ -49,6 +48,7 @@ public class QTParseUtils {
 		try {
 			els = doc.select("li[class=playable clearfix]");
 			if(els!=null&&!els.isEmpty()){
+				int num = 0;
 				for (Element e : els) {
 					String jsonstr = e.attr("data-play-info");
 					jsonstr = HttpUtils.getTextByDispose(jsonstr);
@@ -82,6 +82,9 @@ public class QTParseUtils {
 						pDate.put("playCount",m.get("playcount"));
 					}
 					RedisUtils.addQTAudio(parseData.get("CrawlerNum")+"", pDate);
+					if(num==5)
+						break;
+					num++;
 				}
 			}
 		} catch (Exception e) {e.printStackTrace();}

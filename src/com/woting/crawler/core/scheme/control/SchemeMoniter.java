@@ -10,7 +10,8 @@ import com.woting.crawler.scheme.KL.crawler.KLCrawler;
 import com.woting.crawler.scheme.QT.crawler.QTCrawler;
 import com.woting.crawler.scheme.XMLY.crawler.XMLYCrawler;
 import com.woting.crawler.scheme.crawler.Crawler;
-import com.woting.crawler.scheme.util.RedisUtils;
+import com.woting.crawler.scheme.utils.RedisUtils;
+
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
 import edu.uci.ics.crawler4j.crawler.CrawlController;
 import edu.uci.ics.crawler4j.fetcher.PageFetcher;

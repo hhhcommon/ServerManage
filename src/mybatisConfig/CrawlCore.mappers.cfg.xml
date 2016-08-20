@@ -4,12 +4,16 @@
 <configuration>
   <!-- 别名设置 -->
   <typeAliases>
-    <typeAlias alias="album"      type="com.woting.crawler.core.album.persis.po.Album"/>
-    <typeAlias alias="audio"      type="com.woting.crawler.core.audio.persis.po.Audio"/>
+    <typeAlias alias="album"      type="com.woting.crawler.core.album.persis.po.AlbumPo"/>
+    <typeAlias alias="audio"      type="com.woting.crawler.core.audio.persis.po.AudioPo"/>
+    <typeAlias alias="dictm"      type="com.woting.crawler.core.dict.persis.po.DictMPo"/>
+    <typeAlias alias="dictd"      type="com.woting.crawler.core.dict.persis.po.DictDPo"/>
   </typeAliases>
   <!-- SQL文件设置 -->
   <mappers>
     <mapper resource="com/woting/crawler/core/album/persis/sql/Album.mapper.xml"/>
     <mapper resource="com/woting/crawler/core/audio/persis/sql/Audio.mapper.xml"/>
+    <mapper resource="com/woting/crawler/core/dict/persis/sql/DictM.mapper.xml"/>
+    <mapper resource="com/woting/crawler/core/dict/persis/sql/DictD.mapper.xml"/>
   </mappers>
 </configuration>

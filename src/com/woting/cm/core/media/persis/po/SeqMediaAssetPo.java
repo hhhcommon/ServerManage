@@ -22,7 +22,13 @@ public class SeqMediaAssetPo extends BaseObject {
     private String descn; //说明
     private int pubCount; //发布状态：0未发布;>0被发布到多少个栏目中（系列节目的发布，这里的单曲也要被加1）
     private Timestamp CTime; //记录创建时间
-
+    private int smaStatus;
+    public int getSmaStatus() {
+		return smaStatus;
+	}
+	public void setSmaStatus(int smaStatus) {
+		this.smaStatus = smaStatus;
+	}
     public String getId() {
         return id;
     }

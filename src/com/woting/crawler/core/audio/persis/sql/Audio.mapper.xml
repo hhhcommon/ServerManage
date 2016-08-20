@@ -25,6 +25,19 @@
     <result  column="schemeName"     property="schemeName"     jdbcType="VARCHAR"/>
     <result  column="cTime"          property="cTime"          jdbcType="TIMESTAMP"/>
   </resultMap>
+  
+   <!-- 条件子句 -->
+  <sql id="WhereClauseByEntiey">
+    <where>
+      <trim prefix="(" suffix=")" prefixOverrides="and">
+        <if test="audioTags!=null">and audioTags=#{audioTags,jdbcType=VARCHAR}</if>
+        <if test="descn!=null">and descn=#{descn,jdbcType=VARCHAR}</if>
+        <if test="crawlerNum!=null">and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}</if>
+        <if test="schemeId!=null">and schemeId=#{schemeId,jdbcType=VARCHAR}</if>
+        <if test="schemeName!=null">and schemeName=#{schemeName,jdbcType=VARCHAR}</if>
+      </trim>
+    </where>
+  </sql>
 
   <!-- 所有列 -->
   <sql id="Base_Column_List">
@@ -37,5 +50,33 @@
      (#{list.id},#{list.audioId},#{list.audioName},#{list.audioPublisher},#{list.audioImg},#{list.audioURL},#{list.audioTags},#{list.albumId},#{list.albumName},#{list.categoryId},#{list.categoryName},#{list.descn},#{list.duration},#{list.visitUrl},#{list.playCount},#{list.crawlerNum},#{list.schemeId},#{list.schemeName},#{list.cTime})
     </foreach>
   </insert>
+  
+  <select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+    select count(*) from hotspot_audio where 
+  </select>
+  
+  <select id="getAudioByAlbumIdAndPublisher" parameterType="java.util.Map" resultMap="BaseResultMap">
+    select * from hotspot_audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{publisher,jdbcType=VARCHAR}
+  </select>
+  
+  <update id="removeNull" parameterType="java.util.Map">
+   update hotspot_audio
+   <set>
+      <if test="audioTags!=null">audioTags=Null,</if>
+      <if test="descn!=null">descn=Null,</if>
+      <if test="crawlerNum!=null">crawlerNum=Null,</if>
+      <if test="schemeId!=null">schemeId=Null,</if>
+      <if test="schemeName!=null">schemeName=Null,</if>
+    </set>
+    <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
+  </update>
+  
+  <update id="updateAlbumIdInfo" >
+   update hotspot_audio a,(select * from hotspot_album) b set a.albumId = b.id where a.albumId = b.albumId and a.audioPublisher = b.albumPublisher
+  </update>
+  
+  <delete id="deleteByAlbumIdAndPublisher" parameterType="java.util.Map">
+    delete from hotspot_audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{audioPublisher,jdbcType=VARCHAR}
+  </delete>
   
 </mapper>

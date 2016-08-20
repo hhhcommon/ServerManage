@@ -6,11 +6,8 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-
 import org.springframework.stereotype.Service;
-
 import com.spiritdata.framework.core.dao.mybatis.MybatisDAO;
-import com.spiritdata.framework.util.JsonUtils;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 
 @Service
@@ -41,5 +38,38 @@ public class AudioService {
 		}
 		m.put("list", aulist);
 		audioDao.insert("insertList", m);
+	}
+	
+	public List<AudioPo> getAudioListByAlbumId(String albumId,String publisher){
+		Map<String, Object> m = new HashMap<String,Object>();
+		m.put("albumId", albumId);
+		m.put("publisher", publisher);
+		List<AudioPo> list = audioDao.queryForList("getAudioByAlbumIdAndPublisher", m);
+		return list;
+	}
+	
+	public void removeSameAudio(String albumId, String publisher){
+		Map<String, Object> m = new HashMap<String,Object>();
+		m.put("albumId", albumId);
+		m.put("audioPublisher", publisher);
+		audioDao.delete("deleteByAlbumIdAndPublisher", m);
+	}
+	
+	public void removeNull(){
+		Map<String, Object> m = new HashMap<String,Object>();
+		m.put("schemeId", "null");
+		audioDao.update("removeNull", m);
+		m.clear();
+		m.put("schemeName", "null");
+		audioDao.update("removeNull", m);
+		m.clear();
+		m.put("audioTags", "null");
+		audioDao.update("removeNull", m);
+		m.clear();
+		m.put("descn", "null");
+		audioDao.update("removeNull", m);
+		m.clear();
+		m.put("descn", "");
+		audioDao.update("removeNull", m);
 	}
 }

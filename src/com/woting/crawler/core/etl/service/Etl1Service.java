@@ -2,13 +2,9 @@ package com.woting.crawler.core.etl.service;
 
 import java.util.List;
 import java.util.Map;
-
-import org.apache.ibatis.annotations.Insert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import com.hp.hpl.sparta.xpath.ThisNodeTest;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.album.service.AlbumService;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
@@ -17,13 +13,9 @@ import com.woting.crawler.ext.SpringShell;
 
 @Service
 public class Etl1Service {
-	private Logger logger = LoggerFactory.getLogger(ThisNodeTest.class);
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	private List<AudioPo> audiolist;
 	private List<AlbumPo> albumlist;
-	
-	public Etl1Service() {
-		logger.info("第一次数据转换存放到中间数据库中");
-	}
 	
 	@SuppressWarnings("unchecked")
 	public void insertSqlAlbumAndAudio(Map<String, Object> m){
@@ -39,5 +31,14 @@ public class Etl1Service {
 				albumService.insertAlbumList(albumlist);
 			}
 		}
+	}
+	
+	public void removeNull(){
+		logger.info("数据存储完成，开始进行数据库清理！");
+		AlbumService albumService = (AlbumService) SpringShell.getBean("albumService");
+		AudioService audioService = (AudioService) SpringShell.getBean("audioService");
+		albumService.removeNull();
+		audioService.removeNull();
+		logger.info("数据库清理完成！");
 	}
 }

@@ -1,22 +1,20 @@
 package com.woting.crawler.core.etl.control;
 
-import java.util.List;
 import java.util.Map;
-
-import javax.jws.soap.InitParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.hp.hpl.sparta.xpath.ThisNodeTest;
 import com.woting.crawler.core.etl.model.Etl1Process;
 import com.woting.crawler.core.etl.service.Etl1Service;
 import com.woting.crawler.ext.SpringShell;
-import com.woting.crawler.scheme.QT.etl1.QTEtl1Process;
-import com.woting.crawler.scheme.XMLY.etl1.XMLYEtl1Process;
-import com.woting.crawler.scheme.util.RedisUtils;
+import com.woting.crawler.scheme.QT.etl.QTEtl1Process;
+import com.woting.crawler.scheme.XMLY.etl.XMLYEtl1Process;
+import com.woting.crawler.scheme.utils.RedisUtils;
+
+import ch.qos.logback.classic.pattern.Util;
 
 public class Etl1Controller {
-	private Logger logger = LoggerFactory.getLogger(ThisNodeTest.class);
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	private Etl1Process etl1Process;
 	private Etl1Service etl1Service;
 	
@@ -40,5 +38,7 @@ public class Etl1Controller {
 		logger.info("喜马拉雅FM抓取数据第一次转换数据存放中间库中");
 		etl1Service.insertSqlAlbumAndAudio(xmlym);
 		logger.info("喜马拉雅FM抓取数据第一次转换完成");
+		etl1Service.removeNull();
+		RedisUtils.writeEtl1Finish(etl1Process.getEtlnum(), "");
 	}
 }

@@ -19,9 +19,9 @@ public class DictDPo extends BaseObject {
 	private String crawlerNum; //抓取序号
 	private String schemeId; //抓取方案Id
 	private String schemeName; //抓取方案名称
+	private String visitUrl;
 	private String descn;
 	private Timestamp cTime;
-	
 	public String getId() {
 		return id;
 	}
@@ -57,7 +57,7 @@ public class DictDPo extends BaseObject {
 	}
 	public void setDdName(String ddName) {
 		this.ddName = ddName;
-		setnPy(ChineseCharactersUtils.getFullSpell(ddName));
+		setnPy(ChineseCharactersUtils.getFullSpellFirstUp(ddName));
 		setAliasName(ddName);
 	}
 	public String getnPy() {
@@ -71,7 +71,7 @@ public class DictDPo extends BaseObject {
 	}
 	public void setAliasName(String aliasName) {
 		this.aliasName = aliasName;
-		setAnPy(ChineseCharactersUtils.getFullSpell(aliasName));
+		setAnPy(ChineseCharactersUtils.getFullSpellFirstUp(aliasName));
 	}
 	public String getAnPy() {
 		return anPy;
@@ -96,6 +96,12 @@ public class DictDPo extends BaseObject {
 	}
 	public void setSchemeName(String schemeName) {
 		this.schemeName = schemeName;
+	}
+	public String getVisitUrl() {
+		return visitUrl;
+	}
+	public void setVisitUrl(String visitUrl) {
+		this.visitUrl = visitUrl;
 	}
 	public String getDescn() {
 		return descn;

@@ -1,13 +1,18 @@
-package com.woting.crawler.scheme.QT.etl1;
+package com.woting.crawler.scheme.QT.etl;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.woting.crawler.core.album.service.AlbumService;
+import com.woting.crawler.core.audio.service.AudioService;
 import com.woting.crawler.core.etl.model.Etl1Process;
-import com.woting.crawler.scheme.util.ConvertUtils;
-import com.woting.crawler.scheme.util.RedisUtils;
+import com.woting.crawler.ext.SpringShell;
+import com.woting.crawler.scheme.utils.ConvertUtils;
+import com.woting.crawler.scheme.utils.RedisUtils;
 
 public class QTEtl1Process {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -21,7 +26,7 @@ public class QTEtl1Process {
 	public QTEtl1Process(Etl1Process etl1Process) {
 		begintime = System.currentTimeMillis();
 		this.etl1Process = etl1Process;
-		catemap = RedisUtils.getOrigData("QT_ResourceIsAndCategoryId_" + etl1Process.getEtlnum());
+		catemap = RedisUtils.getOrigData("QT_ResourceIdAndCategoryId_" + etl1Process.getEtlnum());
 		albumlist = RedisUtils.getOrigDataList("QT_Album_" + etl1Process.getEtlnum());
 		audiolist = RedisUtils.getOrigDataList("QT_Audio_" + etl1Process.getEtlnum());
 		if (catemap == null || albumlist == null || audiolist == null)
@@ -43,7 +48,7 @@ public class QTEtl1Process {
 					m.put("categoryId", cateid);
 				}
 			}
-			map.put("audiolist", ConvertUtils.convert2Aludio(audiolist, "蜻蜓FM"));
+			map.put("audiolist", ConvertUtils.convert2Aludio(audiolist, "蜻蜓"));
 			for (Map<String, Object> m : albumlist) {
 				String cate = catemap.get(m.get("albumId")) + "";
 				if (cate.split("::").length > 1) {
@@ -53,7 +58,7 @@ public class QTEtl1Process {
 					m.put("categoryId", cateid);
 				}
 			}
-			map.put("albumlist", ConvertUtils.convert2Album(albumlist, "蜻蜓FM"));
+			map.put("albumlist", ConvertUtils.convert2Album(albumlist, "蜻蜓"));
 			logger.info("蜻蜓FM第一次转换结束");
 		}
 		return map;

@@ -21,7 +21,6 @@ public class Crawler extends WebCrawler {
 	
 	@Override
 	public void onStart() {
-		
 		this.crawlernum = SystemCache.getCache(CrawlerConstants.CRAWLERNUM).getContent()+"";
 	}
 	
@@ -50,20 +49,23 @@ public class Crawler extends WebCrawler {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    	String url = page.getWebURL().getURL().trim();;
+    	reloadUrl(url, page.getContentData(), crawlernum);
+	}
+	
+	public void reloadUrl(String url, byte[] htmlByteArray ,String crawlernum){
 		Map<String, Object> parseData = new HashMap<String,Object>();
-    	String url = page.getWebURL().getURL().trim();
-    	int pageType = ParseUtils.getType(url);
+		int pageType = ParseUtils.getType(url);
     	parseData.put("CrawlerNum", crawlernum);
     	parseData.put("visitUrl", url);
     	switch(pageType){
     	case 0: break;
-    	case 1: KLParseUtils.parseAlbum(page.getContentData(), parseData);break;
-    	case 2: KLParseUtils.parseSond(page.getContentData(), parseData);break;
-    	case 3: QTParseUtils.parseQTResourceIdAndCategoryId(page.getContentData(), parseData);break;
-    	case 4: QTParseUtils.parseAlbum(page.getContentData(), parseData);break;
-    	case 5: XMLYParseUtils.parseCategory(page.getContentData(), parseData);break;
-    	case 6: XMLYParseUtils.parseAlbum(page.getContentData(), parseData);break;
-    	case 7: XMLYParseUtils.parseSond(page.getContentData(), parseData);break;
+    	case 1: KLParseUtils.parseAlbum(htmlByteArray, parseData);break;
+    	case 2: KLParseUtils.parseSond(htmlByteArray, parseData);break;
+    	case 3: QTParseUtils.parseQTResourceIdAndCategoryId(htmlByteArray, parseData);break;
+    	case 4: QTParseUtils.parseAlbum(htmlByteArray, parseData);break;
+    	case 5: XMLYParseUtils.parseAlbum(htmlByteArray, parseData);break;
+    	case 6: XMLYParseUtils.parseSond(htmlByteArray, parseData);break;
     	}
 	}
 }

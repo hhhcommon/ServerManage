@@ -6,8 +6,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import com.woting.crawler.scheme.util.HttpUtils;
-import com.woting.crawler.scheme.util.RedisUtils;
+
+import com.woting.crawler.scheme.utils.HttpUtils;
+import com.woting.crawler.scheme.utils.RedisUtils;
 
 public class KLParseUtils {
 

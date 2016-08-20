@@ -5,11 +5,13 @@ import org.slf4j.LoggerFactory;
 import com.spiritdata.framework.core.cache.CacheEle;
 import com.spiritdata.framework.core.cache.SystemCache;
 import com.woting.crawler.core.etl.control.Etl1Controller;
+import com.woting.crawler.core.etl.control.Etl2Controller;
 import com.woting.crawler.core.etl.model.Etl1Process;
+import com.woting.crawler.core.etl.model.Etl2Process;
 import com.woting.crawler.core.scheme.control.SchemeController;
 import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.ext.SpringShell;
-import com.woting.crawler.scheme.util.RedisUtils;
+import com.woting.crawler.scheme.utils.RedisUtils;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -60,12 +62,12 @@ public class Booter {
         logger.info("内容抓取，环境初始化开始");
         logger.info("系统运行路径 [{}]", (SystemCache.getCache(CrawlerConstants.APP_PATH)).getContent());
         logger.info("计算并加载运行目录，用时[{}]毫秒", System.currentTimeMillis()-beginTime);
-
+        
         //Spring环境加载
         long _begin=System.currentTimeMillis();
         SpringShell.init();
         logger.info("加载Spring配置，用时[{}]毫秒", System.currentTimeMillis()-_begin);
-
+        
         //加载抓取方案
         Scheme scheme = new Scheme("");
         String crawlernum = scheme.getSchemenum();
@@ -80,13 +82,21 @@ public class Booter {
 		logger.info("开始进行序号为[{}]抓取", crawlernum);
 		scheme.setSchemenum(crawlernum);
 		SystemCache.setCache(new CacheEle<String>(CrawlerConstants.CRAWLERNUM, "抓取序号", crawlernum));
-        
         //开始抓取数据
         SchemeController sc = new SchemeController(scheme);
         sc.runningScheme();
         
-        Etl1Process etl1Process = scheme.getEtl1Process();
+        //第一次数据转换
+        Etl1Process etl1Process = new Etl1Process();
+        etl1Process.setEtlnum(scheme.getSchemenum());
         Etl1Controller etl1 = new Etl1Controller(etl1Process);
         etl1.runningScheme();
+        
+        scheme.setSchemenum("1");
+        //第二次数据转换
+        Etl2Process etl2Process = new Etl2Process();
+        etl2Process.setEtlnum(scheme.getSchemenum());
+        Etl2Controller etl2 = new Etl2Controller(etl2Process);
+        etl2.runningScheme();
 	}
 }

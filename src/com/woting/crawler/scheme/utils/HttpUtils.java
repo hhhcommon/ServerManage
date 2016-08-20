@@ -1,4 +1,4 @@
-package com.woting.crawler.scheme.util;
+package com.woting.crawler.scheme.utils;
 
 import java.util.Map;
 

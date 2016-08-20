@@ -1,44 +1,17 @@
 package com.woting.crawler.scheme.XMLY.crawler;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import com.woting.crawler.scheme.util.HttpUtils;
-import com.woting.crawler.scheme.util.RedisUtils;
+
+import com.woting.crawler.scheme.utils.HttpUtils;
+import com.woting.crawler.scheme.utils.RedisUtils;
 
 public abstract class XMLYParseUtils {
-	/**
-	 * 得到内容类型，喜马拉雅采用Rest风格
-	 * 
-	 * @param href
-	 * @return 类型0不符合的类型,1专辑；2声音；3主播；4标签
-	 */
-	public static int getType(String href) {
-		String[] _s = href.substring(9).split("/");
-		if (_s.length < 2)
-			return 0;
-		if (_s[_s.length - 2].equals("album"))
-			return 1;// 专辑
-		if (_s[_s.length - 2].equals("sound"))
-			return 2;// 声音
-		// if (_s[_s.length-2].equals("zhubo")) return 3;//主播
-		// if (_s[_s.length-2].equals("tag")) return 4;//标签
-		return 0;
-	}
-	/**
-	 * parseData.put("seqId", ""); parseData.put("assetId", "");
-	 * parseData.put("assetName", ""); parseData.put("person", "");
-	 * parseData.put("playCount", ""); parseData.put("descript", "");
-	 * parseData.put("extInfo", "");
-	 */
-
+	
 	/**
 	 * 分析专辑
 	 * 
@@ -102,8 +75,7 @@ public abstract class XMLYParseUtils {
 		try {
 			eles = doc.select("div.detailContent_intro");
 			if (eles != null && !eles.isEmpty()) {
-				parseData.put("descript", StringEscapeUtils
-						.unescapeHtml4(eles.select("div.mid_intro").select("article").get(0).html().trim()));
+				parseData.put("descript", StringEscapeUtils.unescapeHtml4(eles.select("div.mid_intro").select("article").get(0).html().trim()));
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -149,8 +121,7 @@ public abstract class XMLYParseUtils {
 		try {
 			eles = doc.select("div.detail_soundBox2");
 			// 播放URL
-			Map<String, Object> m = HttpUtils
-					.getJsonMapFromURL("http://www.ximalaya.com/tracks/" + parseData.get("audioId") + ".json");
+			Map<String, Object> m = HttpUtils.getJsonMapFromURL("http://www.ximalaya.com/tracks/" + parseData.get("audioId") + ".json");
 			if (m != null) {
 				if ((parseData.get("audioName") + "").equals(m.get("title") + "")) {
 					parseData.put("playUrl", m.get("play_path"));
@@ -230,23 +201,6 @@ public abstract class XMLYParseUtils {
 			ex.printStackTrace();
 		}
 		RedisUtils.addXMLYOriginalMa(parseData.get("CrawlerNum") + "", parseData);
-		String url = "";
-		try {
-			eles = doc.select("link[rel=canonical]");
-			if (eles != null && !eles.isEmpty()) {
-				e = eles.get(0);
-				url = e.attr("href");
-			}
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		url = url.replace(url.substring(url.indexOf("sound"), url.length()), "album/" + parseData.get("albumId"));
-		try {
-			doc = Jsoup.connect(url).ignoreContentType(true).get();
-			parseAlbum(doc.select("body").get(0).html().getBytes(), pData);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
 	}
 
 	/**
@@ -308,50 +262,5 @@ public abstract class XMLYParseUtils {
 		f = f * gene;
 		ret = (new Float(f)).longValue();
 		return ret;
-	}
-
-	public static void parseCategory(byte[] htmlByteArray, Map<String, Object> parseData) {
-		Elements eles = null;
-		Element el = null;
-		Document doc = Jsoup.parse(new String(htmlByteArray), "UTF-8");
-		List<Map<String, Object>> xmlycatelist = new ArrayList<Map<String, Object>>();
-		try {
-			//加载一级分类信息
-			eles = doc.select("ul[class=sort_list]");
-			if (eles != null && !eles.isEmpty()) {
-				el = eles.get(0);
-				eles = el.select("li[cid]");
-				for (Element ele : eles) {
-					Map<String, Object> m = new HashMap<String, Object>();
-					m.put("cid", ele.attr("cid"));
-					m.put("nPy", ele.attr("cname"));
-					Elements els = ele.select("a");
-					if (els != null && !els.isEmpty()) {
-						ele = els.get(0);
-						m.put("visitUrl", "http://www.ximalaya.com" + ele.attr("href"));
-						m.put("cname", els.html());
-						xmlycatelist.add(m);
-					}
-				}
-
-				//加载二级分类信息
-				eles = doc.select("div[data-cache]");
-				if (eles != null && !eles.isEmpty()) {
-					for (Element ele : eles) {
-						Elements els = ele.select("a[hashlink]");
-						for (Element element : els) {
-							Map<String, Object> m = new HashMap<String, Object>();
-							m.put("visitUrl", "http://www.ximalaya.com" + element.attr("href"));
-							m.put("tid", element.attr("tid"));
-							m.put("pid", ele.attr("data-cache"));
-							xmlycatelist.add(m);
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		RedisUtils.addXMLYCategorys(parseData.get("CrawlerNum") + "", xmlycatelist);
 	}
 }

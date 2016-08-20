@@ -11,10 +11,6 @@ public class DictMPo extends BaseObject {
 	private String id;
 	private String dmName;
 	private String nPy;
-	private String publisher;
-	private String crawlerNum; //抓取序号
-	private String schemeId; //抓取方案Id
-	private String schemeName; //抓取方案名称
 	private String descn;
 	private Timestamp cTime;
 	public String getId() {
@@ -28,37 +24,13 @@ public class DictMPo extends BaseObject {
 	}
 	public void setDmName(String dmName) {
 		this.dmName = dmName;
-		setnPy(ChineseCharactersUtils.getFullSpell(dmName));
+		setnPy(ChineseCharactersUtils.getFullSpellFirstUp(dmName));
 	}
 	public String getnPy() {
 		return nPy;
 	}
 	public void setnPy(String nPy) {
 		this.nPy = nPy;
-	}
-	public String getPublisher() {
-		return publisher;
-	}
-	public void setPublisher(String publisher) {
-		this.publisher = publisher;
-	}
-	public String getCrawlerNum() {
-		return crawlerNum;
-	}
-	public void setCrawlerNum(String crawlerNum) {
-		this.crawlerNum = crawlerNum;
-	}
-	public String getSchemeId() {
-		return schemeId;
-	}
-	public void setSchemeId(String schemeId) {
-		this.schemeId = schemeId;
-	}
-	public String getSchemeName() {
-		return schemeName;
-	}
-	public void setSchemeName(String schemeName) {
-		this.schemeName = schemeName;
 	}
 	public String getDescn() {
 		return descn;
