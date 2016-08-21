@@ -66,7 +66,7 @@
   </update>
   
   <select id="getAlbumList" parameterType="java.util.Map" resultMap="BaseResultMap">
-    select * from hotspot_album limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
+    select * from hotspot_album where crawlerNum=#{crawlerNum,jdbcType=VARCHAR} limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
   </select>
   
   <select id="count" resultType="java.lang.Integer" parameterType="java.lang.String">
@@ -74,7 +74,7 @@
   </select>
   
   <delete id="deleteByAlbumIdAndPublisher" parameterType="java.util.Map">
-    delete from hotspot_album where albumId=#{albumId,jdbcType=VARCHAR} and albumPublisher=#{albumPublisher,jdbcType=VARCHAR}
+    delete from hotspot_album where albumId=#{albumId,jdbcType=VARCHAR} and albumPublisher=#{albumPublisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
   </delete>
   
 </mapper>

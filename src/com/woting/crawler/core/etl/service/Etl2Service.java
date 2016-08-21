@@ -49,7 +49,7 @@ public class Etl2Service {
 		long begintime = System.currentTimeMillis();
 		List<String> alnames = new ArrayList<String>();
 		for (int i = 0; i < alnum; i++) {
-			List<AlbumPo> allist = albumService.getAlbumList(i, 1000);
+			List<AlbumPo> allist = albumService.getAlbumList(i, 1000, etl2Process.getEtlnum());
 			List<AudioPo> aulist = new ArrayList<AudioPo>();
 			for (AlbumPo albumPo : allist) {
 				alnames.add(albumPo.getAlbumName());
@@ -78,8 +78,8 @@ public class Etl2Service {
 					if(albu.contains(al.getAlbumName()+al.getAlbumPublisher())){
 						logger.info("查出抓取到相同专辑[{}]", al.getAlbumName()+"_"+al.getAlbumPublisher()+"_"+al.getAlbumId());
 						logger.info("进行删除查询到相同专辑下级单体");
-						audioService.removeSameAudio(al.getAlbumId(), al.getAlbumPublisher());
-						albumService.removeSameAlbum(al.getAlbumId(), al.getAlbumPublisher());
+						audioService.removeSameAudio(al.getAlbumId(), al.getAlbumPublisher(), etl2Process.getEtlnum());
+						albumService.removeSameAlbum(al.getAlbumId(), al.getAlbumPublisher(), etl2Process.getEtlnum());
 						continue;
 					}
 					albu+=al.getAlbumName()+al.getAlbumPublisher();
@@ -90,10 +90,10 @@ public class Etl2Service {
 					try {
 						Thread.sleep(10);
 					} catch (Exception e) {}
-					List<AudioPo> aus = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher());
+					List<AudioPo> aus = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), etl2Process.getEtlnum());
 					if(aus.size()==0 || aus.isEmpty() || aus==null){
 						logger.info("删除无下级声音的专辑[{}]", al.getAlbumName()+"_"+al.getAlbumPublisher());
-						albumService.removeSameAlbum(al.getAlbumId(), al.getAlbumPublisher());
+						albumService.removeSameAlbum(al.getAlbumId(), al.getAlbumPublisher(), etl2Process.getEtlnum());
 						als.remove();
 						continue;
 					}
