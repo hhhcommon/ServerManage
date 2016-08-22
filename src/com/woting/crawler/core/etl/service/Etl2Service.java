@@ -91,6 +91,8 @@ public class Etl2Service {
 						Thread.sleep(10);
 					} catch (Exception e) {}
 					List<AudioPo> aus = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher());
+					if(al.getAlbumId().equals("208933"))
+						System.out.println(aus.size()+"_"+aus.isEmpty()+"_"+aus==null);
 					if(aus.size()==0 || aus.isEmpty() || aus==null){
 						logger.info("删除无下级声音的专辑[{}]", al.getAlbumName()+"_"+al.getAlbumPublisher());
 						albumService.removeSameAlbum(al.getAlbumId(), al.getAlbumPublisher());
