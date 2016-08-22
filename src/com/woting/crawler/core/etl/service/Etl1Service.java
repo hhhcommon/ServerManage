@@ -5,11 +5,16 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import com.spiritdata.framework.core.cache.SystemCache;
+import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.album.service.AlbumService;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.core.audio.service.AudioService;
 import com.woting.crawler.ext.SpringShell;
+
+import edu.uci.ics.crawler4j.crawler.CrawlConfig;
 
 @Service
 public class Etl1Service {
@@ -37,8 +42,8 @@ public class Etl1Service {
 		logger.info("数据存储完成，开始进行数据库清理！");
 		AlbumService albumService = (AlbumService) SpringShell.getBean("albumService");
 		AudioService audioService = (AudioService) SpringShell.getBean("audioService");
-		albumService.removeNull();
-		audioService.removeNull();
+		albumService.removeNull(SystemCache.getCache(CrawlerConstants.CRAWLERNUM).getContent()+"");
+		audioService.removeNull(SystemCache.getCache(CrawlerConstants.CRAWLERNUM).getContent()+"");
 		logger.info("数据库清理完成！");
 	}
 }

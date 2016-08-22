@@ -27,41 +27,48 @@ public class AlbumService {
 		albumDao.insert("insertList", m);
 	}
 	
-	public List<AlbumPo> getAlbumList(int page, int pagesize){
+	public List<AlbumPo> getAlbumList(int page, int pagesize ,String num){
 		Map<String, Object> m = new HashMap<String,Object>();
 		m.put("page", page);
 		m.put("pagesize", pagesize);
+		m.put("crawlerNum", num);
 		List<AlbumPo> aus = albumDao.queryForList("getAlbumList", m);
 		return aus;
 	}
 	
-	public int countNum(String crawlernum){
-		int num = albumDao.getCount("count",crawlernum);
+	public int countNum(String crawlerNum){
+		int num = albumDao.getCount("count",crawlerNum);
 		return num;
 	}
 	
-	public void removeSameAlbum(String albumId, String publisher){
+	public void removeSameAlbum(String albumId, String publisher ,String num){
 		Map<String, Object> m = new HashMap<String,Object>();
 		m.put("albumId", albumId);
 		m.put("albumPublisher", publisher);
+		m.put("crawlerNum", num);
 		albumDao.delete("deleteByAlbumIdAndPublisher", m);
 	}
 	
-	public void removeNull(){
+	public void removeNull(String num){
 		Map<String, Object> m = new HashMap<String,Object>();
 		m.put("schemeId", "null");
+		m.put("crawlerNum", num);
 		albumDao.update("removeNull", m);
 		m.clear();
 		m.put("schemeName", "null");
+		m.put("crawlerNum", num);
 		albumDao.update("removeNull", m);
 		m.clear();
 		m.put("albumTags", "null");
+		m.put("crawlerNum", num);
 		albumDao.update("removeNull", m);
 		m.clear();
 		m.put("descn", "null");
+		m.put("crawlerNum", num);
 		albumDao.update("removeNull", m);
 		m.clear();
 		m.put("descn", "");
+		m.put("crawlerNum", num);
 		albumDao.update("removeNull", m);
 	}
 }
