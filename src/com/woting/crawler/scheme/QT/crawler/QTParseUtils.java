@@ -48,7 +48,7 @@ public class QTParseUtils {
 		try {
 			els = doc.select("li[class=playable clearfix]");
 			if(els!=null&&!els.isEmpty()){
-				int num = 0;
+//				int num = 0;
 				for (Element e : els) {
 					String jsonstr = e.attr("data-play-info");
 					jsonstr = HttpUtils.getTextByDispose(jsonstr);
@@ -67,7 +67,7 @@ public class QTParseUtils {
 					pDate.put("audioName", au.get("name"));
 					pDate.put("audioId", au.get("id"));
 					pDate.put("duration", au.get("duration"));
-					pDate.put("audioImg", au.get("thumb"));
+					pDate.put("audioImg", parseData.get("albumImg"));
 					pDate.put("albumId",parseData.get("albumId"));
 					pDate.put("albumName", parseData.get("albumName"));
 					List<String> playlist = (List<String>) au.get("urls");
@@ -82,9 +82,9 @@ public class QTParseUtils {
 						pDate.put("playCount",m.get("playcount"));
 					}
 					RedisUtils.addQTAudio(parseData.get("CrawlerNum")+"", pDate);
-					if(num==5)
-						break;
-					num++;
+//					if(num==5)
+//						break;
+//					num++;
 				}
 			}
 		} catch (Exception e) {e.printStackTrace();}

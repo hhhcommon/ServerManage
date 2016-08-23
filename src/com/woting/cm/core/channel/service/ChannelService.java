@@ -1,5 +1,6 @@
 package com.woting.cm.core.channel.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.spiritdata.framework.core.dao.mybatis.MybatisDAO;
 import com.woting.cm.core.channel.persis.po.ChannelAssetPo;
 import com.woting.cm.core.channel.persis.po.ChannelPo;
-
 
 @Service
 public class ChannelService {
@@ -24,19 +24,32 @@ public class ChannelService {
 		channelDao.setNamespace("A_CHANNEL");
 		ChannelAssetDao.setNamespace("A_CHANNELASSET");
 	}
-	
-	public void insertChannelAssetList(List<ChannelAssetPo> chalist){
+
+	public void insertChannelAssetList(List<ChannelAssetPo> chalist) {
+		List<ChannelAssetPo> chas = new ArrayList<>();
+		int num = 0;
+		for (ChannelAssetPo channelAssetPo : chalist) {
+			chas.add(channelAssetPo);
+			if (num == 1000) {
+				Map<String, Object> m = new HashMap<>();
+				m.put("list", chas);
+				ChannelAssetDao.insert("insertList", m);
+				chas.clear();
+				num=0;
+			}
+			num++;
+		}
 		Map<String, Object> m = new HashMap<>();
-		m.put("list", chalist);
+		m.put("list", chas);
 		ChannelAssetDao.insert("insertList", m);
 	}
-	
-	public List<ChannelPo> getChannelList(){
+
+	public List<ChannelPo> getChannelList() {
 		List<ChannelPo> chlist = channelDao.queryForList("getList");
 		return chlist;
 	}
-	
-	public void insertChannelAsset(ChannelAssetPo cha){
+
+	public void insertChannelAsset(ChannelAssetPo cha) {
 		ChannelAssetDao.insert("insert", cha.toHashMap());
 	}
 }

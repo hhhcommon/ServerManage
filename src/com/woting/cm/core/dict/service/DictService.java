@@ -159,7 +159,20 @@ public class DictService {
         }
     }
     
-    public void insertDictRefList(List<DictRefResPo> dictrefs){
+    public void insertDictRefList(List<DictRefResPo> dictreflist){
+    	List<DictRefResPo> dictrefs = new ArrayList<>();
+    	int num=0;
+    	for (DictRefResPo dictRefResPo : dictreflist) {
+			dictrefs.add(dictRefResPo);
+			if(num==1000){
+				Map<String, Object> m = new HashMap<String,Object>();
+		    	m.put("list", dictrefs);
+		    	dictRefDao.insert("insertList",m);
+		    	dictrefs.clear();
+		    	num=0;
+			}
+			num++;
+		}
     	Map<String, Object> m = new HashMap<String,Object>();
     	m.put("list", dictrefs);
     	dictRefDao.insert("insertList",m);

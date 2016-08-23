@@ -44,7 +44,7 @@
 	
 	<sql id="Base_MaSource_List">
     id, maId, maSrcType, maSrcId, maSource, smType, playURI, isMain, descn, cTime
-  </sql>
+    </sql>
 
 	<!-- 专辑 -->
 	<resultMap id="seqMediaAssetMap" type="seqMediaAsset">
@@ -205,6 +205,26 @@
       <if test="descn!=null">#{descn,jdbcType=VARCHAR},</if>
     </trim>
   </insert>
+  
+    <resultMap id="mediaplaycountmap" type="mediaplaycount">
+		<id     column="id"            property="id"            jdbcType="VARCHAR" />
+		<result column="resTableName"  property="resTableName"  jdbcType="VARCHAR" />
+		<result column="resId"         property="resId"         jdbcType="INTEGER" />
+		<result column="playCount"     property="playCount"     jdbcType="VARCHAR" />
+		<result column="publisher"     property="publisher"     jdbcType="VARCHAR" />
+		<result column="cTime"         property="CTime"         jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<sql id="Base_MediaPlayCount_List">
+		id, resTableName, resId, playCount, publisher, cTime
+	</sql>
+	
+	<insert id="insertMediaPlayCountList" parameterType="map">
+    insert into wt_MediaPlayCount(id, resTableName, resId, playCount, publisher, cTime) values
+      <foreach collection="list" item="list" index="index" separator=",">
+       (#{list.id},#{list.resTableName},#{list.resId},#{list.playCount},#{list.publisher},#{list.cTime})
+      </foreach>
+    </insert>
 	
 	<insert id="insertMaList" parameterType="map">
     insert into wt_MediaAsset( id, maTitle, maPubType, maPubId, maPublisher, maPublishTime, maImg, maURL, subjectWords, keyWords, langDid, language, timeLong, descn, pubCount, maStatus, cTime) values

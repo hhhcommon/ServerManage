@@ -15,6 +15,7 @@ import com.woting.cm.core.channel.persis.po.ChannelPo;
 import com.woting.cm.core.dict.persis.po.DictRefResPo;
 import com.woting.cm.core.media.persis.po.MaSourcePo;
 import com.woting.cm.core.media.persis.po.MediaAssetPo;
+import com.woting.cm.core.media.persis.po.MediaPlayCountPo;
 import com.woting.cm.core.media.persis.po.SeqMaRefPo;
 import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
@@ -115,12 +116,13 @@ public abstract class ConvertUtils {
 		return dictdlist;
 	}
 
-	public static Map<String, Object> convert2MediaAsset(List<AudioPo> aulist, SeqMediaAssetPo seq,List<Map<String, Object>> dicts, List<ChannelPo> chlist) {
+	public static Map<String, Object> convert2MediaAsset(List<AudioPo> aulist, SeqMediaAssetPo seq, List<Map<String, Object>> dicts, List<ChannelPo> chlist) {
 		List<MediaAssetPo> malist = new ArrayList<MediaAssetPo>();
 		List<MaSourcePo> maslist = new ArrayList<MaSourcePo>();
 		List<DictRefResPo> dictreflist = new ArrayList<DictRefResPo>();
 		List<ChannelAssetPo> chalist = new ArrayList<ChannelAssetPo>();
 		List<SeqMaRefPo> seqreflist = new ArrayList<SeqMaRefPo>();
+		List<MediaPlayCountPo> mecounts = new ArrayList<MediaPlayCountPo>();
 		if (aulist != null && aulist.size() > 0) {
 			for (AudioPo au : aulist) {
 				// 声音数据转换
@@ -137,10 +139,10 @@ public abstract class ConvertUtils {
 				ma.setDescn(au.getDescn());
 				ma.setKeyWords(au.getAudioTags());
 				ma.setPubCount(1);
-				ma.setTimeLong(new Long(au.getDuration()));
+				ma.setTimeLong(new Long(au.getDuration()+"000"));
 				ma.setMaStatus(1);
 				ma.setCTime(new Timestamp(System.currentTimeMillis()));
-				
+
 				MaSourcePo maS = new MaSourcePo();
 				maS.setId(SequenceUUID.getPureUUID());
 				maS.setMaId(au.getId());
@@ -180,7 +182,7 @@ public abstract class ConvertUtils {
 						}
 					}
 				}
-				if (!dictRefRes.getDictDid().equals("null")) {
+				if (dictRefRes.getDictDid()!=null && !dictRefRes.getDictDid().equals("null")) {
 					malist.add(ma);
 					maslist.add(maS);
 					seqreflist.add(seqMaRef);
@@ -192,7 +194,7 @@ public abstract class ConvertUtils {
 					cha.setPublisherId(ma.getMaPubId());
 					cha.setIsValidate(1);
 					cha.setCheckerId("1");
-					cha.setPubName(ma.getMaPublisher());
+					cha.setPubName(ma.getMaTitle());
 					cha.setPubImg(ma.getMaImg());
 					cha.setSort(0);
 					cha.setFlowFlag(2);
@@ -206,11 +208,22 @@ public abstract class ConvertUtils {
 								cha.setChannelId(ch.getId());
 								break;
 							}
-						}
+						}	
 					}
+					if(cha.getChannelId()==null||cha.getChannelId().equals("null"))
+						continue;
 					chalist.add(cha);
+					
+					MediaPlayCountPo mecount = new MediaPlayCountPo();
+					mecount.setId(SequenceUUID.getPureUUID());
+					mecount.setResTableName("wt_MediaAsset");
+					mecount.setResId(ma.getId());
+					mecount.setPlayCount(convertPlayNum2Long(au.getPlayCount()));
+					mecount.setPublisher(au.getAudioPublisher());
+					mecount.setcTime(new Timestamp(System.currentTimeMillis()));
+					mecounts.add(mecount);
 				}else{
-					return null;
+					continue;
 				}
 			}
 		}
@@ -221,6 +234,121 @@ public abstract class ConvertUtils {
 		m.put("dictreflist", dictreflist);
 		m.put("chalist", chalist);
 		m.put("seqmareflist", seqreflist);
+		m.put("mediaplaycount", mecounts);
 		return m;
+	}
+	
+	public static Map<String, Object> convert2SeqMediaAsset(AlbumPo al, List<Map<String, Object>> dicts, List<ChannelPo> chlist){
+		Map<String, Object> map = new HashMap<>();
+		SeqMediaAssetPo seq = new SeqMediaAssetPo();
+		seq.setId(SequenceUUID.getPureUUID());
+		seq.setSmaTitle(al.getAlbumName());
+		seq.setSmaImg(al.getAlbumImg());
+		seq.setSmaPubType(1);
+		if(al.getAlbumPublisher().equals("喜马拉雅")){
+			seq.setSmaPubId("2");
+			seq.setSmaPublisher("喜马拉雅");
+		}else{
+			if(al.getAlbumPublisher().equals("蜻蜓")){
+				seq.setSmaPubId("3");
+				seq.setSmaPublisher("蜻蜓");
+			}else{
+				if (al.getAlbumPublisher().equals("考拉")) {
+					seq.setSmaPubId("4");
+					seq.setSmaPublisher("考拉");
+				}
+			}
+		}
+		seq.setSmaAllCount(0);
+		if(al.getAlbumTags()!=null && !al.getAlbumTags().equals("null"))
+			seq.setKeyWords(al.getAlbumTags());
+		seq.setLangDid("zho");
+		seq.setLanguage("中文");
+		if(al.getDescn()!=null && !al.getDescn().equals("null"))
+			seq.setDescn(al.getDescn());
+		seq.setCTime(new Timestamp(System.currentTimeMillis()));
+		seq.setPubCount(1);
+		seq.setSmaStatus(1);
+		map.put("seq", seq);
+		
+		MediaPlayCountPo mecount = new MediaPlayCountPo();
+		mecount.setId(SequenceUUID.getPureUUID());
+		mecount.setResTableName("wt_SeqMediaAsset");
+		mecount.setResId(seq.getId());
+		mecount.setPlayCount(convertPlayNum2Long(al.getPlayCount()));
+		mecount.setPublisher(al.getAlbumPublisher());
+		mecount.setcTime(new Timestamp(System.currentTimeMillis()));
+		map.put("playnum", mecount);
+		
+		DictRefResPo dictRefRes = new DictRefResPo();
+		dictRefRes.setId(SequenceUUID.getPureUUID());
+		dictRefRes.setRefName("专辑-内容分类");
+		dictRefRes.setResTableName("wt_SeqMediaAsset");
+		dictRefRes.setResId(seq.getId());
+		for (Map<String, Object> ms : dicts) {
+			if (al.getAlbumPublisher().equals(ms.get("publisher"))&& al.getCategoryName().equals(ms.get("crawlerDictdName"))) {
+				dictRefRes.setDictMid(ms.get("dictmId") + "");
+				dictRefRes.setDictMName(ms.get("dictmName") + "");
+				dictRefRes.setDictDid(ms.get("dictdId") + "");
+				dictRefRes.setTitle(ms.get("dictdName") + "");
+				dictRefRes.setBCode(ms.get("dictdId") + "");
+				dictRefRes.setPathNames(ms.get("dictdName") + "");
+				dictRefRes.setPathIds(ms.get("dictdId") + "");
+				dictRefRes.setCTime(new Timestamp(System.currentTimeMillis()));
+			}
+		}
+		
+		if (dictRefRes.getDictDid()!=null && !dictRefRes.getDictDid().equals("null")) {
+			map.put("dictref", dictRefRes);
+			ChannelAssetPo cha = new ChannelAssetPo();
+			cha.setId(SequenceUUID.getPureUUID());
+			cha.setAssetType("wt_SeqMediaAsset");
+			cha.setAssetId(seq.getId());
+			cha.setPublisherId(seq.getSmaPubId());
+			cha.setIsValidate(1);
+			cha.setCheckerId("1");
+			cha.setPubName(seq.getSmaTitle());
+			cha.setPubImg(seq.getSmaImg());
+			cha.setSort(0);
+			cha.setFlowFlag(2);
+			cha.setInRuleIds("etl");
+			cha.setCheckRuleIds("etl");
+			cha.setCTime(new Timestamp(System.currentTimeMillis()));
+			cha.setPubTime(cha.getCTime());
+			if (chlist != null && chlist.size() > 0) {
+				for (ChannelPo ch : chlist) {
+					if (dictRefRes.getTitle().equals(ch.getChannelName())) {
+						cha.setChannelId(ch.getId());
+						map.put("cha", cha);
+						break;
+					}
+				}
+			}
+		}
+		if(map.containsKey("cha"))
+			return map;
+		else return null;
+	}
+	
+	private static String convertPlayNum2Long(String playnum){
+		int lastnum = -1;
+		int begnum = -1;
+		if(!playnum.contains(".")) return playnum;
+		begnum = playnum.indexOf(".");
+		if(playnum.contains("万")){
+			lastnum = playnum.indexOf("万");
+			if(lastnum-begnum==2){
+			    playnum = playnum.substring(0, lastnum-1);
+			    playnum = playnum.replace(".", "")+"000";
+		    }
+		}
+		if(playnum.contains("亿")){
+			lastnum = playnum.indexOf("亿");
+			if(lastnum-begnum==2){
+			    playnum = playnum.substring(0, lastnum-1);
+			    playnum = playnum.replace(".", "")+"0000000";
+		    }
+		}
+		return playnum;
 	}
 }

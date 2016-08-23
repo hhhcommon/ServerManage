@@ -18,6 +18,7 @@ import com.woting.cm.core.dict.persis.po.DictRefResPo;
 import com.woting.cm.core.dict.service.DictService;
 import com.woting.cm.core.media.persis.po.MaSourcePo;
 import com.woting.cm.core.media.persis.po.MediaAssetPo;
+import com.woting.cm.core.media.persis.po.MediaPlayCountPo;
 import com.woting.cm.core.media.persis.po.SeqMaRefPo;
 import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
 import com.woting.cm.core.media.service.MediaService;
@@ -78,8 +79,7 @@ public class Etl2Service {
 				while (als.hasNext()) {
 					AlbumPo al = (AlbumPo) als.next();
 					if (albu.contains(al.getAlbumName() + al.getAlbumPublisher())) {
-						logger.info("查出抓取到相同专辑[{}]",
-								al.getAlbumName() + "_" + al.getAlbumPublisher() + "_" + al.getAlbumId());
+						logger.info("查出抓取到相同专辑[{}]",al.getAlbumName() + "_" + al.getAlbumPublisher() + "_" + al.getAlbumId());
 						logger.info("进行删除查询到相同专辑下级单体");
 						audioService.removeSameAudio(al.getAlbumId(), al.getAlbumPublisher(), etl2Process.getEtlnum());
 						albumService.removeSameAlbum(al.getAlbumId(), al.getAlbumPublisher(), etl2Process.getEtlnum());
@@ -105,8 +105,7 @@ public class Etl2Service {
 					AlbumPo al = (AlbumPo) als.next();
 					try {
 						Thread.sleep(10);
-					} catch (Exception e) {
-					}
+					} catch (Exception e) {}
 					List<AudioPo> aus = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(),
 							etl2Process.getEtlnum());
 					if (aus.size() == 0 || aus.isEmpty() || aus == null) {
@@ -119,11 +118,11 @@ public class Etl2Service {
 				}
 				logger.info("与专辑有绑定关系的声音数量为[{}]", aulist.size());
 			}
-
 		}
 		System.out.println("时长=" + (System.currentTimeMillis() - begintime));
 		logger.info("开始往资源库进行数据转换");
 		makeExistAlbums(existals);
+		makeNewAlbums(allist);
 	}
 
 	/**
@@ -140,12 +139,11 @@ public class Etl2Service {
 		List<DictRefResPo> dictreflist = new ArrayList<DictRefResPo>();
 		List<ChannelAssetPo> chalist = new ArrayList<ChannelAssetPo>();
 		List<SeqMaRefPo> seqreflist = new ArrayList<SeqMaRefPo>();
+		List<MediaPlayCountPo> mecounts = new ArrayList<MediaPlayCountPo>();
 		List<ChannelPo> chlist = channelService.getChannelList();
-		System.out.println(JsonUtils.objToJson(chlist));
 		if (allist != null && allist.size() > 0) {
 			for (AlbumPo al : allist) {
-				List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(),
-						al.getCrawlerNum());
+				List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(),al.getCrawlerNum());
 				if (aulist.size() > 0) {
 					Iterator<AudioPo> aus = aulist.iterator();
 					while (aus.hasNext()) {
@@ -166,6 +164,7 @@ public class Etl2Service {
 									dictreflist.addAll((List<DictRefResPo>) mall.get("dictreflist"));
 									chalist.addAll((List<ChannelAssetPo>) mall.get("chalist"));
 									seqreflist.addAll((List<SeqMaRefPo>) mall.get("seqmareflist"));
+									mecounts.addAll((List<MediaPlayCountPo>)mall.get("mediaplaycount"));
 								}
 							}
 						}
@@ -174,12 +173,80 @@ public class Etl2Service {
 			}
 		}
 		logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}],专辑声音关系数量[{}]", malist.size(),maslist.size(), dictreflist.size(), chalist.size(), seqreflist.size());
+		if (malist.size()>0) {
+			//往资源库插入声音数据
+		    mediaService.insertMaList(malist);
+	        //往资源库插入播放流数据
+	        mediaService.insertMasList(maslist);
+	        //往资源库插入专辑声音关系表数据
+		    mediaService.insertSeqRefList(seqreflist);
+		    //往资源库插入音频播放次数数据
+		    mediaService.insertMediaPlayCountList(mecounts);
+		    //往字典关系表里插入内容分类关系数据
+		    dictService.insertDictRefList(dictreflist);
+		    //往栏目发布表里插入发布信息
+		    channelService.insertChannelAssetList(chalist);
+		}else{
+			logger.info("已存在的专辑无最新下级声音资源");
+		}
 		
-		mediaService.insertMaList(malist);
-		mediaService.insertMasList(maslist);
-		mediaService.insertSeqRefList(seqreflist);
-		dictService.insertDictRefList(dictreflist);
-		System.out.println(JsonUtils.objToJson(chalist));
-		channelService.insertChannelAssetList(chalist);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void makeNewAlbums(List<AlbumPo> allist){
+		channelService = (ChannelService) SpringShell.getBean("channelService");
+		dictService = (DictService) SpringShell.getBean("dictService");
+		List<MediaAssetPo> malist = new ArrayList<MediaAssetPo>();
+		List<MaSourcePo> maslist = new ArrayList<MaSourcePo>();
+		List<DictRefResPo> dictreflist = new ArrayList<DictRefResPo>();
+		List<ChannelAssetPo> chalist = new ArrayList<ChannelAssetPo>();
+		List<SeqMediaAssetPo> seqlist = new ArrayList<SeqMediaAssetPo>();
+		List<SeqMaRefPo> seqreflist = new ArrayList<SeqMaRefPo>();
+		List<MediaPlayCountPo> mecounts = new ArrayList<MediaPlayCountPo>();
+		List<ChannelPo> chlist = channelService.getChannelList();
+		if (allist != null && allist.size() > 0) {
+			for (AlbumPo al : allist) { 
+				Map<String, Object> map = ConvertUtils.convert2SeqMediaAsset(al,cate2dictdlist,chlist);
+				if (map==null) {
+					continue;
+				}
+				SeqMediaAssetPo se = (SeqMediaAssetPo) map.get("seq");
+				seqlist.add(se);
+				dictreflist.add((DictRefResPo)map.get("dictref"));
+				chalist.add((ChannelAssetPo)map.get("cha"));
+				mecounts.add((MediaPlayCountPo)map.get("playnum"));
+				//获取抓取到的专辑下级节目信息
+				List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(),al.getCrawlerNum());
+				if (aulist.size() > 0) {
+					Map<String, Object> mall = ConvertUtils.convert2MediaAsset(aulist, se, cate2dictdlist, chlist);
+					if (mall != null &&mall.containsKey("malist")) {
+						malist.addAll((List<MediaAssetPo>) mall.get("malist"));
+						maslist.addAll((List<MaSourcePo>) mall.get("maslist"));
+						dictreflist.addAll((List<DictRefResPo>) mall.get("dictreflist"));
+						chalist.addAll((List<ChannelAssetPo>) mall.get("chalist"));
+						seqreflist.addAll((List<SeqMaRefPo>) mall.get("seqmareflist"));
+						mecounts.addAll((List<MediaPlayCountPo>)mall.get("mediaplaycount"));
+					}
+				}
+			}
+		}
+		logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}],专辑声音关系数量[{}]", malist.size(),maslist.size(), dictreflist.size(), chalist.size(), seqreflist.size());
+		if (malist.size()>0) {
+			mediaService.insertSeqList(seqlist);
+			//往资源库插入声音数据
+		    mediaService.insertMaList(malist);
+	        //往资源库插入播放流数据
+	        mediaService.insertMasList(maslist);
+	        //往资源库插入专辑声音关系表数据
+		    mediaService.insertSeqRefList(seqreflist);
+		    //往资源库插入音频播放次数数据
+		    mediaService.insertMediaPlayCountList(mecounts);
+		    //往字典关系表里插入内容分类关系数据
+		    dictService.insertDictRefList(dictreflist);
+		    //往栏目发布表里插入发布信息
+		    channelService.insertChannelAssetList(chalist);
+		}else{
+			logger.info("新专辑无下级声音资源");
+		}
 	}
 }

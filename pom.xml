@@ -93,7 +93,7 @@
       <artifactId>BasicPlat</artifactId>
       <version>0.1.0.9</version>
       <scope>system</scope>
-      <systemPath>${projectDir}/lib/BasicPlat-0.1.0.9.jar</systemPath>
+      <systemPath>${projectDir}/lib/BasicPlat-0.1.0.10.jar</systemPath>
     </dependency>
     <!-- 引入汉字转拼音 -->
     <dependency>
