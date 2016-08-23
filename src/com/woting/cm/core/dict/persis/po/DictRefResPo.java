@@ -15,7 +15,7 @@ public class DictRefResPo extends BaseObject {
     private String dictMName; //字典组名称
     private String dictDid; //字典项Id
     private String title; //字典项名称
-    private String BCode; //字典项业务编码
+    private String bCode; //字典项业务编码
     private String pathNames; //字典项全名称
     private String pathIds; //字典项路径Id
     private Timestamp CTime; //创建时间
@@ -69,10 +69,10 @@ public class DictRefResPo extends BaseObject {
         this.title=title;
     }
     public String getBCode() {
-        return BCode;
+        return bCode;
     }
     public void setBCode(String BCode) {
-        this.BCode=BCode;
+        this.bCode=BCode;
     }
     public String getPathNames() {
         return pathNames;

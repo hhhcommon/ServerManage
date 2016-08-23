@@ -36,8 +36,8 @@ public class XMLYCrawler extends Thread {
 				for (Element ele : eles) {
 					String catename = ele.select("a").get(0).html();
 					String cateid = ele.attr("cid");
-					if(catename.equals("英语"))
-						catename = "外语";
+					if(catename.equals("外语"))
+						catename = "英语";
 					catemap.put(catename, cateid);
 				}
 				if (catemap != null) {

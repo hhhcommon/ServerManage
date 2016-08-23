@@ -12,6 +12,8 @@
     <typeAlias alias="maSource"      type="com.woting.cm.core.media.persis.po.MaSourcePo"/>
     <typeAlias alias="seqMediaAsset" type="com.woting.cm.core.media.persis.po.SeqMediaAssetPo"/>
     <typeAlias alias="seqMaRef"      type="com.woting.cm.core.media.persis.po.SeqMaRefPo"/>
+    <typeAlias alias="channel"       type="com.woting.cm.core.channel.persis.po.ChannelPo"/>
+    <typeAlias alias="channelAsset"  type="com.woting.cm.core.channel.persis.po.ChannelAssetPo"/>
   </typeAliases>
   <!-- SQL文件设置 -->
   <mappers>
@@ -20,5 +22,7 @@
     <mapper resource="com/woting/cm/core/dict/persis/sql/DictRefRes.mapper.xml"/>
     <mapper resource="com/woting/cm/core/tracklog/persis/sql/TrackLog.mapper.xml"/>
     <mapper resource="com/woting/cm/core/media/persis/sql/Media.mapper.xml"/>
+    <mapper resource="com/woting/cm/core/channel/persis/sql/ChannelAsset.mapper.xml"/>
+    <mapper resource="com/woting/cm/core/channel/persis/sql/Channel.mapper.xml"/>
   </mappers>
 </configuration>

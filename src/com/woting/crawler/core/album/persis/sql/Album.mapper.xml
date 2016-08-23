@@ -58,7 +58,6 @@
       <if test="descn!=null">descn=Null,</if>
       <if test="visitUrl!=null">visitUrl=Null,</if>
       <if test="playCount!=null">playCount=Null,</if>
-      <if test="crawlerNum!=null">crawlerNum=Null,</if>
       <if test="schemeId!=null">schemeId=Null,</if>
       <if test="schemeName!=null">schemeName=Null,</if>
     </set>

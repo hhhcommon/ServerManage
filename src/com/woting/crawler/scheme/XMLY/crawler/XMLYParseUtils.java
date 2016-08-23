@@ -138,7 +138,10 @@ public abstract class XMLYParseUtils {
 			eles = doc.select("div.detailContent_category");
 			if (eles != null && !eles.isEmpty()) {
 				e = eles.get(0);
-				parseData.put("categoryName", e.select("a").get(0).html().trim().replace("【", "").replace("】", ""));
+				String catename = e.select("a").get(0).html().trim().replace("【", "").replace("】", "");
+				if(catename.equals("外语"))
+					catename = "英语";
+				parseData.put("categoryName", catename);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();

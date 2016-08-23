@@ -2,11 +2,21 @@ package com.woting.crawler.scheme.utils;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.spiritdata.framework.util.SequenceUUID;
+import com.woting.cm.core.channel.persis.po.ChannelAssetPo;
+import com.woting.cm.core.channel.persis.po.ChannelPo;
+import com.woting.cm.core.dict.persis.po.DictRefResPo;
+import com.woting.cm.core.media.persis.po.MaSourcePo;
 import com.woting.cm.core.media.persis.po.MediaAssetPo;
+import com.woting.cm.core.media.persis.po.SeqMaRefPo;
+import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.core.dict.persis.po.DictDPo;
@@ -15,6 +25,7 @@ import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.ext.SpringShell;
 
 public abstract class ConvertUtils {
+	private static Logger logger = LoggerFactory.getLogger(ConvertUtils.class);
 
 	public static List<AlbumPo> convert2Album(List<Map<String, Object>> list, String publisher) {
 		List<AlbumPo> albums = new ArrayList<AlbumPo>();
@@ -72,7 +83,8 @@ public abstract class ConvertUtils {
 		return audios;
 	}
 
-	public static List<DictDPo> convert2DictD(Scheme scheme, List<Map<String, Object>> list, String publisher, String dmid) {
+	public static List<DictDPo> convert2DictD(Scheme scheme, List<Map<String, Object>> list, String publisher,
+			String dmid) {
 		CrawlerDictService crawlerDictService = (CrawlerDictService) SpringShell.getBean("crawlerDictService");
 		List<DictDPo> ddlist = crawlerDictService.getDictDList(publisher, scheme.getSchemenum());
 		List<DictDPo> dictdlist = new ArrayList<DictDPo>();
@@ -92,7 +104,7 @@ public abstract class ConvertUtils {
 					}
 				}
 				dd.setPublisher(publisher);
-				if (m.containsKey("nPy")) 
+				if (m.containsKey("nPy"))
 					dd.setnPy(m.get("nPy") + "");
 				dd.setCrawlerNum(scheme.getSchemenum());
 				dd.setVisitUrl(m.get("visitUrl") + "");
@@ -102,13 +114,113 @@ public abstract class ConvertUtils {
 		}
 		return dictdlist;
 	}
-	
-	public static List<MediaAssetPo> convert2MediaAsset(List<AudioPo> aulist){
-		if(aulist!=null&&aulist.size()>0){
+
+	public static Map<String, Object> convert2MediaAsset(List<AudioPo> aulist, SeqMediaAssetPo seq,List<Map<String, Object>> dicts, List<ChannelPo> chlist) {
+		List<MediaAssetPo> malist = new ArrayList<MediaAssetPo>();
+		List<MaSourcePo> maslist = new ArrayList<MaSourcePo>();
+		List<DictRefResPo> dictreflist = new ArrayList<DictRefResPo>();
+		List<ChannelAssetPo> chalist = new ArrayList<ChannelAssetPo>();
+		List<SeqMaRefPo> seqreflist = new ArrayList<SeqMaRefPo>();
+		if (aulist != null && aulist.size() > 0) {
 			for (AudioPo au : aulist) {
+				// 声音数据转换
 				MediaAssetPo ma = new MediaAssetPo();
+				ma.setId(au.getId());
+				ma.setMaTitle(au.getAudioName());
+				ma.setMaImg(au.getAudioImg());
+				ma.setMaURL(au.getAudioURL());
+				ma.setMaPubId(seq.getSmaPubId());
+				ma.setMaPublisher(seq.getSmaPublisher());
+				ma.setMaPubType(seq.getSmaPubType());
+				ma.setLangDid(seq.getLangDid());
+				ma.setLanguage(seq.getLanguage());
+				ma.setDescn(au.getDescn());
+				ma.setKeyWords(au.getAudioTags());
+				ma.setPubCount(1);
+				ma.setTimeLong(new Long(au.getDuration()));
+				ma.setMaStatus(1);
+				ma.setCTime(new Timestamp(System.currentTimeMillis()));
+				
+				MaSourcePo maS = new MaSourcePo();
+				maS.setId(SequenceUUID.getPureUUID());
+				maS.setMaId(au.getId());
+				maS.setIsMain(1);
+				maS.setMaSrcType(seq.getSmaPubType());
+				maS.setMaSrcId(seq.getSmaPubId());
+				maS.setMaSource(seq.getSmaPublisher());
+				maS.setPlayURI(au.getAudioURL());
+				maS.setDescn(au.getDescn());
+				maS.setCTime(new Timestamp(System.currentTimeMillis()));
+				
+				SeqMaRefPo seqMaRef = new SeqMaRefPo();
+				seqMaRef.setId(SequenceUUID.getPureUUID());
+				seqMaRef.setsId(seq.getId());
+				seqMaRef.setmId(ma.getId());
+				seqMaRef.setColumnNum(0);
+				seqMaRef.setDescn(ma.getDescn());
+				seqMaRef.setcTime(new Timestamp(System.currentTimeMillis()));
+				
+				DictRefResPo dictRefRes = new DictRefResPo();
+				dictRefRes.setId(SequenceUUID.getPureUUID());
+				dictRefRes.setRefName("单体-内容分类");
+				dictRefRes.setResTableName("wt_MediaAsset");
+				dictRefRes.setResId(au.getId());
+				for (Map<String, Object> ms : dicts) {
+					if (au.getAudioPublisher().equals(ms.get("publisher"))&& au.getCategoryName().equals(ms.get("crawlerDictdName"))) {
+						dictRefRes.setDictMid(ms.get("dictmId") + "");
+						dictRefRes.setDictMName(ms.get("dictmName") + "");
+						dictRefRes.setDictDid(ms.get("dictdId") + "");
+						dictRefRes.setTitle(ms.get("dictdName") + "");
+						dictRefRes.setBCode(ms.get("dictdId") + "");
+						dictRefRes.setPathNames(ms.get("dictdName") + "");
+						dictRefRes.setPathIds(ms.get("dictdId") + "");
+						dictRefRes.setCTime(new Timestamp(System.currentTimeMillis()));
+						if (!dictRefRes.getDictDid().equals("null")) {
+							dictreflist.add(dictRefRes);
+						}
+					}
+				}
+				if (!dictRefRes.getDictDid().equals("null")) {
+					malist.add(ma);
+					maslist.add(maS);
+					seqreflist.add(seqMaRef);
+					
+					ChannelAssetPo cha = new ChannelAssetPo();
+					cha.setId(SequenceUUID.getPureUUID());
+					cha.setAssetType("wt_MediaAsset");
+					cha.setAssetId(ma.getId());
+					cha.setPublisherId(ma.getMaPubId());
+					cha.setIsValidate(1);
+					cha.setCheckerId("1");
+					cha.setPubName(ma.getMaPublisher());
+					cha.setPubImg(ma.getMaImg());
+					cha.setSort(0);
+					cha.setFlowFlag(2);
+					cha.setInRuleIds("etl");
+					cha.setCheckRuleIds("etl");
+					cha.setCTime(new Timestamp(System.currentTimeMillis()));
+					cha.setPubTime(cha.getCTime());
+					if (chlist != null && chlist.size() > 0) {
+						for (ChannelPo ch : chlist) {
+							if (dictRefRes.getTitle().equals(ch.getChannelName())) {
+								cha.setChannelId(ch.getId());
+								break;
+							}
+						}
+					}
+					chalist.add(cha);
+				}else{
+					return null;
+				}
 			}
 		}
-		return null;
+		logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}]", malist.size(), maslist.size(),dictreflist.size(), chalist.size());
+		Map<String, Object> m = new HashMap<String,Object>();
+		m.put("malist", malist);
+		m.put("maslist", maslist);
+		m.put("dictreflist", dictreflist);
+		m.put("chalist", chalist);
+		m.put("seqmareflist", seqreflist);
+		return m;
 	}
 }

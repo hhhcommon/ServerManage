@@ -8,6 +8,7 @@
     <id      column="id"            property="id"            jdbcType="VARCHAR"/>
     <result  column="refName"       property="refName"       jdbcType="VARCHAR"/>
     <result  column="resTableName"  property="resTableName"  jdbcType="VARCHAR"/>
+    <result  column="resId"         property="resId"         jdbcType="VARCHAR"/>
     <result  column="dictMid"       property="dictMid"       jdbcType="VARCHAR"/>
     <result  column="dictMName"     property="dictMName"     jdbcType="VARCHAR"/>
     <result  column="dictDid"       property="dictDid"       jdbcType="VARCHAR"/>
@@ -17,6 +18,11 @@
     <result  column="pathIds"       property="pathIds"       jdbcType="VARCHAR"/>
     <result  column="cTime"         property="CTime"         jdbcType="TIMESTAMP"/>
   </resultMap>
+  
+  <!-- 所有列 -->
+  <sql id="Base_Column_List">
+    id, refName, resTableName, resId, dictMid, dictMName, dictDid, title, bCode, pathNames, pathIds, cTime
+  </sql>
 
   <!-- 新增 对应关系 -->
   <insert id="insert" parameterType="java.util.Map">
@@ -25,6 +31,7 @@
       <if test="id!=null">id,</if>
       <if test="refName!=null">refName,</if>
       <if test="resTableName!=null">resTableName,</if>
+      <if test="resId!=null">resId,</if>
       <if test="dictMid!=null">dictMid,</if>
       <if test="dictMName!=null">dictMName,</if>
       <if test="dictDid!=null">dictDid,</if>
@@ -37,6 +44,7 @@
       <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
       <if test="refName!=null">#{refName,jdbcType=VARCHAR},</if>
       <if test="resTableName!=null">#{resTableName,jdbcType=VARCHAR},</if>
+      <if test="resId!=null">#{resId,jdbcType=VARCHAR},</if>
       <if test="dictMid=null">#{dictMid,jdbcType=VARCHAR},</if>
       <if test="dictMName!=null">#{dictMName,jdbcType=VARCHAR},</if>
       <if test="dictDid!=null">#{dictDid,jdbcType=VARCHAR},</if>
@@ -46,4 +54,12 @@
       <if test="pathIds!=null">#{pathIds,jdbcType=VARCHAR},</if>
     </trim>
   </insert>
+  
+  <insert id="insertList" parameterType="java.util.Map">
+    insert into wt_ResDict_Ref(id, refName, resTableName, resId, dictMid, dictMName, dictDid, title, bCode, pathNames, pathIds, cTime) values
+    <foreach collection="list" item="list" index="index" separator=",">
+     (#{list.id},#{list.refName},#{list.resTableName},#{list.resId},#{list.dictMid},#{list.dictMName},#{list.dictDid},#{list.title},#{list.bCode},#{list.pathNames},#{list.pathIds},#{list.CTime})
+    </foreach>
+  </insert>
+  
 </mapper>

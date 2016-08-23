@@ -8,6 +8,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,29 +36,21 @@ public class FileUtils {
 	
 	@SuppressWarnings("unchecked")
 	public static List<Map<String, Object>> readFileByJson(String path){
-		InputStreamReader in = null;
-		BufferedReader br = null;
 		String sb = "";
 		List<Map<String, Object>> l = new ArrayList<Map<String, Object>>();
 		File file = new File(path);
 		try {
-			in = new InputStreamReader(new FileInputStream(file));
-			br = new BufferedReader(in);
-			String str = "";
-			try {
-				while ((str = br.readLine()) != null) {
-					str = str.trim().replace("\r", "").replace("\n", "");
-					sb+=str;
-				}
-				in.close();
-				br.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			InputStreamReader read = new InputStreamReader(new FileInputStream(file),"gbk");       
+            BufferedReader reader=new BufferedReader(read);       
+            String line;       
+            while ((line = reader.readLine()) != null)   
+            {
+                sb += line;
+            }
+            read.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println(sb);
 		l = (List<Map<String, Object>>) JsonUtils.jsonToObj(sb, List.class);
 		return l;
 	}

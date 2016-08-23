@@ -28,11 +28,11 @@ import com.woting.exceptionC.Wtcm1000CException;
 
 @Service
 public class DictService {
-    @Resource(name="defaultDAO_CM")
+    @Resource(name="defaultDAO")
     private MybatisDAO<DictMasterPo> dictMDao;
-    @Resource(name="defaultDAO_CM")
+    @Resource(name="defaultDAO")
     private MybatisDAO<DictDetailPo> dictDDao;
-    @Resource(name="defaultDAO_CM")
+    @Resource(name="defaultDAO")
     private MybatisDAO<DictRefResPo> dictRefDao;
 
     @PostConstruct
@@ -157,5 +157,11 @@ public class DictService {
         } catch(Exception e) {
             throw new Wtcm0301CException(e);
         }
+    }
+    
+    public void insertDictRefList(List<DictRefResPo> dictrefs){
+    	Map<String, Object> m = new HashMap<String,Object>();
+    	m.put("list", dictrefs);
+    	dictRefDao.insert("insertList",m);
     }
 }
