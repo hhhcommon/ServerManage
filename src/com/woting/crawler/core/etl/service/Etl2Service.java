@@ -88,9 +88,7 @@ public class Etl2Service {
 					}
 					albu += al.getAlbumName() + al.getAlbumPublisher();
 				}
-				logger.info("非重复专辑数量[{}]", allist.size());
-				logger.info("开始进行查询专辑与声音的绑定信息");
-
+				
 				als = allist.iterator();
 				while (als.hasNext()) {
 					AlbumPo al = (AlbumPo) als.next();
@@ -99,7 +97,10 @@ public class Etl2Service {
 						als.remove();
 					}
 				} // 资源库已存在专辑列表existals,新添专辑列表 allist
-
+				
+                logger.info("非重复专辑数量[{}]", allist.size());
+				logger.info("开始进行查询专辑与声音的绑定信息");
+				
 				als = allist.iterator();
 				while (als.hasNext()) {
 					AlbumPo al = (AlbumPo) als.next();
@@ -233,8 +234,6 @@ public class Etl2Service {
 		logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}],专辑声音关系数量[{}]", malist.size(),maslist.size(), dictreflist.size(), chalist.size(), seqreflist.size());
 		if (malist.size()>0) {
 			mediaService.insertSeqList(seqlist);
-			//往资源库插入声音数据
-		    mediaService.insertMaList(malist);
 	        //往资源库插入播放流数据
 	        mediaService.insertMasList(maslist);
 	        //往资源库插入专辑声音关系表数据
@@ -245,6 +244,8 @@ public class Etl2Service {
 		    dictService.insertDictRefList(dictreflist);
 		    //往栏目发布表里插入发布信息
 		    channelService.insertChannelAssetList(chalist);
+		    //往资源库插入声音数据
+		    mediaService.insertMaList(malist);
 		}else{
 			logger.info("新专辑无下级声音资源");
 		}

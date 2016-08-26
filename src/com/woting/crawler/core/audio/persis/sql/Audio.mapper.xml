@@ -56,7 +56,7 @@
   </select>
   
   <select id="getAudioByAlbumIdAndPublisher" parameterType="java.util.Map" resultMap="BaseResultMap">
-    select * from hotspot_audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{publisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+    select * from hotspot_audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{publisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR} order by duration
   </select>
   
   <update id="removeNull" parameterType="java.util.Map">

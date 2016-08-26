@@ -22,7 +22,7 @@ public class Etl2Process {
 			String catejson = doc.select("body").get(0).html();
 			catejson = HttpUtils.getTextByDispose(catejson);
 			setCategorys((Map<String, Object>) JsonUtils.jsonToObj(catejson, Map.class));
-			doc = Jsoup.connect("http://123.56.254.75:908/CM/content/getConditions.do").ignoreContentType(true).get();
+			doc = Jsoup.connect("http://123.56.254.75:908/CM/content/getConditions.do").timeout(10000).ignoreContentType(true).get();
 			String chjson = doc.select("body").get(0).html();
 			chjson = HttpUtils.getTextByDispose(chjson);
 			setChannels((Map<String, Object>) JsonUtils.jsonToObj(chjson, Map.class));

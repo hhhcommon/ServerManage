@@ -36,8 +36,10 @@ public class AudioService {
 				aulist.clear();
 			}
 		}
-		m.put("list", aulist);
-		audioDao.insert("insertList", m);
+		if(aulist!=null&&aulist.size()>0){
+			m.put("list", aulist);
+		    audioDao.insert("insertList", m);
+		}
 	}
 	
 	public List<AudioPo> getAudioListByAlbumId(String albumId,String publisher, String num){

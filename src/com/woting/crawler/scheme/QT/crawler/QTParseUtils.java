@@ -48,7 +48,6 @@ public class QTParseUtils {
 		try {
 			els = doc.select("li[class=playable clearfix]");
 			if(els!=null&&!els.isEmpty()){
-//				int num = 0;
 				for (Element e : els) {
 					String jsonstr = e.attr("data-play-info");
 					jsonstr = HttpUtils.getTextByDispose(jsonstr);
@@ -82,9 +81,6 @@ public class QTParseUtils {
 						pDate.put("playCount",m.get("playcount"));
 					}
 					RedisUtils.addQTAudio(parseData.get("CrawlerNum")+"", pDate);
-//					if(num==5)
-//						break;
-//					num++;
 				}
 			}
 		} catch (Exception e) {e.printStackTrace();}

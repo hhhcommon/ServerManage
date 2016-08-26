@@ -9,6 +9,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.spiritdata.framework.util.JsonUtils;
 import com.spiritdata.framework.util.SequenceUUID;
 import com.woting.cm.core.channel.persis.po.ChannelAssetPo;
 import com.woting.cm.core.channel.persis.po.ChannelPo;
@@ -177,15 +178,10 @@ public abstract class ConvertUtils {
 						dictRefRes.setPathNames(ms.get("dictdName") + "");
 						dictRefRes.setPathIds(ms.get("dictdId") + "");
 						dictRefRes.setCTime(new Timestamp(System.currentTimeMillis()));
-						if (!dictRefRes.getDictDid().equals("null")) {
-							dictreflist.add(dictRefRes);
-						}
 					}
 				}
 				if (dictRefRes.getDictDid()!=null && !dictRefRes.getDictDid().equals("null")) {
-					malist.add(ma);
-					maslist.add(maS);
-					seqreflist.add(seqMaRef);
+					
 					
 					ChannelAssetPo cha = new ChannelAssetPo();
 					cha.setId(SequenceUUID.getPureUUID());
@@ -213,6 +209,10 @@ public abstract class ConvertUtils {
 					if(cha.getChannelId()==null||cha.getChannelId().equals("null"))
 						continue;
 					chalist.add(cha);
+					malist.add(ma);
+					maslist.add(maS);
+					dictreflist.add(dictRefRes);
+					seqreflist.add(seqMaRef);
 					
 					MediaPlayCountPo mecount = new MediaPlayCountPo();
 					mecount.setId(SequenceUUID.getPureUUID());
@@ -228,14 +228,17 @@ public abstract class ConvertUtils {
 			}
 		}
 		logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}]", malist.size(), maslist.size(),dictreflist.size(), chalist.size());
-		Map<String, Object> m = new HashMap<String,Object>();
-		m.put("malist", malist);
-		m.put("maslist", maslist);
-		m.put("dictreflist", dictreflist);
-		m.put("chalist", chalist);
-		m.put("seqmareflist", seqreflist);
-		m.put("mediaplaycount", mecounts);
-		return m;
+		if(malist!=null&&malist.size()>0){
+			Map<String, Object> m = new HashMap<String,Object>();
+		    m.put("malist", malist);
+		    m.put("maslist", maslist);
+		    m.put("dictreflist", dictreflist);
+		    m.put("chalist", chalist);
+		    m.put("seqmareflist", seqreflist);
+		    m.put("mediaplaycount", mecounts);
+		    return m;
+		}
+		return null;
 	}
 	
 	public static Map<String, Object> convert2SeqMediaAsset(AlbumPo al, List<Map<String, Object>> dicts, List<ChannelPo> chlist){

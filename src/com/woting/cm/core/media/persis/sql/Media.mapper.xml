@@ -20,13 +20,14 @@
 		<result column="timeLong" property="timeLong" jdbcType="BIGINT" />
 		<result column="descn" property="descn" jdbcType="VARCHAR" />
 		<result column="pubCount" property="pubCount" jdbcType="INTEGER" />
+		<result column="maStatus" property="maStatus" jdbcType="INTEGER" />
 		<result column="cTime" property="CTime" jdbcType="TIMESTAMP" />
 	</resultMap>
 	
 	<!-- 所有列 -->
-  <sql id="Base_Media_List">
-    id, maTitle, maPubType, maPubId, maPublisher, maPublishTime, maImg, maURL, subjectWords, keyWords, langDid, language, timeLong, descn, pubCount, maStatus, cTime
-  </sql>
+    <sql id="Base_Media_List">
+      id, maTitle, maPubType, maPubId, maPublisher, maPublishTime, maImg, maURL, subjectWords, keyWords, langDid, language, timeLong, descn, pubCount, maStatus, cTime
+    </sql>
 
 	<!-- 单体节目播放源 -->
 	<resultMap id="maSourceMap" type="maSource">
@@ -43,7 +44,7 @@
 	</resultMap>
 	
 	<sql id="Base_MaSource_List">
-    id, maId, maSrcType, maSrcId, maSource, smType, playURI, isMain, descn, cTime
+      id, maId, maSrcType, maSrcId, maSource, smType, playURI, isMain, descn, cTime
     </sql>
 
 	<!-- 专辑 -->
@@ -141,6 +142,7 @@
 			<if test="timeLong!=null and timeLong>0">timeLong,</if>
 			<if test="descn!=null">descn,</if>
 			<if test="pubCount!=null and pubCount>0">pubCount,</if>
+			<if test="maStatus!=null and maStatus>0">maStatus,</if>
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
 			<if test="id!=null">#{id,jdbcType=VARCHAR},</if>
@@ -157,6 +159,7 @@
 			<if test="timeLong!=null and timeLong>0">#{timeLong,jdbcType=BIGINT},</if>
 			<if test="descn!=null">#{descn,jdbcType=VARCHAR},</if>
 			<if test="pubCount!=null and pubCount>0">#{pubCount,jdbcType=VARCHAR},</if>
+			<if test="maStatus!=null and maStatus>0">#{maStatus,jdbcType=INTEGER},</if>
 		</trim>
 	</insert>
 
@@ -226,8 +229,8 @@
       </foreach>
     </insert>
 	
-	<insert id="insertMaList" parameterType="map">
-    insert into wt_MediaAsset( id, maTitle, maPubType, maPubId, maPublisher, maPublishTime, maImg, maURL, subjectWords, keyWords, langDid, language, timeLong, descn, pubCount, maStatus, cTime) values
+	<insert id="insertMaList" parameterType="java.util.List">
+    insert into wt_MediaAsset(id, maTitle, maPubType, maPubId, maPublisher, maPublishTime, maImg, maURL, subjectWords, keyWords, langDid, language, timeLong, descn, pubCount, maStatus, cTime) values
       <foreach collection="list" item="list" index="index" separator=",">
        (#{list.id},#{list.maTitle},#{list.maPubType},#{list.maPubId},#{list.maPublisher},#{list.maPublishTime},#{list.maImg},#{list.maURL},#{list.subjectWords},#{list.keyWords},#{list.langDid},#{list.language},#{list.timeLong},#{list.descn},#{list.pubCount},#{list.maStatus},#{list.CTime})
       </foreach>

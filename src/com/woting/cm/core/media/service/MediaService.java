@@ -1,5 +1,9 @@
 package com.woting.cm.core.media.service;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +33,14 @@ public class MediaService {
 	private MybatisDAO<SeqMaRefPo> seqrefDao;
 	@Resource(name = "defaultDAO")
 	private MybatisDAO<MediaPlayCountPo> mediaplaycountDao;
+	
+	public static final String url = "jdbc:mysql://123.56.254.75/woting";
+	public static final String name = "com.mysql.jdbc.Driver";
+	public static final String user = "root";
+	public static final String password = "mysql";
+	
+	private static Connection conn = null;
+    private static PreparedStatement ps ;
 
 	@PostConstruct
 	public void initParam() {
@@ -37,6 +49,9 @@ public class MediaService {
 		seqDao.setNamespace("A_MEDIA");
 		seqrefDao.setNamespace("A_MEDIA");
 		mediaplaycountDao.setNamespace("A_MEDIA");
+		try {
+			Class.forName(name); // 指定连接类型
+		} catch (ClassNotFoundException e) {e.printStackTrace();}
 	}
 
 	public void insertMa(MediaAssetPo ma) {
@@ -46,21 +61,19 @@ public class MediaService {
 	public void insertMaList(List<MediaAssetPo> malist) {
 		List<MediaAssetPo> mas = new ArrayList<>();
 		int num = 0;
-		for (MediaAssetPo mediaAssetPo : malist) {
-			mas.add(mediaAssetPo);
-			if (num == 50) {
-				System.out.println(JsonUtils.objToJson(mas));
-				Map<String, Object> m = new HashMap<>();
-				m.put("list", mas);
-				mediaAssetDao.insert("insertMaList", m);
-				mas.clear();
-				num = 0;
-			}
+		for (int i = 0; i < malist.size(); i++) {
+			if(malist.get(i).getMaTitle()!=null)
+				mas.add(malist.get(i));
 			num++;
+			if(num==1000){
+			    mediaAssetDao.insert("insertMaList", mas);
+				mas.clear();
+				num=0;
+			}
 		}
-		Map<String, Object> m = new HashMap<>();
-		m.put("list", mas);
-		mediaAssetDao.insert("insertMaList", m);
+		if(mas!=null && mas.size()>0){
+		    mediaAssetDao.insert("insertMaList", mas);
+		}
 	}
 
 	public void insertMasList(List<MaSourcePo> maslist) {
@@ -71,15 +84,17 @@ public class MediaService {
 			if (num == 1000) {
 				Map<String, Object> m = new HashMap<>();
 				m.put("list", ms);
-				mediaAssetDao.insert("insertMaList", m);
+				mediaAssetDao.insert("insertMasList", m);
 				ms.clear();
 				num = 0;
 			}
 			num++;
 		}
-		Map<String, Object> m = new HashMap<>();
-		m.put("list", ms);
-		mediaAssetDao.insert("insertMasList", m);
+		if(ms!=null&&ms.size()>0){
+			Map<String, Object> m = new HashMap<>();
+		    m.put("list", ms);
+		    mediaAssetDao.insert("insertMasList", m);
+		}
 	}
 
 	public void insertSeqList(List<SeqMediaAssetPo> seqlist) {
@@ -96,9 +111,11 @@ public class MediaService {
 			}
 			num++;
 		}
-		Map<String, Object> m = new HashMap<>();
-		m.put("list", smas);
-		mediaAssetDao.insert("insertSeqList", m);
+		if(smas!=null&&smas.size()>0){
+			Map<String, Object> m = new HashMap<>();
+		    m.put("list", smas);
+		    mediaAssetDao.insert("insertSeqList", m);
+		}
 	}
 
 	public void insertSeqRefList(List<SeqMaRefPo> seqreflist) {
@@ -114,10 +131,11 @@ public class MediaService {
 				num=0;
 			}
 			num++;
+		}if(smarefs!=null&&smarefs.size()>0){
+			Map<String, Object> m = new HashMap<>();
+		    m.put("list", smarefs);
+		    mediaAssetDao.insert("insertSeqRefList", m);
 		}
-		Map<String, Object> m = new HashMap<>();
-		m.put("list", smarefs);
-		mediaAssetDao.insert("insertSeqRefList", m);
 	}
 
 	public void insertSeq(SeqMediaAssetPo seq) {
@@ -162,9 +180,24 @@ public class MediaService {
 	}
 
 	public void insertMediaPlayCountList(List<MediaPlayCountPo> mediaCounts) {
-		Map<String, Object> m = new HashMap<>();
-		m.put("list", mediaCounts);
-		mediaplaycountDao.insert("insertMediaPlayCountList", m);
+		List<MediaPlayCountPo> mepls = new ArrayList<MediaPlayCountPo>();
+		int num = 0;
+		for (MediaPlayCountPo mePlPo : mediaCounts) {
+			mepls.add(mePlPo);
+			num++;
+			if (num==1000) {
+				Map<String, Object> m = new HashMap<>();
+		        m.put("list", mepls);
+		        mediaplaycountDao.insert("insertMediaPlayCountList", m);
+		        mepls.clear();
+		        num=0;
+			}
+		}
+		if (mepls!=null&&mepls.size()>0) {
+			Map<String, Object> m = new HashMap<>();
+	        m.put("list", mepls);
+	        mediaplaycountDao.insert("insertMediaPlayCountList", m);
+		}
 	}
 
 	public List<MediaAssetPo> getMaSameList(List<String> urls) {

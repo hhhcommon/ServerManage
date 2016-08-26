@@ -27,8 +27,15 @@ public class RedisUtils {
 			config.setTestOnBorrow(true);
 			config.setTestOnReturn(true);
 			pool = new JedisPool(config, "localhost", 6379);
+			
 		}
 		return pool;
+	}
+	
+	private static Jedis getResource(){
+		Jedis jedis = jedisPool.getResource();
+		jedis.select(1);
+		return jedis;
 	}
 
 	/**
@@ -43,7 +50,7 @@ public class RedisUtils {
 	}
 	
 	public static void addXMLYOriginalMa(String num,Object str){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		try {
 			jedis.lpush("XMLY_Audio_"+num, JsonUtils.objToJson(str));
 		} catch (Exception e) {} finally {
@@ -52,7 +59,7 @@ public class RedisUtils {
 	}
 	
 	public static void addXMLYOriginalSeq(String num, Object str){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		try {
 			jedis.lpush("XMLY_Album_"+num, JsonUtils.objToJson(str));
 		} catch (Exception e) {} finally {
@@ -61,7 +68,7 @@ public class RedisUtils {
 	}
 	
 	public static void addXMLYCategory(String num, Object str){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		try {
 			jedis.set("XMLY_FastGetCategoryId_"+num, JsonUtils.objToJson(str));
 		} catch (Exception e) {} finally {
@@ -70,7 +77,7 @@ public class RedisUtils {
 	}
 	
 	public static void addXMLYCategorys(String num, Object str){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		try {
 			jedis.lpush("XMLY_Categorys_"+num, JsonUtils.objToJson(str));
 		} catch (Exception e) {
@@ -79,7 +86,7 @@ public class RedisUtils {
 	}
 	
 	public static void addQTAudio(String num,Object str){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		try {
 //			jedis.select(1); //选择redis db1 库，其余未标明的默认db0库
 			jedis.lpush("QT_Audio_"+num, JsonUtils.objToJson(str));
@@ -89,7 +96,7 @@ public class RedisUtils {
 	}
 	
 	public static void addQTAlbum(String num,Object str){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		try {
 			jedis.lpush("QT_Album_"+num, JsonUtils.objToJson(str));
 		} catch (Exception e) {} finally {
@@ -98,7 +105,7 @@ public class RedisUtils {
 	}
 	
 	public static void addQTCategory(String num,Object cate){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		try {
 			jedis.set("QT_ResourceIdAndCategoryId_"+num, JsonUtils.objToJson(cate));
 		} catch (Exception e) {} finally {
@@ -107,7 +114,7 @@ public class RedisUtils {
 	}
 	
 	public static void addQTCategorys(String num,Object cate){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		try {
 			jedis.lpush("QT_Categorys_"+num, JsonUtils.objToJson(cate));
 		} catch (Exception e) {} finally {
@@ -116,7 +123,7 @@ public class RedisUtils {
 	}
 	
 	public static void addKLAlbum(String num, Object seq){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		try {
 			jedis.lpush("KL_Album_"+num, JsonUtils.objToJson(seq));
 		} catch (Exception e) {} finally {
@@ -125,7 +132,7 @@ public class RedisUtils {
 	}
 	
 	public static void addKLAudio(String num,Object malist){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		try {
 			jedis.lpush("KL_Audio_"+num, JsonUtils.objToJson(malist));
 		} catch (Exception e) {} finally {
@@ -134,7 +141,7 @@ public class RedisUtils {
 	}
 	
 	public static void addKLCategory(String num,Object catelist){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		try {
 			jedis.set("KL_CategroyId_"+num, JsonUtils.objToJson(catelist));
 		} catch (Exception e) {} finally {
@@ -144,7 +151,7 @@ public class RedisUtils {
 	
 	@SuppressWarnings("unchecked")
 	public static Map<String, Object> getOrigData(String key){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		Map<String, Object> m = new HashMap<String,Object>();
 		try {
 			String str = jedis.get(key);
@@ -157,7 +164,7 @@ public class RedisUtils {
 	
 	@SuppressWarnings("unchecked")
 	public static List<Map<String, Object>> getOrigDataList(String key){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		List<Map<String, Object>> list = new ArrayList<Map<String,Object>>();
 		try {
 			List<String> l = jedis.lrange(key, 0, -1);
@@ -171,7 +178,7 @@ public class RedisUtils {
 	}
 	
 	public static long getOrigDataListSize(String key){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		long num = 0;
 		try {
 			num = jedis.llen(key);
@@ -182,7 +189,7 @@ public class RedisUtils {
 	}
 	
 	public static void writeCrawlerFinishInfo(String num){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		try {
 			Map<String, Object> m = new HashMap<String,Object>();
 			m.put("KLAudio.size", getOrigDataListSize("KL_Audio_"+num));
@@ -199,7 +206,7 @@ public class RedisUtils {
 	}
 	
 	public static boolean isOrNoCrawlerFinish(String num){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		boolean isok = false;
 		try {
 			isok = jedis.exists("Scheme_CrawlerInfo_"+num);
@@ -210,7 +217,7 @@ public class RedisUtils {
 	}
 	
 	public static void writeEtl1Finish(String num,String jsonstr){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		try {
 			jedis.set("Scheme_Etl1Info_"+num, jsonstr);
 		} catch (Exception e) {e.printStackTrace();} finally {
@@ -219,7 +226,7 @@ public class RedisUtils {
 	}
 	
 	public static boolean isOrNoEtl1Finish(String num){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		boolean isok = false;
 		try {
 			isok = jedis.exists("Scheme_Etl1Info_"+num);
@@ -230,7 +237,7 @@ public class RedisUtils {
 	}
 	
 	public static void addUrl(String url){
-		Jedis jedis = jedisPool.getResource();
+		Jedis jedis = getResource();
 		try {
 			jedis.lpush("XMLYURL", url);
 		} catch (Exception e) {e.printStackTrace();} finally {
