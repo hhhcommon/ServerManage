@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.spiritdata.framework.core.cache.SystemCache;
-import com.spiritdata.framework.util.JsonUtils;
 import com.woting.cm.core.channel.persis.po.ChannelAssetPo;
 import com.woting.cm.core.channel.persis.po.ChannelPo;
 import com.woting.cm.core.channel.service.ChannelService;
@@ -69,9 +68,12 @@ public class Etl2Service {
 		oldals = distinct.compareCMByAudio(oldals); //专辑帮顶下的声音待入库
 		// 新增资源库已存在的专辑下级声音
 		makeExistAlbums(oldals);
+		//进行多平台资源消重
+		m = distinct.comparePublisherSrc(newlist, etl2Process.getEtlnum());
+		List<Map<String, Object>> samelist = (List<Map<String, Object>>) m.get("samelist");
+		newlist = (List<AlbumPo>) m.get("newlist");
 		// 新增资源库
 		makeNewAlbums(newlist);
-
 	}
 
 	/**
@@ -189,6 +191,17 @@ public class Etl2Service {
 		    mediaService.insertMaList(malist);
 		}else{
 			logger.info("新专辑无下级声音资源");
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void makeSameAlbums(List<Map<String, Object>> samelist){
+		if(samelist!=null&&samelist.size()>0) {
+			for (Map<String, Object> m : samelist) {
+				List<Map<String, Object>> sameaus = (List<Map<String, Object>>) m.get("sameaudiolist");
+				List<AudioPo> newaus = (List<AudioPo>) m.get("newaudiolist");
+				
+			}
 		}
 	}
 }

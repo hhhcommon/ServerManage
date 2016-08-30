@@ -84,25 +84,23 @@ public class Booter {
 		scheme.setSchemenum(crawlernum);
 		SystemCache.setCache(new CacheEle<String>(CrawlerConstants.CRAWLERNUM, "抓取序号", crawlernum));
 		
-		CrawlerSrcRecord srcRecord = new CrawlerSrcRecord(crawlernum);
-		srcRecord.reloadCrawlerInfo();
-		
-        //开始抓取数据
-        SchemeController sc = new SchemeController(scheme);
-        sc.runningScheme();
-		
-        //第一次数据转换
-        Etl1Process etl1Process = new Etl1Process();
-        etl1Process.setEtlnum(scheme.getSchemenum());
-        Etl1Controller etl1 = new Etl1Controller(etl1Process);
-        etl1.runningScheme();
-//		scheme.setSchemenum("1");
-        
+//		CrawlerSrcRecord srcRecord = new CrawlerSrcRecord(crawlernum);
+//		srcRecord.reloadCrawlerInfo();
+//		
+//        //开始抓取数据
+//        SchemeController sc = new SchemeController(scheme);
+//        sc.runningScheme();
+//		
+//        //第一次数据转换
+//        Etl1Process etl1Process = new Etl1Process();
+//        etl1Process.setEtlnum(scheme.getSchemenum());
+//        Etl1Controller etl1 = new Etl1Controller(etl1Process);
+//        etl1.runningScheme();
+		scheme.setSchemenum("1");
         //第二次数据转换
         Etl2Process etl2Process = new Etl2Process();
         etl2Process.setEtlnum(scheme.getSchemenum());
         Etl2Controller etl2 = new Etl2Controller(etl2Process);
         etl2.runningScheme();
-        
 	}
 }

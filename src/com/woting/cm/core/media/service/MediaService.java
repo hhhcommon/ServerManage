@@ -1,19 +1,13 @@
 package com.woting.cm.core.media.service;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-
 import com.spiritdata.framework.core.dao.mybatis.MybatisDAO;
-import com.spiritdata.framework.util.JsonUtils;
 import com.woting.cm.core.media.model.MaSource;
 import com.woting.cm.core.media.model.MediaAsset;
 import com.woting.cm.core.media.persis.po.MaSourcePo;
@@ -154,10 +148,8 @@ public class MediaService {
 		return seqlist;
 	}
 
-	public MediaAsset getMaInfoById(String id) {
-		MediaAsset ma = new MediaAsset();
-		ma.buildFromPo(mediaAssetDao.getInfoObject("getInfoById", id));
-		return ma;
+	public MediaAssetPo getMaInfoById(String id) {
+		return mediaAssetDao.getInfoObject("getInfoById", id);
 	}
 
 	public void saveMa(MediaAsset ma) {
@@ -196,5 +188,37 @@ public class MediaService {
 
 	public int getMaSame(String url) {
 		return mediaAssetDao.getCount("getMaSame", url);
+	}
+	
+	public int getSeqMaNumBySid(String sId) {
+		return seqrefDao.getCount("getSeqMaNumBySid", sId);
+	}
+	
+	public List<MediaAssetPo> getMaBySmaId(String sId) {
+		return mediaAssetDao.queryForList("getMaBySmaId", sId);
+	}
+	
+	public List<MediaAssetPo> getMaByPublisher(String publisher, int page, int pagesize) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("maPublisher", publisher);
+		m.put("page", page);
+		m.put("pagesize", pagesize);
+		return mediaAssetDao.queryForList("getMaListByPublisher", m);
+	}
+	
+	public int getSmaNum(String smaPublisher) {
+		return seqDao.getCount("getSmaNum", smaPublisher);
+	}
+	
+	public SeqMediaAssetPo getSmaById(String id) {
+		return seqDao.getInfoObject("getSmaById", id);
+	}
+	
+	public List<SeqMediaAssetPo> getSmaByPublisher(String publisher, int page, int pagesize) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("smaPublisher", publisher);
+		m.put("page", page);
+		m.put("pagesize", pagesize);
+		return seqDao.queryForList("getSmaListByPublisher", m);
 	}
 }

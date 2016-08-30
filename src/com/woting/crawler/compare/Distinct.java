@@ -10,6 +10,7 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.spiritdata.framework.util.SpiritRandom;
+import com.woting.cm.core.media.persis.po.MediaAssetPo;
 import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
 import com.woting.cm.core.media.service.MediaService;
 import com.woting.crawler.core.album.model.Album;
@@ -137,7 +138,7 @@ public class Distinct {
 					alls.add(album);
 				}
 			}
-			return alls;
+		return alls;
 	}
 	
 	/**
@@ -199,6 +200,51 @@ public class Distinct {
 		m.put("oldlist", oldlist); // 本次次抓取与资源库对比已存在专辑列表
 		m.put("newlist", allist); // 本次抓取新增专辑列表
 		return m;
+	}
+	
+	public Map<String, Object> comparePublisherSrc(List<AlbumPo> allist, String crawlernum){
+		audioService = (AudioService) SpringShell.getBean("audioService");
+		mediaService = (MediaService) SpringShell.getBean("mediaService");
+		List<AlbumPo> newlist = new ArrayList<>();
+		List<Map<String, Object>> samelist = new ArrayList<>();
+		CompareAttribute compareAttribute = new CompareAttribute(crawlernum);
+		if(allist!=null&&allist.size()>0) {
+			for (int i = 0; i < allist.size(); i++) {
+				AlbumPo al = allist.get(i);
+				SeqMediaAssetPo sma = compareAttribute.getSameSma(al);
+				if(sma!=null) {
+					Map<String, Object> m = new HashMap<>();
+					m.put("album", al);
+					m.put("Sma", sma);
+					List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
+					List<Map<String, Object>> lm = new ArrayList<>();
+					List<AudioPo> la = new ArrayList<>();
+					if(aulist!=null&&aulist.size()>0) {
+						for (int j = 0; j < aulist.size(); j++) {
+							AudioPo au = aulist.get(j);
+							MediaAssetPo ma = compareAttribute.getSameMa(au, sma);
+							if(ma!=null) {
+								Map<String, Object> mm = new HashMap<>();
+								mm.put("audio", au);
+								mm.put("ma", ma);
+								lm.add(mm);
+							}else
+								la.add(au);
+						}
+					}
+					m.put("sameaudiolist", lm);
+					m.put("newaudiolist", la);
+					samelist.add(m);
+					System.out.println(al.getAlbumName()+"___"+sma.getSmaTitle());
+				}else{
+					newlist.add(al);
+				}
+			}
+		}
+		Map<String, Object> map = new HashMap<>();
+		map.put("samelist", samelist);
+		map.put("newlist", newlist);
+		return map;
 	}
 
 	/**

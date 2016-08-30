@@ -10,6 +10,10 @@ import org.apache.solr.client.solrj.response.FieldAnalysisResponse;
 import org.apache.solr.client.solrj.response.AnalysisResponseBase.AnalysisPhase;
 import org.apache.solr.client.solrj.response.AnalysisResponseBase.TokenInfo;
 
+import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
+import com.woting.crawler.core.album.persis.po.AlbumPo;
+import com.woting.crawler.scheme.utils.RedisUtils;
+
 public class SolrParticiple {
 
 	private static HttpSolrServer solrServer;
@@ -42,5 +46,17 @@ public class SolrParticiple {
 			}
 		} catch (Exception e) {e.printStackTrace();}
 		return results;
+	}
+	
+	public static float getSameProportion(String srcname, Object o) {
+		List<String> n1 = getAnalysis(srcname);
+		List<String> n2 = RedisUtils.getSrcParticiple(o);
+		int num = 0;
+		for (String str1 : n1) {
+			for (String str2 : n2) {
+				if(str1.equals(str2)) num++;
+			}
+		}
+		return num*2/(n1.size()+n2.size());
 	}
 }
