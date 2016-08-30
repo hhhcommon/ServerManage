@@ -42,6 +42,27 @@ public class AudioService {
 		}
 	}
 	
+	public int getAudioNum(String crawlerNum){
+		return audioDao.getCount("count", crawlerNum);
+	}
+	
+	public List<AudioPo> getAudioList(int page, int pagesize, String crawlernum){
+		Map<String, Object> m = new HashMap<String,Object>();
+		m.put("page", page);
+		m.put("pagesize", pagesize);
+		m.put("crawlerNum", crawlernum);
+		List<AudioPo> l = audioDao.queryForList("getAudioList", m);
+		return l;
+	}
+	
+	public int countNumByAlbumId(String albumId, String publisher, String crawlernum) {
+		Map<String, Object> m = new HashMap<String,Object>();
+		m.put("albumId", albumId);
+		m.put("publisher", publisher);
+		m.put("crawlerNum", crawlernum);
+		return audioDao.getCount("getAudioNumByAlbumIdAndPublisher", m);
+	}
+	
 	public List<AudioPo> getAudioListByAlbumId(String albumId,String publisher, String num){
 		Map<String, Object> m = new HashMap<String,Object>();
 		m.put("albumId", albumId);
@@ -49,6 +70,10 @@ public class AudioService {
 		m.put("crawlerNum", num);
 		List<AudioPo> list = audioDao.queryForList("getAudioByAlbumIdAndPublisher", m);
 		return list;
+	}
+	
+	public void removeSameAudio(String id){
+		audioDao.delete("deleteAudioById", id);
 	}
 	
 	public void removeSameAudio(String albumId, String publisher, String num){

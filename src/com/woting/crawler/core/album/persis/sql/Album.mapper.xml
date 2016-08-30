@@ -44,14 +44,14 @@
   </sql>
 
   <insert id="insertList" parameterType="java.util.List">
-    Insert into hotspot_album(id,albumId,albumName,albumPublisher,albumImg,albumTags,categoryId,categoryName,descn,visitUrl,playCount,crawlerNum,schemeId,schemeName,cTime) values
+    Insert into hotspot_Album(id,albumId,albumName,albumPublisher,albumImg,albumTags,categoryId,categoryName,descn,visitUrl,playCount,crawlerNum,schemeId,schemeName,cTime) values
     <foreach collection="list" item="list" index="index" separator=",">
      (#{list.id},#{list.albumId},#{list.albumName},#{list.albumPublisher},#{list.albumImg},#{list.albumTags},#{list.categoryId},#{list.categoryName},#{list.descn},#{list.visitUrl},#{list.playCount},#{list.crawlerNum},#{list.schemeId},#{list.schemeName},#{list.cTime})
     </foreach>
   </insert>
   
   <update id="removeNull" parameterType="java.util.Map">
-   update hotspot_album 
+   update hotspot_Album 
    <set>
       <if test="albumImg!=null">albumImg=Null,</if>
       <if test="albumTags!=null">albumTags=Null,</if>
@@ -65,15 +65,19 @@
   </update>
   
   <select id="getAlbumList" parameterType="java.util.Map" resultMap="BaseResultMap">
-    select * from hotspot_album where crawlerNum=#{crawlerNum,jdbcType=VARCHAR} limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
+    select * from hotspot_Album where crawlerNum=#{crawlerNum,jdbcType=VARCHAR} limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
+  </select>
+  
+  <select id="getAlbumListByCrawlerNum" parameterType="java.util.Map" resultMap="BaseResultMap">
+    select * from hotspot_Album where crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
   </select>
   
   <select id="count" resultType="java.lang.Integer" parameterType="java.lang.String">
-    select count(*) from hotspot_album where crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+    select count(*) from hotspot_Album where crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
   </select>
   
   <delete id="deleteByAlbumIdAndPublisher" parameterType="java.util.Map">
-    delete from hotspot_album where albumId=#{albumId,jdbcType=VARCHAR} and albumPublisher=#{albumPublisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+    delete from hotspot_Album where albumId=#{albumId,jdbcType=VARCHAR} and albumPublisher=#{albumPublisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
   </delete>
   
 </mapper>

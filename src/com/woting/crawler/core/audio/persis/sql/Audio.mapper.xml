@@ -45,22 +45,30 @@
   </sql>
 
   <insert id="insertList" parameterType="java.util.List">
-    insert into hotspot_audio(id, audioId, audioName, audioPublisher, audioImg, audioURL, audioTags, albumId, albumName, categoryId, categoryName, descn, duration, visitUrl, playCount, crawlerNum, schemeId, schemeName, cTime) values
+    insert into hotspot_Audio(id, audioId, audioName, audioPublisher, audioImg, audioURL, audioTags, albumId, albumName, categoryId, categoryName, descn, duration, visitUrl, playCount, crawlerNum, schemeId, schemeName, cTime) values
     <foreach collection="list" item="list" index="index" separator=",">
      (#{list.id},#{list.audioId},#{list.audioName},#{list.audioPublisher},#{list.audioImg},#{list.audioURL},#{list.audioTags},#{list.albumId},#{list.albumName},#{list.categoryId},#{list.categoryName},#{list.descn},#{list.duration},#{list.visitUrl},#{list.playCount},#{list.crawlerNum},#{list.schemeId},#{list.schemeName},#{list.cTime})
     </foreach>
   </insert>
   
-  <select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
-    select count(*) from hotspot_audio where  crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+  <select id="count" parameterType="java.lang.String" resultType="java.lang.Integer">
+    select count(*) from hotspot_Audio where  crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
   </select>
   
   <select id="getAudioByAlbumIdAndPublisher" parameterType="java.util.Map" resultMap="BaseResultMap">
-    select * from hotspot_audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{publisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR} order by duration
+    select * from hotspot_Audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{publisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="getAudioNumByAlbumIdAndPublisher" parameterType="java.util.Map" resultType="java.lang.Integer">
+    select count(*) from hotspot_Audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{publisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="getAudioList" parameterType="java.util.Map" resultMap="BaseResultMap">
+    select * from hotspot_Audio where crawlerNum=#{crawlerNum,jdbcType=VARCHAR} limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
   </select>
   
   <update id="removeNull" parameterType="java.util.Map">
-   update hotspot_audio
+   update hotspot_Audio
    <set>
       <if test="audioTags!=null">audioTags=Null,</if>
       <if test="descn!=null">descn=Null,</if>
@@ -71,11 +79,15 @@
   </update>
   
   <update id="updateAlbumIdInfo" >
-   update hotspot_audio a,(select * from hotspot_album) b set a.albumId = b.id where a.albumId = b.albumId and a.audioPublisher = b.albumPublisher and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+   update hotspot_Audio a,(select * from hotspot_Album) b set a.albumId = b.id where a.albumId = b.albumId and a.audioPublisher = b.albumPublisher and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
   </update>
   
+  <delete id="deleteAudioById" parameterType="java.lang.String">
+    delete from hotspot_Audio where id=#{id,jdbcType=VARCHAR}
+  </delete>
+  
   <delete id="deleteByAlbumIdAndPublisher" parameterType="java.util.Map">
-    delete from hotspot_audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{audioPublisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+    delete from hotspot_Audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{audioPublisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
   </delete>
   
 </mapper>

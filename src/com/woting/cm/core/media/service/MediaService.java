@@ -33,14 +33,6 @@ public class MediaService {
 	private MybatisDAO<SeqMaRefPo> seqrefDao;
 	@Resource(name = "defaultDAO")
 	private MybatisDAO<MediaPlayCountPo> mediaplaycountDao;
-	
-	public static final String url = "jdbc:mysql://123.56.254.75/woting";
-	public static final String name = "com.mysql.jdbc.Driver";
-	public static final String user = "root";
-	public static final String password = "mysql";
-	
-	private static Connection conn = null;
-    private static PreparedStatement ps ;
 
 	@PostConstruct
 	public void initParam() {
@@ -49,9 +41,6 @@ public class MediaService {
 		seqDao.setNamespace("A_MEDIA");
 		seqrefDao.setNamespace("A_MEDIA");
 		mediaplaycountDao.setNamespace("A_MEDIA");
-		try {
-			Class.forName(name); // 指定连接类型
-		} catch (ClassNotFoundException e) {e.printStackTrace();}
 	}
 
 	public void insertMa(MediaAssetPo ma) {
@@ -200,10 +189,8 @@ public class MediaService {
 		}
 	}
 
-	public List<MediaAssetPo> getMaSameList(List<String> urls) {
-		Map<String, Object> m = new HashMap<>();
-		m.put("list", urls);
-		List<MediaAssetPo> malist = mediaAssetDao.queryForList("getMaSameList", m);
+	public List<MediaAssetPo> getMaSameList(String maURLs) {
+		List<MediaAssetPo> malist = mediaAssetDao.queryForList("getMaSameList", maURLs);
 		return malist;
 	}
 

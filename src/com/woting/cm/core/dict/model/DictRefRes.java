@@ -65,53 +65,14 @@ public class DictRefRes implements Serializable, ModelSwapPo {
     public void setCTime(Timestamp cTime) {
         CTime=cTime;
     }
-
-    @Override
-    public DictRefResPo convert2Po() {
-        DictRefResPo ret=new DictRefResPo();
-
-        //id处理，没有id，自动生成一个
-        if (StringUtils.isNullOrEmptyOrSpace(this.id)) ret.setId(SequenceUUID.getPureUUID());
-        else ret.setId(this.id);
-        ret.setRefName(refName);
-        ret.setResTableName(resTableName);
-        ret.setResId(resId);
-        ret.setDictMid(dm.getId());
-        ret.setDictMName(dm.getDmName());
-        ret.setDictDid(dd.getId());
-        ret.setTitle(dd.getNodeName());
-        ret.setBCode(dd.getBCode());
-        if (dm!=null) {
-            TreeNode<DictDetail> tdd=(TreeNode<DictDetail>)dm.dictTree.findNode(dd.getId());
-            if (tdd!=null) {
-                ret.setPathIds(tdd.getTreePathId("-",0));
-                ret.setPathNames(tdd.getTreePathName("-",0));
-            }
-        }
-
-        return ret;
-    }
-
-    @Override
-    public void buildFromPo(Object po) {
-        if (po==null) throw new Plat0006CException("Po对象为空，无法从空对象得到概念/逻辑对象！");
-        if (!(po instanceof DictRefResPo)) throw new Plat0006CException("Po对象不是DictRefResPo的实例，无法从此对象构建字典资源关联对象！");
-        DictRefResPo _po=(DictRefResPo)po;
-
-        id=_po.getId();
-        refName=_po.getRefName();
-        resTableName=_po.getResTableName();
-        resId=_po.getResId();
-        CTime=_po.getCTime();
-        //dm和dd无法在这里获取，这里只是做一个记录
-        DictModel dm=new DictModel();
-        dm.setId(_po.getDictMid());
-        dm.setDmName(_po.getDictMName());
-        this.dm=dm;
-        DictDetail dd=new DictDetail();
-        dd.setId(_po.getDictDid());
-        dd.setDdName(_po.getTitle());
-        dd.setBCode(_po.getBCode());
-        this.dd=dd;
-    }
+	@Override
+	public void buildFromPo(Object arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public Object convert2Po() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

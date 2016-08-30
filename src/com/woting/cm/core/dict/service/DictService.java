@@ -150,14 +150,14 @@ public class DictService {
      * 绑定字典与资源的关系
      * @param dd 字典项信息
      */
-    public void bindDictRef(DictRefRes drr) {
-        try {
-            DictRefResPo newDrrPo = drr.convert2Po();
-            dictRefDao.insert(newDrrPo);
-        } catch(Exception e) {
-            throw new Wtcm0301CException(e);
-        }
-    }
+//    public void bindDictRef(DictRefRes drr) {
+//        try {
+//            DictRefResPo newDrrPo = drr.convert2Po();
+//            dictRefDao.insert(newDrrPo);
+//        } catch(Exception e) {
+//            throw new Wtcm0301CException(e);
+//        }
+//    }
     
     public void insertDictRefList(List<DictRefResPo> dictreflist){
     	List<DictRefResPo> dictrefs = new ArrayList<>();

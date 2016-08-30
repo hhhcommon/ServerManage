@@ -27,6 +27,7 @@ public class Etl1Controller {
 		while(etl1Process!=null && !RedisUtils.isOrNoCrawlerFinish(etl1Process.getEtlnum())){
 			try {
 				logger.info("等待抓取完成");
+				RedisUtils.waitCrawlerFinish(etl1Process.getEtlnum());
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {e.printStackTrace();}
 		}

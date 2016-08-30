@@ -237,9 +237,9 @@
     </insert>
 
 	<select id="getSeqSameList" parameterType="map" resultMap="seqMediaAssetMap">
-		select * from wt_SeqMediaAsset where smaTitle in
-		<foreach collection="list" item="list" index="index" separator="," open="(" close=")">
-		#{list}
+		select * from wt_SeqMediaAsset where
+		<foreach collection="list" item="list" index="index" separator=" or " >
+		smaTitle=#{list}
         </foreach>
 	</select>
 	
@@ -273,7 +273,7 @@
 	</select>
 
 	<select id="getMaSameList" parameterType="java.lang.String" resultMap="mediaAssetMap">
-		select * from wt_MediaAsset where maURL in (#{maURL,jdbcType=VARCHAR})
+		select * from wt_MediaAsset where #{maURLs,jdbcType=VARCHAR}
 	</select>
 	
 	<select id="getInfoById" parameterType="java.lang.String" resultMap="mediaAssetMap">

@@ -36,6 +36,13 @@ public class AlbumService {
 		return aus;
 	}
 	
+	public List<AlbumPo> getAlbumList(String num){
+		Map<String, Object> m = new HashMap<String,Object>();
+		m.put("crawlerNum", num);
+		List<AlbumPo> aus = albumDao.queryForList("getAlbumListByCrawlerNum", m);
+		return aus;
+	}
+	
 	public int countNum(String crawlerNum){
 		int num = albumDao.getCount("count",crawlerNum);
 		return num;

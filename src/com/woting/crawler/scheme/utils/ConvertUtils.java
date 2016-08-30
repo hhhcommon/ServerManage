@@ -168,18 +168,11 @@ public abstract class ConvertUtils {
 				for (Map<String, Object> ms : dicts) {
 					if (au.getAudioPublisher().equals(ms.get("publisher"))&& au.getCategoryName().equals(ms.get("crawlerDictdName"))) {
 						dictRefRes.setDictMid(ms.get("dictmId") + "");
-						dictRefRes.setDictMName(ms.get("dictmName") + "");
 						dictRefRes.setDictDid(ms.get("dictdId") + "");
-						dictRefRes.setTitle(ms.get("dictdName") + "");
-						dictRefRes.setBCode(ms.get("dictdId") + "");
-						dictRefRes.setPathNames(ms.get("dictdName") + "");
-						dictRefRes.setPathIds(ms.get("dictdId") + "");
 						dictRefRes.setCTime(new Timestamp(System.currentTimeMillis()));
 					}
 				}
 				if (dictRefRes.getDictDid()!=null && !dictRefRes.getDictDid().equals("null")) {
-					
-					
 					ChannelAssetPo cha = new ChannelAssetPo();
 					cha.setId(SequenceUUID.getPureUUID());
 					cha.setAssetType("wt_MediaAsset");
@@ -197,7 +190,7 @@ public abstract class ConvertUtils {
 					cha.setPubTime(cha.getCTime());
 					if (chlist != null && chlist.size() > 0) {
 						for (ChannelPo ch : chlist) {
-							if (dictRefRes.getTitle().equals(ch.getChannelName())) {
+							if (dictRefRes.getDictDid().equals(ch.getId())) {
 								cha.setChannelId(ch.getId());
 								break;
 							}
@@ -286,15 +279,11 @@ public abstract class ConvertUtils {
 		dictRefRes.setResTableName("wt_SeqMediaAsset");
 		dictRefRes.setResId(seq.getId());
 		for (Map<String, Object> ms : dicts) {
-			if (al.getAlbumPublisher().equals(ms.get("publisher"))&& al.getCategoryName().equals(ms.get("crawlerDictdName"))) {
+			if (al.getAlbumPublisher().equals(ms.get("publisher")) && al.getCategoryName().equals(ms.get("crawlerDictdName"))) {
 				dictRefRes.setDictMid(ms.get("dictmId") + "");
-				dictRefRes.setDictMName(ms.get("dictmName") + "");
 				dictRefRes.setDictDid(ms.get("dictdId") + "");
-				dictRefRes.setTitle(ms.get("dictdName") + "");
-				dictRefRes.setBCode(ms.get("dictdId") + "");
-				dictRefRes.setPathNames(ms.get("dictdName") + "");
-				dictRefRes.setPathIds(ms.get("dictdId") + "");
 				dictRefRes.setCTime(new Timestamp(System.currentTimeMillis()));
+				break;
 			}
 		}
 		
@@ -317,7 +306,7 @@ public abstract class ConvertUtils {
 			cha.setPubTime(cha.getCTime());
 			if (chlist != null && chlist.size() > 0) {
 				for (ChannelPo ch : chlist) {
-					if (dictRefRes.getTitle().equals(ch.getChannelName())) {
+					if (dictRefRes.getDictDid().equals(ch.getId())) {
 						cha.setChannelId(ch.getId());
 						map.put("cha", cha);
 						break;
