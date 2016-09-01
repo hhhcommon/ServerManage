@@ -6,10 +6,10 @@ import org.slf4j.LoggerFactory;
 import com.spiritdata.framework.core.cache.SystemCache;
 import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.core.scheme.model.Scheme;
-import com.woting.crawler.scheme.KL.crawler.KLCrawler;
-import com.woting.crawler.scheme.QT.crawler.QTCrawler;
-import com.woting.crawler.scheme.XMLY.crawler.XMLYCrawler;
-import com.woting.crawler.scheme.crawler.Crawler;
+import com.woting.crawler.scheme.crawlersrc.KL.crawler.KLCrawler;
+import com.woting.crawler.scheme.crawlersrc.QT.crawler.QTCrawler;
+import com.woting.crawler.scheme.crawlersrc.XMLY.crawler.XMLYCrawler;
+import com.woting.crawler.scheme.crawlersrc.crawler.Crawler;
 import com.woting.crawler.scheme.utils.RedisUtils;
 
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;

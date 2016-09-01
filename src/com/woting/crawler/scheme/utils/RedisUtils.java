@@ -402,7 +402,7 @@ public class RedisUtils {
 				if (!jedis.exists(sma.getSmaPublisher()+"_Sma_"+sma.getId()+"_Participle")) 
 					jedis.set(sma.getSmaPublisher()+"_Sma_"+sma.getId()+"_Participle", str);
 			}
-			if(o instanceof AudioPo) {
+			if(o instanceof MediaAssetPo) {
 				MediaAssetPo ma = new MediaAssetPo();
 				if(!jedis.exists(ma.getMaPublisher()+"_Ma_"+ma.getId()+"_Participle"))
 				jedis.set(ma.getMaPublisher()+"_Ma_"+ma.getId()+"_Participle", str);

@@ -53,6 +53,24 @@ public class FileUtils {
 		return l;
 	}
 	
+	public static String readFile(String path) {
+		String sb = "";
+		File file = new File(path);
+		try {
+			InputStreamReader read = new InputStreamReader(new FileInputStream(file),"gbk");       
+            BufferedReader reader=new BufferedReader(read);       
+            String line;       
+            while ((line = reader.readLine()) != null)   
+            {
+                sb += line;
+            }
+            read.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return sb;
+	}
+	
 	private static File createFile(String path) {
 		File file = new File(path);
 		try {

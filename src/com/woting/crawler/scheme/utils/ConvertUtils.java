@@ -8,6 +8,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.spiritdata.framework.util.SequenceUUID;
+import com.woting.cm.core.ResOrgAsset.persis.po.ResOrgAssetPo;
 import com.woting.cm.core.channel.persis.po.ChannelAssetPo;
 import com.woting.cm.core.channel.persis.po.ChannelPo;
 import com.woting.cm.core.dict.persis.po.DictRefResPo;
@@ -16,6 +17,7 @@ import com.woting.cm.core.media.persis.po.MediaAssetPo;
 import com.woting.cm.core.media.persis.po.MediaPlayCountPo;
 import com.woting.cm.core.media.persis.po.SeqMaRefPo;
 import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
+import com.woting.cm.core.perimeter.persis.po.OrganizePo;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.core.dict.persis.po.DictDPo;
@@ -116,6 +118,7 @@ public abstract class ConvertUtils {
 
 	public static Map<String, Object> convert2MediaAsset(List<AudioPo> aulist, SeqMediaAssetPo seq, List<Map<String, Object>> dicts, List<ChannelPo> chlist) {
 		List<MediaAssetPo> malist = new ArrayList<MediaAssetPo>();
+		List<ResOrgAssetPo> resAsslist = new ArrayList<ResOrgAssetPo>();
 		List<MaSourcePo> maslist = new ArrayList<MaSourcePo>();
 		List<DictRefResPo> dictreflist = new ArrayList<DictRefResPo>();
 		List<ChannelAssetPo> chalist = new ArrayList<ChannelAssetPo>();
@@ -137,9 +140,18 @@ public abstract class ConvertUtils {
 				ma.setDescn(au.getDescn());
 				ma.setKeyWords(au.getAudioTags());
 				ma.setPubCount(1);
-				ma.setTimeLong(new Long(au.getDuration()+"000"));
+				ma.setTimeLong(new Long(au.getDuration() + "000"));
 				ma.setMaStatus(1);
 				ma.setCTime(new Timestamp(System.currentTimeMillis()));
+				
+				ResOrgAssetPo roa = new ResOrgAssetPo();
+				roa.setId(SequenceUUID.getPureUUID());
+				roa.setResId(ma.getId());
+				roa.setResTableName("wt_MediaAsset");
+				roa.setOrgName(ma.getMaPublisher());
+				roa.setOrigId(au.getId());
+				roa.setOrigTableName("hotspot_Audio");
+				roa.setcTime(new Timestamp(System.currentTimeMillis()));
 
 				MaSourcePo maS = new MaSourcePo();
 				maS.setId(SequenceUUID.getPureUUID());
@@ -151,7 +163,7 @@ public abstract class ConvertUtils {
 				maS.setPlayURI(au.getAudioURL());
 				maS.setDescn(au.getDescn());
 				maS.setCTime(new Timestamp(System.currentTimeMillis()));
-				
+
 				SeqMaRefPo seqMaRef = new SeqMaRefPo();
 				seqMaRef.setId(SequenceUUID.getPureUUID());
 				seqMaRef.setsId(seq.getId());
@@ -159,20 +171,21 @@ public abstract class ConvertUtils {
 				seqMaRef.setColumnNum(0);
 				seqMaRef.setDescn(ma.getDescn());
 				seqMaRef.setcTime(new Timestamp(System.currentTimeMillis()));
-				
+
 				DictRefResPo dictRefRes = new DictRefResPo();
 				dictRefRes.setId(SequenceUUID.getPureUUID());
 				dictRefRes.setRefName("单体-内容分类");
 				dictRefRes.setResTableName("wt_MediaAsset");
 				dictRefRes.setResId(au.getId());
 				for (Map<String, Object> ms : dicts) {
-					if (au.getAudioPublisher().equals(ms.get("publisher"))&& au.getCategoryName().equals(ms.get("crawlerDictdName"))) {
+					if (au.getAudioPublisher().equals(ms.get("publisher"))
+							&& au.getCategoryName().equals(ms.get("crawlerDictdName"))) {
 						dictRefRes.setDictMid(ms.get("dictmId") + "");
 						dictRefRes.setDictDid(ms.get("dictdId") + "");
 						dictRefRes.setCTime(new Timestamp(System.currentTimeMillis()));
 					}
 				}
-				if (dictRefRes.getDictDid()!=null && !dictRefRes.getDictDid().equals("null")) {
+				if (dictRefRes.getDictDid() != null && !dictRefRes.getDictDid().equals("null")) {
 					ChannelAssetPo cha = new ChannelAssetPo();
 					cha.setId(SequenceUUID.getPureUUID());
 					cha.setAssetType("wt_MediaAsset");
@@ -194,16 +207,17 @@ public abstract class ConvertUtils {
 								cha.setChannelId(ch.getId());
 								break;
 							}
-						}	
+						}
 					}
-					if(cha.getChannelId()==null||cha.getChannelId().equals("null"))
+					if (cha.getChannelId() == null || cha.getChannelId().equals("null"))
 						continue;
 					chalist.add(cha);
 					malist.add(ma);
+					resAsslist.add(roa);
 					maslist.add(maS);
 					dictreflist.add(dictRefRes);
 					seqreflist.add(seqMaRef);
-					
+
 					MediaPlayCountPo mecount = new MediaPlayCountPo();
 					mecount.setId(SequenceUUID.getPureUUID());
 					mecount.setResTableName("wt_MediaAsset");
@@ -212,40 +226,43 @@ public abstract class ConvertUtils {
 					mecount.setPublisher(au.getAudioPublisher());
 					mecount.setcTime(new Timestamp(System.currentTimeMillis()));
 					mecounts.add(mecount);
-				}else{
+				} else {
 					continue;
 				}
 			}
 		}
-		logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}]", malist.size(), maslist.size(),dictreflist.size(), chalist.size());
-		if(malist!=null&&malist.size()>0){
-			Map<String, Object> m = new HashMap<String,Object>();
-		    m.put("malist", malist);
-		    m.put("maslist", maslist);
-		    m.put("dictreflist", dictreflist);
-		    m.put("chalist", chalist);
-		    m.put("seqmareflist", seqreflist);
-		    m.put("mediaplaycount", mecounts);
-		    return m;
+		logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}]", malist.size(), maslist.size(),
+				dictreflist.size(), chalist.size());
+		if (malist != null && malist.size() > 0) {
+			Map<String, Object> m = new HashMap<String, Object>();
+			m.put("malist", malist);
+			m.put("resAss", resAsslist);
+			m.put("maslist", maslist);
+			m.put("dictreflist", dictreflist);
+			m.put("chalist", chalist);
+			m.put("seqmareflist", seqreflist);
+			m.put("mediaplaycount", mecounts);
+			return m;
 		}
 		return null;
 	}
-	
-	public static Map<String, Object> convert2SeqMediaAsset(AlbumPo al, List<Map<String, Object>> dicts, List<ChannelPo> chlist){
+
+	public static Map<String, Object> convert2SeqMediaAsset(AlbumPo al, List<Map<String, Object>> dicts,
+			List<ChannelPo> chlist) {
 		Map<String, Object> map = new HashMap<>();
 		SeqMediaAssetPo seq = new SeqMediaAssetPo();
 		seq.setId(SequenceUUID.getPureUUID());
 		seq.setSmaTitle(al.getAlbumName());
 		seq.setSmaImg(al.getAlbumImg());
 		seq.setSmaPubType(1);
-		if(al.getAlbumPublisher().equals("喜马拉雅")){
+		if (al.getAlbumPublisher().equals("喜马拉雅")) {
 			seq.setSmaPubId("2");
 			seq.setSmaPublisher("喜马拉雅");
-		}else{
-			if(al.getAlbumPublisher().equals("蜻蜓")){
+		} else {
+			if (al.getAlbumPublisher().equals("蜻蜓")) {
 				seq.setSmaPubId("3");
 				seq.setSmaPublisher("蜻蜓");
-			}else{
+			} else {
 				if (al.getAlbumPublisher().equals("考拉")) {
 					seq.setSmaPubId("4");
 					seq.setSmaPublisher("考拉");
@@ -253,17 +270,17 @@ public abstract class ConvertUtils {
 			}
 		}
 		seq.setSmaAllCount(0);
-		if(al.getAlbumTags()!=null && !al.getAlbumTags().equals("null"))
+		if (al.getAlbumTags() != null && !al.getAlbumTags().equals("null"))
 			seq.setKeyWords(al.getAlbumTags());
 		seq.setLangDid("zho");
 		seq.setLanguage("中文");
-		if(al.getDescn()!=null && !al.getDescn().equals("null"))
+		if (al.getDescn() != null && !al.getDescn().equals("null"))
 			seq.setDescn(al.getDescn());
 		seq.setCTime(new Timestamp(System.currentTimeMillis()));
 		seq.setPubCount(1);
 		seq.setSmaStatus(1);
 		map.put("seq", seq);
-		
+
 		MediaPlayCountPo mecount = new MediaPlayCountPo();
 		mecount.setId(SequenceUUID.getPureUUID());
 		mecount.setResTableName("wt_SeqMediaAsset");
@@ -272,22 +289,23 @@ public abstract class ConvertUtils {
 		mecount.setPublisher(al.getAlbumPublisher());
 		mecount.setcTime(new Timestamp(System.currentTimeMillis()));
 		map.put("playnum", mecount);
-		
+
 		DictRefResPo dictRefRes = new DictRefResPo();
 		dictRefRes.setId(SequenceUUID.getPureUUID());
 		dictRefRes.setRefName("专辑-内容分类");
 		dictRefRes.setResTableName("wt_SeqMediaAsset");
 		dictRefRes.setResId(seq.getId());
 		for (Map<String, Object> ms : dicts) {
-			if (al.getAlbumPublisher().equals(ms.get("publisher")) && al.getCategoryName().equals(ms.get("crawlerDictdName"))) {
+			if (al.getAlbumPublisher().equals(ms.get("publisher"))
+					&& al.getCategoryName().equals(ms.get("crawlerDictdName"))) {
 				dictRefRes.setDictMid(ms.get("dictmId") + "");
 				dictRefRes.setDictDid(ms.get("dictdId") + "");
 				dictRefRes.setCTime(new Timestamp(System.currentTimeMillis()));
 				break;
 			}
 		}
-		
-		if (dictRefRes.getDictDid()!=null && !dictRefRes.getDictDid().equals("null")) {
+
+		if (dictRefRes.getDictDid() != null && !dictRefRes.getDictDid().equals("null")) {
 			map.put("dictref", dictRefRes);
 			ChannelAssetPo cha = new ChannelAssetPo();
 			cha.setId(SequenceUUID.getPureUUID());
@@ -314,29 +332,68 @@ public abstract class ConvertUtils {
 				}
 			}
 		}
-		if(map.containsKey("cha"))
+		if (map.containsKey("cha"))
 			return map;
-		else return null;
+		else
+			return null;
 	}
-	
-	private static String convertPlayNum2Long(String playnum){
+
+	public static Map<String, Object> convert2Masource(AudioPo audio, MediaAssetPo media ,List<OrganizePo> oganlist) {
+		if (audio == null || media == null)
+			return null;
+		List<ResOrgAssetPo> resAss = new ArrayList<ResOrgAssetPo>();
+		MaSourcePo mas = new MaSourcePo();
+		mas.setId(SequenceUUID.getPureUUID());
+		mas.setMaId(media.getId());
+		mas.setIsMain(0);
+		mas.setMaSrcType(media.getMaPubType());
+		if (media.getMaPubType() == 1 && oganlist != null && oganlist.size() > 0) {
+			for (OrganizePo ogan : oganlist) {
+				if (audio.getAudioPublisher().equals(ogan.getOrgName())) {
+					mas.setMaSrcId(ogan.getId());
+					mas.setMaSource(audio.getAudioPublisher());
+					mas.setPlayURI(audio.getAudioURL());
+					mas.setDescn(audio.getDescn());
+					mas.setCTime(new Timestamp(System.currentTimeMillis()));
+				}
+			}
+		}
+		
+		ResOrgAssetPo resass = new ResOrgAssetPo();
+		resass.setId(SequenceUUID.getPureUUID());
+		resass.setResId(mas.getId());
+		resass.setResTableName("wt_Masource");
+		resass.setOrgName(mas.getMaSource());
+		resass.setOrigId(audio.getId());
+		resass.setOrigTableName("hotspot_Audio");
+		if(mas.getMaSrcId()!=null) {
+			Map<String, Object> m = new HashMap<String,Object>();
+			m.put("mas", mas);
+			m.put("resAss", resAss);
+			return m;
+		}
+		return null;
+	}
+
+	private static String convertPlayNum2Long(String playnum) {
 		int lastnum = -1;
 		int begnum = -1;
-		if(!playnum.contains(".")) return playnum;
+		if (!playnum.contains("."))
+			return playnum;
 		begnum = playnum.indexOf(".");
-		if(playnum.contains("万")){
+		if (playnum.contains("万")) {
 			lastnum = playnum.indexOf("万");
-			if(lastnum-begnum==2){
-			    playnum = playnum.substring(0, lastnum-1);
-			    playnum = playnum.replace(".", "")+"000";
-		    }
+			if (lastnum - begnum == 2) {
+				playnum = playnum.substring(0, lastnum - 1);
+				playnum = playnum.replace(".", "") + "000";
+			}
 		}
-		if(playnum.contains("亿")){
+		if (playnum.contains("亿")) {
 			lastnum = playnum.indexOf("亿");
-			if(lastnum-begnum==2){
-			    playnum = playnum.substring(0, lastnum-1);
-			    playnum = playnum.replace(".", "")+"0000000";
-		    }
+			if (lastnum - begnum == 2) {
+				playnum = playnum.substring(0, lastnum - 1);
+				playnum = playnum.replace(".", "") + "0000000";
+			}
 		}
 		return playnum;
 	}

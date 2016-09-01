@@ -1,5 +1,7 @@
 package com.woting.crawler;
 
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.spiritdata.framework.core.cache.CacheEle;
@@ -11,6 +13,7 @@ import com.woting.crawler.core.etl.model.Etl1Process;
 import com.woting.crawler.core.etl.model.Etl2Process;
 import com.woting.crawler.core.scheme.control.SchemeController;
 import com.woting.crawler.core.scheme.model.Scheme;
+import com.woting.crawler.core.timer.model.Timer;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.utils.RedisUtils;
 
@@ -69,6 +72,22 @@ public class Booter {
         SpringShell.init();
         logger.info("加载Spring配置，用时[{}]毫秒", System.currentTimeMillis()-_begin);
         
+//        //定时器加载
+//        Timer timer = new Timer(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent()+"conf/timer.txt");
+//        Scheduler scheduler = timer.getScheduler();
+//        if(scheduler==null) {
+//        	logger.info("定时加载出错，结束抓取服务");
+//        	return;
+//        }
+//        
+//        try {
+//			scheduler.start();
+//		} catch (SchedulerException e) {
+//			e.printStackTrace();
+//		}
+//        
+//        logger.info("定时功能已加载[{}]", timer.getSrcCronExpression());
+        
         //加载抓取方案
         Scheme scheme = new Scheme("");
         String crawlernum = scheme.getSchemenum();
@@ -84,19 +103,19 @@ public class Booter {
 		scheme.setSchemenum(crawlernum);
 		SystemCache.setCache(new CacheEle<String>(CrawlerConstants.CRAWLERNUM, "抓取序号", crawlernum));
 		
-//		CrawlerSrcRecord srcRecord = new CrawlerSrcRecord(crawlernum);
-//		srcRecord.reloadCrawlerInfo();
-//		
-//        //开始抓取数据
-//        SchemeController sc = new SchemeController(scheme);
-//        sc.runningScheme();
-//		
-//        //第一次数据转换
-//        Etl1Process etl1Process = new Etl1Process();
-//        etl1Process.setEtlnum(scheme.getSchemenum());
-//        Etl1Controller etl1 = new Etl1Controller(etl1Process);
-//        etl1.runningScheme();
-		scheme.setSchemenum("1");
+		CrawlerSrcRecord srcRecord = new CrawlerSrcRecord(crawlernum);
+		srcRecord.reloadCrawlerInfo();
+		
+        //开始抓取数据
+        SchemeController sc = new SchemeController(scheme);
+        sc.runningScheme();
+		
+        //第一次数据转换
+        Etl1Process etl1Process = new Etl1Process();
+        etl1Process.setEtlnum(scheme.getSchemenum());
+        Etl1Controller etl1 = new Etl1Controller(etl1Process);
+        etl1.runningScheme();
+//		scheme.setSchemenum("1");
         //第二次数据转换
         Etl2Process etl2Process = new Etl2Process();
         etl2Process.setEtlnum(scheme.getSchemenum());

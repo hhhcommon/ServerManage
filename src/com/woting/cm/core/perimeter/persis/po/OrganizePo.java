@@ -14,6 +14,8 @@ public class OrganizePo extends BaseObject {
     private String webPageUrl; //官网地址
     private String orgImg; //组织Logo
     private String descn; //对组织的描述
+    private String protraitBig;
+    private String protraitMini;
     private Timestamp CTime; //记录创建时间
 
     public String getId() {
@@ -58,7 +60,19 @@ public class OrganizePo extends BaseObject {
     public void setDescn(String descn) {
         this.descn = descn;
     }
-    public Timestamp getCTime() {
+    public String getProtraitBig() {
+		return protraitBig;
+	}
+	public void setProtraitBig(String protraitBig) {
+		this.protraitBig = protraitBig;
+	}
+	public String getProtraitMini() {
+		return protraitMini;
+	}
+	public void setProtraitMini(String protraitMini) {
+		this.protraitMini = protraitMini;
+	}
+	public Timestamp getCTime() {
         return CTime;
     }
     public void setCTime(Timestamp cTime) {

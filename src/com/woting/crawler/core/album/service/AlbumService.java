@@ -43,6 +43,10 @@ public class AlbumService {
 		return aus;
 	}
 	
+	public AlbumPo getAlbumInfo(String id){
+		return albumDao.getInfoObject("getAlbumInfo", id);
+	}
+	
 	public int countNum(String crawlerNum){
 		int num = albumDao.getCount("count",crawlerNum);
 		return num;

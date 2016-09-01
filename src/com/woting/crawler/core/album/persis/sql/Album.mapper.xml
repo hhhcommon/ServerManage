@@ -68,6 +68,10 @@
     select * from hotspot_Album where crawlerNum=#{crawlerNum,jdbcType=VARCHAR} limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
   </select>
   
+  <select id="getAlbumInfo" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select * from hotspot_Album where id=#{id,jdbcType=VARCHAR}
+  </select>
+  
   <select id="getAlbumListByCrawlerNum" parameterType="java.util.Map" resultMap="BaseResultMap">
     select * from hotspot_Album where crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
   </select>
