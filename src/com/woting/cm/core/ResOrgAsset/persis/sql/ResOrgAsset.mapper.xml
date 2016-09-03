@@ -47,8 +47,12 @@
     </foreach>
   </insert>
   
-  <select id="getResOrgAssetList" resultMap="resOrgAssetMap">
-    select * from wt_ResOrgAsset_Ref
+  <select id="getResOrgAssetList" parameterType="java.util.Map" resultMap="resOrgAssetMap">
+    select * from wt_ResOrgAsset_Ref limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
+  </select>
+  
+  <select id="count" resultType="java.lang.Integer">
+    select count(*) from wt_ResOrgAsset_Ref
   </select>
   
 </mapper>

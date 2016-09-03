@@ -21,6 +21,7 @@ public abstract class HttpUtils {
 		return str;
 	}
 
+	@SuppressWarnings("unchecked")
 	public static Map<String, Object> getJsonMapFromURL(String url) {
 		HttpClientBuilder clientBuilder = HttpClientBuilder.create();
 		CloseableHttpClient httpClient = clientBuilder.build();

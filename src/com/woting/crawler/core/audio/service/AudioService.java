@@ -72,6 +72,14 @@ public class AudioService {
 		return list;
 	}
 	
+	public List<AudioPo> getAudioListById(String id) {
+		return audioDao.queryForList("getAudioInfo", id);
+	}
+	
+	public AudioPo getAudioInfo(String id) {
+		return audioDao.getInfoObject("getAudioInfo", id);
+	}
+	
 	public void removeSameAudio(String id){
 		audioDao.delete("deleteAudioById", id);
 	}

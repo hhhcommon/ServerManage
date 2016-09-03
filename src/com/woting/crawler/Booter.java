@@ -1,22 +1,12 @@
 package com.woting.crawler;
 
 import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.spiritdata.framework.core.cache.CacheEle;
 import com.spiritdata.framework.core.cache.SystemCache;
-import com.woting.crawler.compare.CrawlerSrcRecord;
-import com.woting.crawler.core.etl.control.Etl1Controller;
-import com.woting.crawler.core.etl.control.Etl2Controller;
-import com.woting.crawler.core.etl.model.Etl1Process;
-import com.woting.crawler.core.etl.model.Etl2Process;
-import com.woting.crawler.core.scheme.control.SchemeController;
-import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.core.timer.model.Timer;
 import com.woting.crawler.ext.SpringShell;
-import com.woting.crawler.scheme.utils.RedisUtils;
-
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
@@ -48,7 +38,7 @@ public class Booter {
         if (os.toLowerCase().startsWith("linux")||os.toLowerCase().startsWith("unix")||os.toLowerCase().startsWith("aix")) rootPath+="/";
         else if (os.toLowerCase().startsWith("window")&&rootPath.startsWith("/")) rootPath=rootPath.substring(1);
         SystemCache.setCache(new CacheEle<String>(CrawlerConstants.APP_PATH, "系统运行的路径", rootPath));
-
+        
         //logback加载xml内容
         LoggerContext lc = (LoggerContext)LoggerFactory.getILoggerFactory();
         JoranConfigurator configurator = new JoranConfigurator();
@@ -72,54 +62,21 @@ public class Booter {
         SpringShell.init();
         logger.info("加载Spring配置，用时[{}]毫秒", System.currentTimeMillis()-_begin);
         
-//        //定时器加载
-//        Timer timer = new Timer(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent()+"conf/timer.txt");
-//        Scheduler scheduler = timer.getScheduler();
-//        if(scheduler==null) {
-//        	logger.info("定时加载出错，结束抓取服务");
-//        	return;
-//        }
-//        
-//        try {
-//			scheduler.start();
-//		} catch (SchedulerException e) {
-//			e.printStackTrace();
-//		}
-//        
-//        logger.info("定时功能已加载[{}]", timer.getSrcCronExpression());
-        
-        //加载抓取方案
-        Scheme scheme = new Scheme("");
-        String crawlernum = scheme.getSchemenum();
-		while (RedisUtils.isOrNoCrawlerFinish(crawlernum)) {
-			logger.info("开始判断redis里是否存在当前抓取序号[{}]是否已存在", crawlernum);
-			logger.info("抓取序号[{}]已存在", crawlernum);
-			int num = Integer.valueOf(crawlernum) + 1;
-			crawlernum = num + "";
-			logger.info("验证抓取序号[{}]是否存在", crawlernum);
+        //定时器加载
+        Timer timer = new Timer(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent()+"conf/timer.txt");
+        Scheduler scheduler = timer.getScheduler();
+        if(scheduler==null) {
+        	logger.info("定时加载出错，结束抓取服务");
+        	return;
+        }
+        try {
+			scheduler.start();
+			logger.info("首页资源抓取定时功能已加载[{}],点击量抓取定时功能已加载[{}]", timer.getSrcCronExpression(), timer.getPlayCountCronExpression());
+			while(true) {
+				Thread.sleep(60*60*1000);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		logger.info("抓取序号[{}]不存在", crawlernum);
-		logger.info("开始进行序号为[{}]抓取", crawlernum);
-		scheme.setSchemenum(crawlernum);
-		SystemCache.setCache(new CacheEle<String>(CrawlerConstants.CRAWLERNUM, "抓取序号", crawlernum));
-		
-		CrawlerSrcRecord srcRecord = new CrawlerSrcRecord(crawlernum);
-		srcRecord.reloadCrawlerInfo();
-		
-        //开始抓取数据
-        SchemeController sc = new SchemeController(scheme);
-        sc.runningScheme();
-		
-        //第一次数据转换
-        Etl1Process etl1Process = new Etl1Process();
-        etl1Process.setEtlnum(scheme.getSchemenum());
-        Etl1Controller etl1 = new Etl1Controller(etl1Process);
-        etl1.runningScheme();
-//		scheme.setSchemenum("1");
-        //第二次数据转换
-        Etl2Process etl2Process = new Etl2Process();
-        etl2Process.setEtlnum(scheme.getSchemenum());
-        Etl2Controller etl2 = new Etl2Controller(etl2Process);
-        etl2.runningScheme();
 	}
 }

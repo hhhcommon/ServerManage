@@ -27,7 +27,14 @@ public class ResOrgAssetService{
     	resOrgAssetDao.insert("insertList", m);
     }
     
-    public List<ResOrgAssetPo> getResOrgAssetList(){
-		return resOrgAssetDao.queryForList("getResOrgAssetList");
+    public int getResOrgAssetNum() {
+		return resOrgAssetDao.getCount("count","");
+    }
+    
+    public List<ResOrgAssetPo> getResOrgAssetList(int page ,int pagesize){
+    	Map<String, Object> m = new HashMap<>();
+    	m.put("page", page);
+    	m.put("pagesize", pagesize);
+		return resOrgAssetDao.queryForList("getResOrgAssetList", m);
     }
 }

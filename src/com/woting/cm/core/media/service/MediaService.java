@@ -180,7 +180,11 @@ public class MediaService {
 	        mediaplaycountDao.insert("insertMediaPlayCountList", m);
 		}
 	}
-
+	
+	public void insertMediaPlayCount(MediaPlayCountPo mpc) {
+		mediaplaycountDao.insert("insertMediaPlayCount", mpc);
+	}
+	
 	public List<MediaAssetPo> getMaSameList(String maURLs) {
 		List<MediaAssetPo> malist = mediaAssetDao.queryForList("getMaSameList", maURLs);
 		return malist;

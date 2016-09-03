@@ -108,6 +108,7 @@ public class QTParseUtils {
 	//专辑播放次数http://i.qingting.fm/wapi/channel_playcount?cids=115850
 	//声音播放次数http://i.qingting.fm/wapi/program_playcount?pids=115850_5019265
 	
+	@SuppressWarnings("unchecked")
 	public static void parseQTResourceIdAndCategoryId(byte[] htmlByteArray, Map<String, Object> parseData) {
 		Elements els = null;
 		Map<String, Object> map = new HashMap<String,Object>();

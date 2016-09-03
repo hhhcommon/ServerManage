@@ -1,8 +1,10 @@
 package com.woting.crawler.core.timer.model;
 
 import java.util.Map;
+import java.util.Properties;
 
 import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
 import org.quartz.impl.JobDetailImpl;
 import org.quartz.impl.StdSchedulerFactory;
@@ -74,7 +76,9 @@ public class Timer {
 			cronTrigger1.setCronExpression(SrcCronExpression);
 			this.jobdetail2 = new JobDetailImpl("JobDetail2", "JobGroup2", PlayNumTimerJob.class);
 			this.cronTrigger2 = new CronTriggerImpl("CronTrigger2", "TriggerGroup2");
+			cronTrigger2.setCronExpression(PlayCountCronExpression);
 			scheduler.scheduleJob(jobdetail1, cronTrigger1);
+			scheduler.scheduleJob(jobdetail2, cronTrigger2);
 		} catch (Exception e) {
 			logge.info("启动时间加载时报错");
 			return null;

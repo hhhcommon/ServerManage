@@ -52,7 +52,7 @@
   </insert>
   
   <select id="count" parameterType="java.lang.String" resultType="java.lang.Integer">
-    select count(*) from hotspot_Audio where  crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+    select count(*) from hotspot_Audio where crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
   </select>
   
   <select id="getAudioByAlbumIdAndPublisher" parameterType="java.util.Map" resultMap="BaseResultMap">
@@ -65,6 +65,10 @@
   
   <select id="getAudioList" parameterType="java.util.Map" resultMap="BaseResultMap">
     select * from hotspot_Audio where crawlerNum=#{crawlerNum,jdbcType=VARCHAR} limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
+  </select>
+  
+  <select id="getAudioInfo" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select * from hotspot_Audio where id=#{id,jdbcType=VARCHAR}
   </select>
   
   <update id="removeNull" parameterType="java.util.Map">

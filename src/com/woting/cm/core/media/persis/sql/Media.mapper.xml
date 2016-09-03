@@ -212,11 +212,29 @@
     <resultMap id="mediaplaycountmap" type="mediaplaycount">
 		<id     column="id"            property="id"            jdbcType="VARCHAR" />
 		<result column="resTableName"  property="resTableName"  jdbcType="VARCHAR" />
-		<result column="resId"         property="resId"         jdbcType="INTEGER" />
+		<result column="resId"         property="resId"         jdbcType="VARCHAR" />
 		<result column="playCount"     property="playCount"     jdbcType="VARCHAR" />
 		<result column="publisher"     property="publisher"     jdbcType="VARCHAR" />
 		<result column="cTime"         property="CTime"         jdbcType="TIMESTAMP" />
 	</resultMap>
+	
+	<insert id="insertMediaPlayCount" parameterType="java.util.Map">
+    insert into wt_MediaPlayCount
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id!=null">id,</if>
+      <if test="resId!=null">resId,</if>
+      <if test="resTableName!=null">resTableName,</if>
+      <if test="playCount!=null">playCount,</if>
+      <if test="publisher!=null">publisher,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
+      <if test="resId!=null">#{resId,jdbcType=VARCHAR},</if>
+      <if test="resTableName!=null">#{resTableName,jdbcType=VARCHAR},</if>
+      <if test="playCount!=null">#{playCount,jdbcType=VARCHAR},</if>
+      <if test="publisher!=null">#{publisher,jdbcType=VARCHAR},</if>
+    </trim>
+  </insert>
 	
 	<sql id="Base_MediaPlayCount_List">
 		id, resTableName, resId, playCount, publisher, cTime
@@ -311,5 +329,7 @@
 	<select id="getMaBySmaId" parameterType="java.lang.String" resultMap="mediaAssetMap">
 		select * from wt_MediaAsset where id in (select mId from wt_SeqMA_Ref where sId=#{sId,jdbcType=VARCHAR})
 	</select>
+	
+	
 	
 </mapper>

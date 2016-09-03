@@ -375,7 +375,7 @@ public abstract class ConvertUtils {
 		return null;
 	}
 
-	private static String convertPlayNum2Long(String playnum) {
+	public static String convertPlayNum2Long(String playnum) {
 		int lastnum = -1;
 		int begnum = -1;
 		if (!playnum.contains("."))

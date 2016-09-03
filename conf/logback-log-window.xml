@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration packagingData="true">
-  <property name="APP_NAME" value="WtCrawler" />
+  <property name="APP_NAME" value="WtCrawlerHotSpot" />
   <property name="LOG_HOME" value="D:/workIDE/projects/WtCrawler/logs"/>
   <property name="ENCODER_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS}|a [%thread] %logger{80}%n%d{yyyy-MM-dd HH:mm:ss.SSS}|b [%thread] -- %msg%n" />
   <contextName>${APP_NAME}</contextName>

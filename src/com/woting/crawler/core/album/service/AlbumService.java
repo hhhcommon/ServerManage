@@ -43,6 +43,11 @@ public class AlbumService {
 		return aus;
 	}
 	
+	public List<AlbumPo> getAlbumListById(String id){
+		List<AlbumPo> aus = albumDao.queryForList("getAlbumInfo", id);
+		return aus;
+	}
+	
 	public AlbumPo getAlbumInfo(String id){
 		return albumDao.getInfoObject("getAlbumInfo", id);
 	}
