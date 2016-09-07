@@ -16,7 +16,7 @@ public class DictDPo extends BaseObject {
 	private String nPy; //名称拼音
 	private String aliasName; //字典项别名
 	private String anPy; //别名拼音
-	private String crawlerNum; //抓取序号
+	private int isValidate;
 	private String schemeId; //抓取方案Id
 	private String schemeName; //抓取方案名称
 	private String visitUrl;
@@ -52,6 +52,12 @@ public class DictDPo extends BaseObject {
 	public void setPublisher(String publisher) {
 		this.publisher = publisher;
 	}
+	public int getIsValidate() {
+		return isValidate;
+	}
+	public void setIsValidate(int isValidate) {
+		this.isValidate = isValidate;
+	}
 	public String getDdName() {
 		return ddName;
 	}
@@ -78,12 +84,6 @@ public class DictDPo extends BaseObject {
 	}
 	public void setAnPy(String anPy) {
 		this.anPy = anPy;
-	}
-	public String getCrawlerNum() {
-		return crawlerNum;
-	}
-	public void setCrawlerNum(String crawlerNum) {
-		this.crawlerNum = crawlerNum;
 	}
 	public String getSchemeId() {
 		return schemeId;

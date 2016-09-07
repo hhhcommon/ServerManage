@@ -23,7 +23,7 @@ public class Crawler {
 	private QTPlayNumCrawler qtPlayNumCrawler;
 	private XMLYPlayNumCrawler xmlyPlayNumCrawler;
 
-	public Map<String, Object> begionCrawlerPlayCount() {
+	public Map<String, Object> beginCrawlerPlayCount() {
 		long begtime = System.currentTimeMillis();
 		resAssService = (ResOrgAssetService) SpringShell.getBean("resOrgAssetService");
 		qtPlayNumCrawler = new QTPlayNumCrawler();

@@ -208,7 +208,7 @@
       <if test="descn!=null">#{descn,jdbcType=VARCHAR},</if>
     </trim>
   </insert>
-  
+    <!-- 点击量 -->
     <resultMap id="mediaplaycountmap" type="mediaplaycount">
 		<id     column="id"            property="id"            jdbcType="VARCHAR" />
 		<result column="resTableName"  property="resTableName"  jdbcType="VARCHAR" />
@@ -291,7 +291,7 @@
 	</select>
 
 	<select id="getMaSameList" parameterType="java.lang.String" resultMap="mediaAssetMap">
-		select * from wt_MediaAsset where #{maURLs,jdbcType=VARCHAR}
+		select * from wt_MediaAsset where maURL=#{maURLs,jdbcType=VARCHAR}
 	</select>
 	
 	<select id="getInfoById" parameterType="java.lang.String" resultMap="mediaAssetMap">
@@ -299,7 +299,7 @@
 	</select>
 	
 	<select id="getMaSame" parameterType="java.lang.String" resultType="java.lang.Integer">
-		select count(*) from wt_MediaAsset where maURL=#{maURL,jdbcType=VARCHAR}
+		select count(*) from wt_MediaAsset where maURL=#{value,jdbcType=VARCHAR}
 	</select>
 	
 	<select id="getMaNumByPublisher" parameterType="java.lang.String" resultType="java.lang.Integer">

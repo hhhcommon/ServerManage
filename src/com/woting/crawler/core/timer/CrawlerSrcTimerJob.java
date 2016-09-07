@@ -23,6 +23,7 @@ public class CrawlerSrcTimerJob implements Job {
 
 	@Override
 	public void execute(JobExecutionContext arg0) throws JobExecutionException {
+		long begtime = System.currentTimeMillis();
 		// 加载抓取方案
 		Scheme scheme = new Scheme("");
 		String crawlernum = scheme.getSchemenum();
@@ -50,12 +51,14 @@ public class CrawlerSrcTimerJob implements Job {
 		etl1Process.setEtlnum(scheme.getSchemenum());
 		Etl1Controller etl1 = new Etl1Controller(etl1Process);
 		etl1.runningScheme();
-
+//		scheme.setSchemenum("1");
 		// 第二次数据转换
 		Etl2Process etl2Process = new Etl2Process();
 		etl2Process.setEtlnum(scheme.getSchemenum());
 		Etl2Controller etl2 = new Etl2Controller(etl2Process);
 		etl2.runningScheme();
+		
+		logger.info("第[{}]次抓取完成,耗时[{}]", scheme.getSchemenum(), System.currentTimeMillis()-begtime);
 	}
 
 }

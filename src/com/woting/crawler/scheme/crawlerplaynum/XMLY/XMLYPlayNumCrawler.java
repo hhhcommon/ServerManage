@@ -3,7 +3,6 @@ package com.woting.crawler.scheme.crawlerplaynum.XMLY;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import com.spiritdata.framework.core.cache.SystemCache;
@@ -19,7 +18,6 @@ import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.core.audio.service.AudioService;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.utils.CleanDataUtils;
-import com.woting.crawler.scheme.utils.ConvertUtils;
 import com.woting.crawler.scheme.utils.FileUtils;
 import com.woting.crawler.scheme.utils.TimeUtils;
 
@@ -91,21 +89,23 @@ public class XMLYPlayNumCrawler {
 					try {
 						doc = Jsoup.connect(url).ignoreContentType(true).timeout(10000).get();
 						String austr = doc.body().html();
-						if(austr.contains("19384226"))
-							System.out.println(austr);
-//						austr = StringEscapeUtils.unescapeHtml4(austr);
-//						Map<String, Object> m = (Map<String, Object>) JsonUtils.jsonToObj(austr, Map.class);
-//						if(m!=null) {
-//							String playnum = m.get("playtimes")+"";
-//							MediaPlayCountPo mpc = new MediaPlayCountPo();
-//							mpc.setId(SequenceUUID.getPureUUID());
-//							mpc.setPublisher(resass.getOrgName());
-//							mpc.setResId(resass.getResId());
-//							mpc.setResTableName(resass.getResTableName());
-//							mpc.setPlayCount(playnum);
-//							mpc.setcTime(new Timestamp(System.currentTimeMillis()));
-//							mediaService.insertMediaPlayCount(mpc);
-//						}
+						Map<String, Object> m = null;
+						try {
+							m = (Map<String, Object>) JsonUtils.jsonToObj(austr, Map.class);
+						} catch (Exception e) {
+							m = (Map<String, Object>) JsonUtils.jsonToObj(CleanDataUtils.cleanString(austr), Map.class);
+						}
+						if(m!=null) {
+							String playnum = m.get("playtimes")+"";
+							MediaPlayCountPo mpc = new MediaPlayCountPo();
+							mpc.setId(SequenceUUID.getPureUUID());
+							mpc.setPublisher(resass.getOrgName());
+							mpc.setResId(resass.getResId());
+							mpc.setResTableName(resass.getResTableName());
+							mpc.setPlayCount(playnum);
+							mpc.setcTime(new Timestamp(System.currentTimeMillis()));
+							mediaService.insertMediaPlayCount(mpc);
+						}
 					} catch (Exception e) {
 						e.printStackTrace();
 					}

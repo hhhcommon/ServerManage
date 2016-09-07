@@ -8,7 +8,6 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
 import com.spiritdata.framework.core.dao.mybatis.MybatisDAO;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
-import com.woting.crawler.core.audio.persis.po.AudioPo;
 
 @Service
 public class AlbumService {

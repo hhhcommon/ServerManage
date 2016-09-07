@@ -21,9 +21,6 @@ import com.woting.cm.core.perimeter.persis.po.OrganizePo;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.core.dict.persis.po.DictDPo;
-import com.woting.crawler.core.dict.service.CrawlerDictService;
-import com.woting.crawler.core.scheme.model.Scheme;
-import com.woting.crawler.ext.SpringShell;
 
 public abstract class ConvertUtils {
 	private static Logger logger = LoggerFactory.getLogger(ConvertUtils.class);
@@ -84,10 +81,7 @@ public abstract class ConvertUtils {
 		return audios;
 	}
 
-	public static List<DictDPo> convert2DictD(Scheme scheme, List<Map<String, Object>> list, String publisher,
-			String dmid) {
-		CrawlerDictService crawlerDictService = (CrawlerDictService) SpringShell.getBean("crawlerDictService");
-		List<DictDPo> ddlist = crawlerDictService.getDictDList(publisher, scheme.getSchemenum());
+	public static List<DictDPo> convert2DictD(List<Map<String, Object>> list, List<DictDPo> ddlist, String publisher, String dmid ,int isValidate) {
 		List<DictDPo> dictdlist = new ArrayList<DictDPo>();
 		if (list != null && list.size() > 0) {
 			for (Map<String, Object> m : list) {
@@ -107,8 +101,8 @@ public abstract class ConvertUtils {
 				dd.setPublisher(publisher);
 				if (m.containsKey("nPy"))
 					dd.setnPy(m.get("nPy") + "");
-				dd.setCrawlerNum(scheme.getSchemenum());
 				dd.setVisitUrl(m.get("visitUrl") + "");
+				dd.setIsValidate(isValidate);
 				dd.setcTime(new Timestamp(System.currentTimeMillis()));
 				dictdlist.add(dd);
 			}

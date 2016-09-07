@@ -104,7 +104,7 @@ public abstract class XMLYParseUtils {
 		Elements eles = null;
 		Element e = null;
 		Document doc = Jsoup.parse(new String(htmlByteArray), "UTF-8");
-		Map<String, Object> pData = parseData;
+//		Map<String, Object> pData = parseData;
 		// 得到名称、ID、img
 		try {
 			eles = doc.select("img[sound_popsrc]");

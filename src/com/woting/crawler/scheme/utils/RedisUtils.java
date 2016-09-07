@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.spiritdata.framework.util.JsonUtils;
 import com.woting.cm.core.media.persis.po.MediaAssetPo;
 import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
-import com.woting.crawler.compare.SolrParticiple;
+import com.woting.crawler.compare.SolrServer;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 
@@ -422,7 +422,7 @@ public class RedisUtils {
 					String str = jedis.get(sma.getSmaPublisher()+"_Sma_"+sma.getId()+"_Participle");
 					return (List<String>) JsonUtils.jsonToObj(str, List.class);
 				} else {
-					List<String> list = SolrParticiple.getAnalysis(sma.getSmaTitle());
+					List<String> list = SolrServer.getAnalysis(sma.getSmaTitle());
 					writeSrcParticiple(sma, JsonUtils.objToJson(list));
 					return list;
 				}
@@ -433,7 +433,7 @@ public class RedisUtils {
 					String str = jedis.get(ma.getMaPublisher()+"_Ma_"+ma.getId()+"_Participle");
 					return (List<String>) JsonUtils.jsonToObj(str, List.class);
 				} else {
-					List<String> list = SolrParticiple.getAnalysis(ma.getMaTitle());
+					List<String> list = SolrServer.getAnalysis(ma.getMaTitle());
 					writeSrcParticiple(ma, JsonUtils.objToJson(list));
 					return list;
 				}

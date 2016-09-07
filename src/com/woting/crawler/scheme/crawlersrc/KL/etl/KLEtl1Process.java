@@ -11,7 +11,7 @@ import com.woting.crawler.scheme.utils.RedisUtils;
 
 public class KLEtl1Process {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
-	private Etl1Process etl1Process;
+//	private Etl1Process etl1Process;
 	private List<Map<String, Object>> categorylist;
 	private List<Map<String, Object>> albumlist;
 	private List<Map<String, Object>> audiolist;
@@ -20,7 +20,7 @@ public class KLEtl1Process {
 	
 	public KLEtl1Process(Etl1Process etl1Process){
 		begintime = System.currentTimeMillis();
-		this.etl1Process = etl1Process;
+//		this.etl1Process = etl1Process;
 //		categorylist = RedisUtils.getOrigData("QT_Category_"+etl1Process.getEtlnum());
 		albumlist = RedisUtils.getOrigDataList("QT_Album_"+etl1Process.getEtlnum());
 		audiolist = RedisUtils.getOrigDataList("QT_Audio_"+etl1Process.getEtlnum());

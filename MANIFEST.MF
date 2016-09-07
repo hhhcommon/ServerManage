@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Implementation-Title: WtCrawler
 Implementation-Version: 0.0.1
 Archiver-Version: Plexus Archiver
-Built-By: wanghui
+Built-By: wangbingqiong
 Implementation-Vendor-Id: com.wotingfm
 Class-Path: runlib/spring-boot-starter-1.3.2.RELEASE.jar runlib/spring
  -boot-1.3.2.RELEASE.jar runlib/spring-context-4.2.4.RELEASE.jar runli
@@ -35,9 +35,12 @@ Class-Path: runlib/spring-boot-starter-1.3.2.RELEASE.jar runlib/spring
  tor-2.6.2.jar runlib/xmpcore-5.1.2.jar runlib/xercesImpl-2.8.1.jar ru
  nlib/xml-apis-1.3.03.jar runlib/boilerpipe-1.1.0.jar runlib/rome-0.9.
  jar runlib/jdom-1.0.jar runlib/vorbis-java-core-0.1.jar runlib/junive
- rsalchardet-1.0.3.jar runlib/jhighlight-1.0.jar runlib/jsoup-1.7.3.ja
+ rsalchardet-1.0.3.jar runlib/jhighlight-1.0.jar runlib/jsoup-1.9.2.ja
  r runlib/commons-io-2.4.jar runlib/BasicPlat-0.1.0.10.jar runlib/comm
- ons-pool2-2.4.2.jar runlib/jedis-2.6.2.jar runlib/pinyin4j-2.5.0.jar runlib/commons-lang3-3.3.2.jar
+ ons-pool2-2.4.2.jar runlib/jedis-2.6.2.jar runlib/pinyin4j-2.5.0.jar r
+ unlib/commons-lang3-3.3.2.jar runlib/quartz-2.2.3.jar runlib/solr-core
+ -4.3.1.jar runlib/solr-solrj-4.3.1.jar runlib/httpmime-4.5.1.jar runlib/
+ noggit-0.5.jar
 Created-By: Apache Maven 3.1.1
 Build-Jdk: 1.8.0_66
 Implementation-Vendor: Pivotal Software, Inc.

@@ -6,9 +6,7 @@ import org.slf4j.LoggerFactory;
 import com.spiritdata.framework.core.cache.SystemCache;
 import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.core.scheme.model.Scheme;
-import com.woting.crawler.scheme.crawlersrc.KL.crawler.KLCrawler;
-import com.woting.crawler.scheme.crawlersrc.QT.crawler.QTCrawler;
-import com.woting.crawler.scheme.crawlersrc.XMLY.crawler.XMLYCrawler;
+import com.woting.crawler.scheme.crawlersrc.XMLY.crawler.XMLYCrawlerRedis;
 import com.woting.crawler.scheme.crawlersrc.crawler.Crawler;
 import com.woting.crawler.scheme.utils.RedisUtils;
 
@@ -31,16 +29,10 @@ public class SchemeMoniter extends Thread {
 	@Override
 	public void run() {
 		logger.info("开始进行数据抓取");
-		logger.info("开启辅助信息抓取");
-		new Thread(){public void run() {startCustomCrawler(); };}.start(); //开启辅助信息抓取
+		logger.info("开始辅助信息抓取");
+		new XMLYCrawlerRedis(scheme).start();
 		logger.info("开启Crawler4j抓取");
-		new Thread(){public void run() {startCrawler4j(); };}.start(); //开启Crawler4j抓取
-	}
-	
-	private void startCustomCrawler() {
-		new KLCrawler(scheme).start(); //开启考拉分类信息加载线程
-		new XMLYCrawler(scheme).start(); //开启喜马拉雅分类信息加载线程
-		new QTCrawler(scheme).start(); //开启蜻蜓分类信息加载线程
+		new Thread(){public void run() {startCrawler4j(); }}.start(); //开启Crawler4j抓取
 	}
 	
 	public void startCrawler4j(){

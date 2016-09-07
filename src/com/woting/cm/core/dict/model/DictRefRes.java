@@ -4,11 +4,6 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 
 import com.spiritdata.framework.core.model.ModelSwapPo;
-import com.spiritdata.framework.core.model.tree.TreeNode;
-import com.spiritdata.framework.exceptionC.Plat0006CException;
-import com.spiritdata.framework.util.SequenceUUID;
-import com.spiritdata.framework.util.StringUtils;
-import com.woting.cm.core.dict.persis.po.DictRefResPo;
 
 public class DictRefRes implements Serializable, ModelSwapPo {
     private static final long serialVersionUID=5201517946401777207L;

@@ -78,8 +78,22 @@ public class Channel extends TreeNodeBean implements Serializable, ModelSwapPo {
     public void setCTime(Timestamp cTime) {
         CTime=cTime;
     }
-
-    /**
+    public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+	public String getpId() {
+		return pId;
+	}
+	public void setpId(String pId) {
+		this.pId = pId;
+	}
+	public String getChannelName() {
+		return channelName;
+	}
+	/**
      * 改写基类的该方法，使其能够自动设置汉语拼音
      */
     public void setChannelName(String cName) {

@@ -19,7 +19,6 @@ import com.woting.cm.core.dict.mem._CacheDictionary;
 import com.woting.cm.core.dict.model.DictDetail;
 import com.woting.cm.core.dict.model.DictMaster;
 import com.woting.cm.core.dict.model.DictModel;
-import com.woting.cm.core.dict.model.DictRefRes;
 import com.woting.cm.core.dict.persis.po.DictDetailPo;
 import com.woting.cm.core.dict.persis.po.DictMasterPo;
 import com.woting.cm.core.dict.persis.po.DictRefResPo;
@@ -46,7 +45,8 @@ public class DictService {
     /**
      * 加载字典信息
      */
-    public _CacheDictionary loadCache() {
+    @SuppressWarnings("unchecked")
+	public _CacheDictionary loadCache() {
         _CacheDictionary _cd = new _CacheDictionary();
 
         try {
@@ -122,7 +122,8 @@ public class DictService {
      * @param ddList 同一字典组的所有字典项的列表
      * @param od 所有者字典数据
      */
-    private void buildDictTree(List<DictDetail> ddList, _CacheDictionary cd) {
+    @SuppressWarnings("unchecked")
+	private void buildDictTree(List<DictDetail> ddList, _CacheDictionary cd) {
         if (ddList.size()>0) {//组成树
             DictModel dModel = cd.dictModelMap.get(ddList.get(0).getMId());
             if (dModel!=null) {

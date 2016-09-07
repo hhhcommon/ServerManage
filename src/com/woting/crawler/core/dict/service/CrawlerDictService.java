@@ -42,16 +42,46 @@ public class CrawlerDictService {
 		return dictm;
 	}
 	
-	public List<DictDPo> getDictDList(String publisher, String crawlernum){
+	public List<DictDPo> getDictDList(String publisher){
 		Map<String, Object> m = new HashMap<String,Object>();
 		m.put("publisher", publisher);
-		m.put("crawlerNum", crawlernum);
-		List<DictDPo> ddlist = dictDDao.queryForList("getListByPubAndCrawlerNum", m);
+		List<DictDPo> ddlist = dictDDao.queryForList("getListByPub", m);
 		return ddlist;
 	}
 	
 	public List<DictDPo> getDictDByMid(String mid){
 		List<DictDPo> dictdlist = dictDDao.queryForList("getListByMid", mid);
 		return dictdlist;
+	}
+	
+	public int getDictdValidNum(String publisher) {
+		List<DictDPo> ds = dictDDao.queryForList("getDictdValidNum", publisher);
+		if(ds!=null&&ds.size()>0) 
+			return ds.size();
+		else 
+			return 0;
+	}
+	
+	private DictDPo getDictDByNameAndPubIs1(DictDPo ddpo) {
+		Map<String, Object> m = new HashMap<String,Object>();
+		m.put("ddName", ddpo.getDdName());
+		m.put("publisher", ddpo.getPublisher());
+		m.put("pId", ddpo.getpId());
+		return dictDDao.getInfoObject("getDictDInfo", m);
+	}
+	
+	public boolean compareDictIsOrNoNew(List<DictDPo> listd) {
+		for (DictDPo dDPo : listd) {
+			if(getDictDByNameAndPubIs1(dDPo)==null) 
+				return false;
+		}
+		return true;
+	}
+	
+	public int getMaxIsValidateNum(String publisher) {
+		DictDPo ddp = dictDDao.getInfoObject("getMaxIsValidate" ,publisher);
+		if(ddp!=null) 
+			return ddp.getIsValidate();
+	    return 0;
 	}
 }

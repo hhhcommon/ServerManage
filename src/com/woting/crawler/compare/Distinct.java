@@ -6,9 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.spiritdata.framework.util.SpiritRandom;
 import com.woting.cm.core.media.persis.po.MediaAssetPo;
 import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
@@ -160,7 +160,8 @@ public class Distinct {
 							Thread.sleep(SpiritRandom.getRandom(new Random(), 10, 20));
 						} catch (Exception e) {}
 						AudioPo au = (AudioPo) aus.next();
-						if (mediaService.getMaSame(au.getAudioURL()) > 0)
+						List<MediaAssetPo> mes = mediaService.getMaSameList(au.getAudioURL());
+						if (mes!=null&&mes.size()>0)
 							aus.remove();
 					}
 				}

@@ -14,8 +14,6 @@ import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.core.audio.service.AudioService;
 import com.woting.crawler.ext.SpringShell;
 
-import edu.uci.ics.crawler4j.crawler.CrawlConfig;
-
 @Service
 public class Etl1Service {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());

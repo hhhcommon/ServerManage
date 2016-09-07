@@ -1,4 +1,4 @@
-package com.woting.crawler.scheme.crawlersrc.XMLY.crawler;
+package com.woting.crawler.scheme.crawlercategory.XMLY;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,43 +8,31 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.spiritdata.framework.util.ChineseCharactersUtils;
+import com.woting.crawler.core.dict.persis.po.DictDPo;
 import com.woting.crawler.core.dict.service.CrawlerDictService;
-import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.utils.ConvertUtils;
-import com.woting.crawler.scheme.utils.RedisUtils;
 
 public class XMLYCrawler extends Thread {
+	private Logger logger = LoggerFactory.getLogger(XMLYCrawler.class);
 	private static String CategoryLink = "http://www.ximalaya.com/dq/all/";
-	private Scheme scheme;
-	public XMLYCrawler(Scheme scheme) {
-		this.scheme = scheme;
-	}
 
 	public void getXMLYCategory() {
-		CrawlerDictService crawlerDictService = (CrawlerDictService) SpringShell.getBean("crawlerDictService");
+		logger.info("喜马拉雅分类抓取开始 ");
+		List<DictDPo> listd = new ArrayList<DictDPo>();
 		Elements eles = null;
 		Element el = null;
 		Document doc;
+		int isValidate = 0;
+		CrawlerDictService crawlerDictService = (CrawlerDictService) SpringShell.getBean("crawlerDictService");
+		if(crawlerDictService.getDictdValidNum("喜马拉雅")==0) isValidate = 1;
+		else isValidate = crawlerDictService.getMaxIsValidateNum("喜马拉雅")+1;
 		try {
-			Map<String, Object> catemap = new HashMap<String, Object>();
 			doc = Jsoup.connect(CategoryLink).timeout(10000).ignoreContentType(true).get();
-			eles = doc.select("li[cid]");
-			if (eles!=null&&!eles.isEmpty()) {
-				for (Element ele : eles) {
-					String catename = ele.select("a").get(0).html();
-					String cateid = ele.attr("cid");
-					if(catename.equals("外语"))
-						catename = "英语";
-					catemap.put(catename, cateid);
-				}
-				if (catemap != null) {
-					RedisUtils.addXMLYCategory(scheme.getSchemenum(), catemap);
-				}
-			}
-			
 			//加载分类信息 
 			List<Map<String, Object>> catelist = new ArrayList<Map<String, Object>>();
 			//加载一级分类信息
@@ -64,7 +52,7 @@ public class XMLYCrawler extends Thread {
 						catelist.add(m);
 					}
 				}
-				crawlerDictService.insertDictD(ConvertUtils.convert2DictD(scheme, catelist, "喜马拉雅", "3"));
+				listd.addAll(ConvertUtils.convert2DictD(catelist,null ,"喜马拉雅", "3", isValidate));
 				catelist.clear();
 				//加载二级分类信息
 				eles = doc.select("div[data-cache]");
@@ -81,7 +69,22 @@ public class XMLYCrawler extends Thread {
 						}
 					}
 				}
-				crawlerDictService.insertDictD(ConvertUtils.convert2DictD(scheme, catelist, "喜马拉雅", "3"));
+				listd.addAll(ConvertUtils.convert2DictD(catelist, listd, "喜马拉雅", "3", isValidate));
+				logger.info("喜马拉雅分类抓取数目[{}]", listd.size());
+				if(listd!=null&&listd.size()>0) {
+					if(isValidate==1) {
+						crawlerDictService.insertDictD(listd);
+						logger.info("首次喜马拉雅分类抓取，数据全部入库，并生效");
+					}
+					else {
+						if (!crawlerDictService.compareDictIsOrNoNew(listd)) {
+							logger.info("发现喜马拉雅有新的分类产生,入库");
+							crawlerDictService.insertDictD(listd);
+						} else {
+							logger.info("未发现喜马拉雅新分类,抓取数据作废");
+						}
+					}
+				}
 			}
 		} catch (Exception e) {e.printStackTrace();}
 	}

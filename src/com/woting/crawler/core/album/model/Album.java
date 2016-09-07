@@ -1,12 +1,9 @@
 package com.woting.crawler.core.album.model;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
 import java.util.List;
 
 import com.spiritdata.framework.core.model.ModelSwapPo;
-import com.spiritdata.framework.exceptionC.Plat0006CException;
-import com.woting.cm.core.dict.persis.po.DictMasterPo;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 

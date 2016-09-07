@@ -71,7 +71,9 @@ public class Booter {
         }
         try {
 			scheduler.start();
-			logger.info("首页资源抓取定时功能已加载[{}],点击量抓取定时功能已加载[{}]", timer.getSrcCronExpression(), timer.getPlayCountCronExpression());
+			logger.info("首页资源抓取定时功能已加载[{}]", timer.getSrcCronExpression());
+			logger.info("点击量抓取定时功能已加载[{}]", timer.getPlayCountCronExpression());
+			logger.info("分类抓取定时功能已加载[{}]", timer.getCategoryCronExpression());
 			while(true) {
 				Thread.sleep(60*60*1000);
 			}

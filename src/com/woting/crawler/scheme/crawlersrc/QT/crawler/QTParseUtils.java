@@ -45,7 +45,7 @@ public class QTParseUtils {
 				parseData.put("descript", HttpUtils.getTextByDispose(el.html()));
 			}
 		} catch (Exception e) {e.printStackTrace();}
-		int num = 0;
+//		int num = 0;
 		try {
 			els = doc.select("li[class=playable clearfix]");
 			if(els!=null&&!els.isEmpty()){
@@ -82,11 +82,11 @@ public class QTParseUtils {
 						pDate.put("playCount",m.get("playcount"));
 					}
 					RedisUtils.addQTAudio(parseData.get("CrawlerNum")+"", pDate);
-					num++;
-					if(num==2){
-						num=0;
-						break;
-					}
+//					num++;
+//					if(num==10){
+//						num=0;
+//						break;
+//					}
 				}
 			}
 		} catch (Exception e) {e.printStackTrace();}

@@ -22,12 +22,12 @@
       <artifactId>quartz</artifactId>
       <version>2.2.3</version>
   </dependency>
-  <!-- https://mvnrepository.com/artifact/org.apache.solr/solr-core -->
-   <dependency>
-      <groupId>org.apache.solr</groupId>
-      <artifactId>solr-core</artifactId>
-      <version>4.3.1</version>
-   </dependency>
+  
+<!--    <dependency> -->
+<!--       <groupId>org.apache.solr</groupId> -->
+<!--       <artifactId>solr-core</artifactId> -->
+<!--       <version>4.3.1</version> -->
+<!--    </dependency> -->
   <!-- https://mvnrepository.com/artifact/org.apache.solr/solr-solrj -->
    <dependency>
       <groupId>org.apache.solr</groupId>
@@ -159,13 +159,15 @@
           <archive>
             <addMavenDescriptor>false</addMavenDescriptor>
             <manifestFile>${projectDir}/MANIFEST.MF</manifestFile>
-            <!--
+            
+            <!-- 
             <manifest>
               <addClasspath>true</addClasspath>
               <classpathPrefix>runlib/</classpathPrefix>
               <mainClass>com.woting.crawler.Booter</mainClass>
             </manifest>
-            -->
+             -->
+             
           </archive>
         </configuration>
       </plugin>

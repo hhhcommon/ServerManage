@@ -1,7 +1,6 @@
 package com.woting.crawler.compare;
 
 import java.util.List;
-
 import com.woting.cm.core.media.persis.po.MediaAssetPo;
 import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
 import com.woting.cm.core.media.service.MediaService;
@@ -35,7 +34,7 @@ class CompareAttribute {
 				return null;
 			} else {
 				float maxf = Float.valueOf(fstr);
-				if (maxf > sameproportion) {
+				if (maxf >= sameproportion) {
 					String seqid = RedisUtils.getCompareSameSrcId(albumPo, crawlernum);
 					if (seqid == null || seqid.equals("null")) {
 						return null;
@@ -64,7 +63,7 @@ class CompareAttribute {
 			return null;
 		} else {
 			float maxf = Float.valueOf(fstr);
-			if(maxf > sameproportion) {
+			if(maxf >= sameproportion) {
 				String maid = RedisUtils.getCompareSameSrcId(audioPo, crawlernum);
 				if (maid == null || maid.equals("null")) {
 					return null;
@@ -97,7 +96,7 @@ class CompareAttribute {
 					RedisUtils.writeCompareInfo(album, f, sma.getId(), crawlernum);
 					break;
 				} else {
-					f = SolrParticiple.getSameProportion(album.getAlbumName(), sma);
+					f = SolrServer.getSameProportion(album.getAlbumName(), sma);
 					if (maxf == null || maxf.equals("null"))
 						RedisUtils.writeCompareInfo(album, f, sma.getId(), crawlernum);
 					else {
@@ -124,7 +123,7 @@ class CompareAttribute {
 					RedisUtils.writeCompareInfo(audio, f, ma.getId(), crawlernum);
 					break;
 				} else {
-					f = SolrParticiple.getSameProportion(audio.getAudioName(), ma);
+					f = SolrServer.getSameProportion(audio.getAudioName(), ma);
 					if (maxf == null || maxf.equals("null"))
 						RedisUtils.writeCompareInfo(audio, f, ma.getId(), crawlernum);
 					else {
