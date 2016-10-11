@@ -47,7 +47,7 @@
   </select>
   
   <select id="getDictDInfo" resultMap="BaseResultMap" parameterType="java.util.Map">
-    select <include refid="Base_Column_List"/> from hotspot_DictD where ddName=#{ddName,jdbcType=VARCHAR} and publisher=#{publisher,jdbcType=VARCHAR} and pId=#{pId,jdbcType=VARCHAR} and isValidate=1
+    select <include refid="Base_Column_List"/> from hotspot_DictD where ddName=#{ddName,jdbcType=VARCHAR} and publisher=#{publisher,jdbcType=VARCHAR} and sourceId=#{sourceId,jdbcType=VARCHAR} and isValidate=#{isValidate,jdbcType=INTEGER}
   </select>
   
   <select id="getMaxIsValidate" resultMap="BaseResultMap" parameterType="java.lang.String">

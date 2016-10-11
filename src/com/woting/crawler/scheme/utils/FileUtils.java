@@ -19,7 +19,7 @@ public class FileUtils {
 	public static boolean writeFile(String jsonstr, String path) {
 		File file = createFile(path);
 		try {
-			OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file));
+			OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file),"GBK");
 			BufferedWriter writer = new BufferedWriter(write);
 			writer.write(jsonstr);
 			writer.close();

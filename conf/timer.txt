@@ -1,1 +1,1 @@
-{"CronExpression":"0 10 0/1 * * ?","PlayCountCronExpression":"0 10 0/1 * * ?","CategoryCronExpression":"0 34 0/1 * * ?"}
+{"CronExpression":"0 0 0/3 * * ?","PlayCountCronExpression":"0 0 0/1 * * ?","CategoryCronExpression":"0 23 0/1 * * ?"}

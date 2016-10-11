@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.fontbox.ttf.MaximumProfileTable;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import com.spiritdata.framework.util.JsonUtils;
@@ -47,12 +48,16 @@ public class QTPlayNumCrawler {
 						if(data!=null&&data.size()>0) {
 							Map<String, Object> dm = data.get(0);
 							String playnum = dm.get("playcount")+"";
+							playnum = ConvertUtils.convertPlayNum2Long(playnum);
+							MediaPlayCountPo mplay = mediaService.getMediaPlayCount(resass.getResId(), resass.getResTableName());
+							if(mplay!=null && mplay.getPlayCount().equals(playnum))
+								return;
 							MediaPlayCountPo mpc = new MediaPlayCountPo();
 							mpc.setId(SequenceUUID.getPureUUID());
 							mpc.setPublisher(resass.getOrgName());
 							mpc.setResId(resass.getResId());
 							mpc.setResTableName("wt_SeqMediaAsset");
-							mpc.setPlayCount(ConvertUtils.convertPlayNum2Long(playnum));
+							mpc.setPlayCount(playnum);
 							mpc.setcTime(new Timestamp(System.currentTimeMillis()));
 							mediaService.insertMediaPlayCount(mpc);
 						}
@@ -77,12 +82,16 @@ public class QTPlayNumCrawler {
 						List<Map<String, Object>> data = (List<Map<String, Object>>) m.get("data");
 						Map<String, Object> m0 = data.get(0);
 						String playnum = m0.get("playcount")+"";
+						playnum = ConvertUtils.convertPlayNum2Long(playnum);
+						MediaPlayCountPo mplay = mediaService.getMediaPlayCount(resass.getResId(), resass.getResTableName());
+						if(mplay!=null && mplay.getPlayCount().equals(playnum))
+							return;
 						MediaPlayCountPo mpc = new MediaPlayCountPo();
 						mpc.setId(SequenceUUID.getPureUUID());
 						mpc.setPublisher(resass.getOrgName());
 						mpc.setResId(resass.getResId());
 						mpc.setResTableName(resass.getResTableName());
-						mpc.setPlayCount(ConvertUtils.convertPlayNum2Long(playnum));
+						mpc.setPlayCount(playnum);
 						mpc.setcTime(new Timestamp(System.currentTimeMillis()));
 						mediaService.insertMediaPlayCount(mpc);
 					} catch (Exception e) {

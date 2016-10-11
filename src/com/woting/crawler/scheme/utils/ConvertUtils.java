@@ -378,15 +378,23 @@ public abstract class ConvertUtils {
 		if (playnum.contains("万")) {
 			lastnum = playnum.indexOf("万");
 			if (lastnum - begnum == 2) {
-				playnum = playnum.substring(0, lastnum - 1);
+				playnum = playnum.substring(0, lastnum);
 				playnum = playnum.replace(".", "") + "000";
+			}
+			if (lastnum - begnum == 1) {
+				playnum = playnum.substring(0, lastnum);
+				playnum = playnum.replace(".", "")+"0000";
 			}
 		}
 		if (playnum.contains("亿")) {
 			lastnum = playnum.indexOf("亿");
 			if (lastnum - begnum == 2) {
-				playnum = playnum.substring(0, lastnum - 1);
+				playnum = playnum.substring(0, lastnum);
 				playnum = playnum.replace(".", "") + "0000000";
+			}
+			if (lastnum - begnum == 1) {
+				playnum = playnum.substring(0, lastnum);
+				playnum = playnum.replace(".", "")+"00000000";
 			}
 		}
 		return playnum;

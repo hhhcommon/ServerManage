@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.woting.crawler.scheme.crawlercategory.KL.KLCrawler;
 import com.woting.crawler.scheme.crawlercategory.QT.QTCrawler;
 import com.woting.crawler.scheme.crawlercategory.XMLY.XMLYCrawler;
 
@@ -24,5 +26,6 @@ public class Crawler {
 	private void startCrawlerCategory() {
 		new QTCrawler().start();
 		new XMLYCrawler().start();
+		new KLCrawler().start();
 	}
 }

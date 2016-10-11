@@ -68,9 +68,7 @@
 	</resultMap>
 
 	<sql id="Base_SequMedia_List">
-		id, smaTitle, smaPubType, smaPubId, smaPublisher, smaPublishTime, smaImg,
-		smaAllCount, subjectWords, keyWords, langDid, language, descn,
-		pubCount, smaStatus, cTime
+		id, smaTitle, smaPubType, smaPubId, smaPublisher, smaPublishTime, smaImg, smaAllCount, subjectWords, keyWords, langDid, language, descn, pubCount, smaStatus, cTime
 	</sql>
 	
 	<!-- 新增 专辑 -->
@@ -259,6 +257,10 @@
 		<foreach collection="list" item="list" index="index" separator=" or " >
 		smaTitle=#{list}
         </foreach>
+	</select>
+	
+	<select id="getMediaPlayCountLatest" parameterType="java.util.Map" resultMap="mediaplaycountmap">
+		select * from wt_MediaPlayCount where resId=#{resId,jdbcType=VARCHAR} and resTableName=#{resTableName,jdbcType=VARCHAR} order by cTime desc
 	</select>
 	
 	<insert id="insertSeqRefList" parameterType="map">

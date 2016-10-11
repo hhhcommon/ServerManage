@@ -62,18 +62,21 @@ public class CrawlerDictService {
 			return 0;
 	}
 	
-	private DictDPo getDictDByNameAndPubIs1(DictDPo ddpo) {
+	private List<DictDPo> getDictDByNameAndPubIs1(DictDPo ddpo) {
 		Map<String, Object> m = new HashMap<String,Object>();
 		m.put("ddName", ddpo.getDdName());
 		m.put("publisher", ddpo.getPublisher());
-		m.put("pId", ddpo.getpId());
-		return dictDDao.getInfoObject("getDictDInfo", m);
+		m.put("sourceId", ddpo.getSourceId());
+		
+		return dictDDao.queryForList("getDictDInfo", m);
 	}
 	
 	public boolean compareDictIsOrNoNew(List<DictDPo> listd) {
 		for (DictDPo dDPo : listd) {
-			if(getDictDByNameAndPubIs1(dDPo)==null) 
+			List<DictDPo> ds = getDictDByNameAndPubIs1(dDPo);
+			if(ds==null || ds.size()==0) {
 				return false;
+			}
 		}
 		return true;
 	}

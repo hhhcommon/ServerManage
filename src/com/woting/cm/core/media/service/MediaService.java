@@ -151,6 +151,16 @@ public class MediaService {
 	public MediaAssetPo getMaInfoById(String id) {
 		return mediaAssetDao.getInfoObject("getInfoById", id);
 	}
+	
+	public MediaPlayCountPo getMediaPlayCount(String resId, String resTableName) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("resId", resId);
+		m.put("resTableName", resTableName);
+		List<MediaPlayCountPo> mplays = mediaplaycountDao.queryForList("getMediaPlayCountLatest", m);
+		if(mplays!=null && mplays.size()>0) 
+			return mplays.get(0);
+		return null;
+	}
 
 	public void saveMa(MediaAsset ma) {
 		mediaAssetDao.insert("insertMa", ma.convert2Po());
