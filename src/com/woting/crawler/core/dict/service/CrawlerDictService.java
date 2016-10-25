@@ -67,7 +67,6 @@ public class CrawlerDictService {
 		m.put("ddName", ddpo.getDdName());
 		m.put("publisher", ddpo.getPublisher());
 		m.put("sourceId", ddpo.getSourceId());
-		
 		return dictDDao.queryForList("getDictDInfo", m);
 	}
 	

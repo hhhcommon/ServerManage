@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.bouncycastle.jce.provider.JDKDSASigner.noneDSA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,7 @@ import com.woting.crawler.core.album.model.Album;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.core.audio.service.AudioService;
+import com.woting.crawler.core.dict.service.CrawlerDictService;
 import com.woting.crawler.core.etl.model.Etl2Process;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.utils.ConvertUtils;
@@ -52,7 +55,8 @@ public class Etl2Service {
 
 	@SuppressWarnings("unchecked")
 	public void getDictAndCrawlerDict(Etl2Process etl2Process) {
-		cate2dictdlist = FileUtils.readFileByJson(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent() + "conf/craw.txt");
+		cate2dictdlist = FileUtils
+				.readFileByJson(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent() + "conf/craw.txt");
 		audioService = (AudioService) SpringShell.getBean("audioService");
 		mediaService = (MediaService) SpringShell.getBean("mediaService");
 		resAssService = (ResOrgAssetService) SpringShell.getBean("resOrgAssetService");
@@ -60,7 +64,7 @@ public class Etl2Service {
 		dictService = (DictService) SpringShell.getBean("dictService");
 		chlist = channelService.getChannelList();
 		distinct = new Distinct();
-
+		
 		Map<String, Object> m = new HashMap<>();
 		// 删除本次抓取中间库里专辑和单体重复信息
 		distinct.removeSameAlbumAndAudio(etl2Process.getEtlnum());
@@ -77,6 +81,10 @@ public class Etl2Service {
 		m = distinct.compareCMByAlbum(newlist);
 		oldals.addAll((List<Album>) m.get("oldlist"));
 		newlist = (List<AlbumPo>) m.get("newlist"); // 待入库专辑列表
+		List<AlbumPo> ceshi = new ArrayList<>();
+		ceshi.add(newlist.get(1));
+		ceshi .add(newlist.get(2));
+		newlist=ceshi;
 		// 声音跟资源库对比
 		oldals = distinct.compareCMByAudio(oldals); // 专辑帮顶下的声音待入库
 		// 新增资源库已存在的专辑下级声音
@@ -84,7 +92,7 @@ public class Etl2Service {
 		// 进行多平台资源消重
 		m = distinct.comparePublisherSrc(newlist, etl2Process.getEtlnum());
 		List<Map<String, Object>> samelist = (List<Map<String, Object>>) m.get("samelist");
-		//处理相似专辑数据
+		// 处理相似专辑数据
 		makeSameAlbums(samelist);
 		newlist = (List<AlbumPo>) m.get("newlist");
 		// 新增资源库
@@ -109,35 +117,33 @@ public class Etl2Service {
 			for (Album al : allist) {
 				List<AudioPo> aulist = al.getAudiolist();
 				if (aulist.size() > 0) {
-					if (aulist.size() > 0) {
-						List<SeqMediaAssetPo> seqlist = mediaService.getSeqInfo(al.getAlbumPo().getAlbumName(),
-								al.getAlbumPo().getAlbumPublisher());
-						if (seqlist != null && seqlist.size() > 0) {
-							SeqMediaAssetPo seq = seqlist.get(0);
-							Map<String, Object> mall = ConvertUtils.convert2MediaAsset(aulist, seq, cate2dictdlist,
-									chlist);
-							if (mall != null) {
-								if (mall.containsKey("malist")) {
-									malist.addAll((List<MediaAssetPo>) mall.get("malist"));
-									resAss.addAll((List<ResOrgAssetPo>)mall.get("resAss"));
-									maslist.addAll((List<MaSourcePo>) mall.get("maslist"));
-									dictreflist.addAll((List<DictRefResPo>) mall.get("dictreflist"));
-									chalist.addAll((List<ChannelAssetPo>) mall.get("chalist"));
-									seqreflist.addAll((List<SeqMaRefPo>) mall.get("seqmareflist"));
-									mecounts.addAll((List<MediaPlayCountPo>) mall.get("mediaplaycount"));
-								}
+					List<SeqMediaAssetPo> seqlist = mediaService.getSeqInfo(al.getAlbumPo().getAlbumName(),
+							al.getAlbumPo().getAlbumPublisher());
+					if (seqlist != null && seqlist.size() > 0) {
+						SeqMediaAssetPo seq = seqlist.get(0);
+						Map<String, Object> mall = ConvertUtils.convert2MediaAsset(aulist, seq, cate2dictdlist, chlist);
+						if (mall != null) {
+							if (mall.containsKey("malist")) {
+								malist.addAll((List<MediaAssetPo>) mall.get("malist"));
+								resAss.addAll((List<ResOrgAssetPo>) mall.get("resAss"));
+								maslist.addAll((List<MaSourcePo>) mall.get("maslist"));
+								dictreflist.addAll((List<DictRefResPo>) mall.get("dictreflist"));
+								chalist.addAll((List<ChannelAssetPo>) mall.get("chalist"));
+								seqreflist.addAll((List<SeqMaRefPo>) mall.get("seqmareflist"));
+								mecounts.addAll((List<MediaPlayCountPo>) mall.get("mediaplaycount"));
 							}
 						}
 					}
 				}
 			}
 		}
+		logger.info("增添资源库已存在的专辑新下级声音");
 		logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}],专辑声音关系数量[{}]", malist.size(), maslist.size(),
 				dictreflist.size(), chalist.size(), seqreflist.size());
 		if (malist.size() > 0) {
 			// 往资源库插入声音数据
 			mediaService.insertMaList(malist);
-			//往资源库插入资源与外部资源对照
+			// 往资源库插入资源与外部资源对照
 			resAssService.insertResOrgAssetList(resAss);
 			// 往资源库插入播放流数据
 			mediaService.insertMasList(maslist);
@@ -175,7 +181,7 @@ public class Etl2Service {
 				dictreflist.add((DictRefResPo) map.get("dictref"));
 				chalist.add((ChannelAssetPo) map.get("cha"));
 				mecounts.add((MediaPlayCountPo) map.get("playnum"));
-				
+
 				ResOrgAssetPo resass = new ResOrgAssetPo();
 				resass.setId(SequenceUUID.getPureUUID());
 				resass.setResId(se.getId());
@@ -185,7 +191,7 @@ public class Etl2Service {
 				resass.setOrigTableName("hotspot_Album");
 				resass.setcTime(new Timestamp(System.currentTimeMillis()));
 				resAss.add(resass);
-				
+
 				// 获取抓取到的专辑下级节目信息
 				List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(),
 						al.getCrawlerNum());
@@ -193,7 +199,7 @@ public class Etl2Service {
 					Map<String, Object> mall = ConvertUtils.convert2MediaAsset(aulist, se, cate2dictdlist, chlist);
 					if (mall != null && mall.containsKey("malist")) {
 						malist.addAll((List<MediaAssetPo>) mall.get("malist"));
-						resAss.addAll((List<ResOrgAssetPo>)mall.get("resAss"));
+						resAss.addAll((List<ResOrgAssetPo>) mall.get("resAss"));
 						maslist.addAll((List<MaSourcePo>) mall.get("maslist"));
 						dictreflist.addAll((List<DictRefResPo>) mall.get("dictreflist"));
 						chalist.addAll((List<ChannelAssetPo>) mall.get("chalist"));
@@ -203,6 +209,7 @@ public class Etl2Service {
 				}
 			}
 		}
+		logger.info("新增资源库");
 		logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}],专辑声音关系数量[{}]", malist.size(), maslist.size(),
 				dictreflist.size(), chalist.size(), seqreflist.size());
 		if (malist.size() > 0) {
@@ -219,7 +226,7 @@ public class Etl2Service {
 			channelService.insertChannelAssetList(chalist);
 			// 往资源库插入声音数据
 			mediaService.insertMaList(malist);
-			//往资源库插入资源与外部资源对照
+			// 往资源库插入资源与外部资源对照
 			resAssService.insertResOrgAssetList(resAss);
 		} else {
 			logger.info("新专辑无下级声音资源");
@@ -246,18 +253,20 @@ public class Etl2Service {
 					Map<String, Object> mall = ConvertUtils.convert2MediaAsset(newaus, sma, cate2dictdlist, chlist);
 					if (mall != null && mall.containsKey("malist")) {
 						malist.addAll((List<MediaAssetPo>) mall.get("malist"));
-						resAss.addAll((List<ResOrgAssetPo>)mall.get("resAss"));
+						resAss.addAll((List<ResOrgAssetPo>) mall.get("resAss"));
 						maslist.addAll((List<MaSourcePo>) mall.get("maslist"));
 						dictreflist.addAll((List<DictRefResPo>) mall.get("dictreflist"));
 						chalist.addAll((List<ChannelAssetPo>) mall.get("chalist"));
 						seqreflist.addAll((List<SeqMaRefPo>) mall.get("seqmareflist"));
 						mecounts.addAll((List<MediaPlayCountPo>) mall.get("mediaplaycount"));
 					}
-					logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}],专辑声音关系数量[{}]", malist.size(), maslist.size(), dictreflist.size(), chalist.size(), seqreflist.size());
+					logger.info("处理相似专辑数据");
+					logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}],专辑声音关系数量[{}]", malist.size(),
+							maslist.size(), dictreflist.size(), chalist.size(), seqreflist.size());
 					if (malist.size() > 0) {
 						// 往资源库插入声音数据
 						mediaService.insertMaList(malist);
-						//往资源库插入资源与外部资源对照
+						// 往资源库插入资源与外部资源对照
 						resAssService.insertResOrgAssetList(resAss);
 						// 往资源库插入播放流数据
 						mediaService.insertMasList(maslist);
@@ -275,18 +284,18 @@ public class Etl2Service {
 				}
 				maslist.clear();
 				resAss.clear();
-				if(sameaus!=null&&sameaus.size()>0) {
+				if (sameaus != null && sameaus.size() > 0) {
 					for (Map<String, Object> mm : sameaus) {
 						AudioPo au = (AudioPo) mm.get("audio");
 						MediaAssetPo ma = (MediaAssetPo) mm.get("ma");
 						Map<String, Object> mss = ConvertUtils.convert2Masource(au, ma, oganlist);
-						if(mss!=null) {
-							maslist.add((MaSourcePo)mss.get("mas"));
-							resAss.add((ResOrgAssetPo)mss.get("resAss"));
+						if (mss != null) {
+							maslist.add((MaSourcePo) mss.get("mas"));
+							resAss.add((ResOrgAssetPo) mss.get("resAss"));
 						}
 					}
 					logger.info("新增相似声音数[{}]", maslist.size());
-					if (maslist!=null && maslist.size()>0) {
+					if (maslist != null && maslist.size() > 0) {
 						mediaService.insertMasList(maslist);
 						resAssService.insertResOrgAssetList(resAss);
 					}

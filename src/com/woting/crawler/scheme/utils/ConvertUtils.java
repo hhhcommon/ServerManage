@@ -335,7 +335,7 @@ public abstract class ConvertUtils {
 	public static Map<String, Object> convert2Masource(AudioPo audio, MediaAssetPo media ,List<OrganizePo> oganlist) {
 		if (audio == null || media == null)
 			return null;
-		List<ResOrgAssetPo> resAss = new ArrayList<ResOrgAssetPo>();
+//		List<ResOrgAssetPo> resAss = new ArrayList<ResOrgAssetPo>();
 		MaSourcePo mas = new MaSourcePo();
 		mas.setId(SequenceUUID.getPureUUID());
 		mas.setMaId(media.getId());
@@ -360,10 +360,11 @@ public abstract class ConvertUtils {
 		resass.setOrgName(mas.getMaSource());
 		resass.setOrigId(audio.getId());
 		resass.setOrigTableName("hotspot_Audio");
+//		resAss.add(resass);
 		if(mas.getMaSrcId()!=null) {
 			Map<String, Object> m = new HashMap<String,Object>();
 			m.put("mas", mas);
-			m.put("resAss", resAss);
+			m.put("resAss", resass);
 			return m;
 		}
 		return null;

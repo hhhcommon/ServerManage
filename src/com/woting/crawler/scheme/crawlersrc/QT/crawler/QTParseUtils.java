@@ -83,7 +83,7 @@ public class QTParseUtils {
 					}
 					RedisUtils.addQTAudio(parseData.get("CrawlerNum")+"", pDate);
 					num++;
-					if(num==10){
+					if(num==1){
 						num=0;
 						break;
 					}
@@ -104,9 +104,6 @@ public class QTParseUtils {
 			RedisUtils.addQTAlbum(parseData.get("CrawlerNum")+"", parseData);
 		} catch (Exception e) {e.printStackTrace();}
 	}
-	
-	//专辑播放次数http://i.qingting.fm/wapi/channel_playcount?cids=115850
-	//声音播放次数http://i.qingting.fm/wapi/program_playcount?pids=115850_5019265
 	
 	@SuppressWarnings("unchecked")
 	public static void parseQTResourceIdAndCategoryId(byte[] htmlByteArray, Map<String, Object> parseData) {

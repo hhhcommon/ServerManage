@@ -42,7 +42,6 @@ public class SolrServer {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println(url+"##"+JsonUtils.objToJson(lstr));
 		return lstr;
 	}
 	
@@ -55,6 +54,10 @@ public class SolrServer {
 				if(str1.equals(str2)) num++;
 			}
 		}
-		return num*2/(n1.size()+n2.size());
+		try {
+			return num*2/(n1.size()+n2.size());
+		} catch (Exception e) {
+			return 0;
+		}
 	}
 }

@@ -105,6 +105,7 @@ public class Distinct {
 		}
 		logger.info("Redis快照不存在专辑数目[{}]", allist.size());
 		logger.info("Redis快照存在专辑数目[{}]", oldlist.size());
+		
 		Map<String, Object> m = new HashMap<String, Object>();
 		m.put("oldlist", oldlist); // 本次次抓取与Redis快照对比已存在专辑列表
 		m.put("newlist", allist); // 本次抓取新增专辑列表
@@ -118,26 +119,26 @@ public class Distinct {
 	 */
 	public List<Album> compareRedisByAudio(List<AlbumPo> allist) {
 		List<Album> alls = new ArrayList<>();
-			audioService = (AudioService) SpringShell.getBean("audioService");
-			Iterator<AlbumPo> als = allist.iterator();
-			while (als.hasNext()) {
-				AlbumPo al = (AlbumPo) als.next();
-				List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
-				Iterator<AudioPo> aus = aulist.iterator();
-				while (aus.hasNext()) {
-					AudioPo au = (AudioPo) aus.next();
-					if (isOrNoCrawlerSrcRecord(au)) {
-						audioService.removeSameAudio(au.getId());
-						aus.remove();
-					}
-				}
-				if (aulist.size()>0) {
-					Album album = new Album();
-					album.setAlbumPo(al);
-					album.setAudiolist(aulist);
-					alls.add(album);
-				}
+		audioService = (AudioService) SpringShell.getBean("audioService");
+		Iterator<AlbumPo> als = allist.iterator();
+		while (als.hasNext()) {
+			AlbumPo al = (AlbumPo) als.next();
+			List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
+			Iterator<AudioPo> aus = aulist.iterator();
+			while (aus.hasNext()) {
+				AudioPo au = (AudioPo) aus.next();
+				if (isOrNoCrawlerSrcRecord(au)) {
+					audioService.removeSameAudio(au.getId());
+					aus.remove();
+				}				
 			}
+			if (aulist.size()>0) {
+				Album album = new Album();
+				album.setAlbumPo(al);
+				album.setAudiolist(aulist);
+				alls.add(album);
+			}
+		}
 		return alls;
 	}
 	
@@ -165,7 +166,7 @@ public class Distinct {
 							aus.remove();
 					}
 				}
-				if (aulist!=null&&aulist.size()>0)
+				if (aulist==null||aulist.size()==0)
 					als.remove();
 			}
 		}
@@ -214,6 +215,7 @@ public class Distinct {
 				AlbumPo al = allist.get(i);
 				SeqMediaAssetPo sma = compareAttribute.getSameSma(al);
 				if(sma!=null) {
+					logger.info("相似专辑抓取库_资源库", al.getAlbumName()+"_"+sma.getSmaTitle());
 					Map<String, Object> m = new HashMap<>();
 					m.put("album", al);
 					m.put("Sma", sma);
@@ -236,7 +238,6 @@ public class Distinct {
 					m.put("sameaudiolist", lm);
 					m.put("newaudiolist", la);
 					samelist.add(m);
-					System.out.println(al.getAlbumName()+"___"+sma.getSmaTitle());
 				}else{
 					newlist.add(al);
 				}
