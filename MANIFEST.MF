@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Implementation-Title: WtCrawler
+Implementation-Title: WtCrawlerHotSpot
 Implementation-Version: 0.0.1
 Archiver-Version: Plexus Archiver
 Built-By: wangbingqiong

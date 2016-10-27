@@ -211,11 +211,18 @@ public class Distinct {
 		List<Map<String, Object>> samelist = new ArrayList<>();
 		CompareAttribute compareAttribute = new CompareAttribute(crawlernum);
 		if(allist!=null&&allist.size()>0) {
+			int processnum = 0;
+			logger.info("相似专辑抓取进度[{}]%",0);
 			for (int i = 0; i < allist.size(); i++) {
+				int procnum = i*100/allist.size();
+				if(procnum!=processnum) {
+					logger.info("相似专辑抓取进度[{}]%",procnum);
+					processnum = procnum;
+				}
 				AlbumPo al = allist.get(i);
 				SeqMediaAssetPo sma = compareAttribute.getSameSma(al);
 				if(sma!=null) {
-					logger.info("相似专辑抓取库_资源库", al.getAlbumName()+"_"+sma.getSmaTitle());
+					logger.info("相似专辑抓取库_资源库[{}]", al.getAlbumName()+"_"+sma.getSmaTitle());
 					Map<String, Object> m = new HashMap<>();
 					m.put("album", al);
 					m.put("Sma", sma);
@@ -239,6 +246,7 @@ public class Distinct {
 					m.put("newaudiolist", la);
 					samelist.add(m);
 				}else{
+					logger.info("非相似专辑抓取库_资源库[{}]", al.getAlbumName()+"_"+al.getAlbumPublisher());
 					newlist.add(al);
 				}
 			}

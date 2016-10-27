@@ -208,8 +208,18 @@ public class MediaService {
 		return seqrefDao.getCount("getSeqMaNumBySid", sId);
 	}
 	
-	public List<MediaAssetPo> getMaBySmaId(String sId) {
-		return mediaAssetDao.queryForList("getMaBySmaId", sId);
+	public List<MediaAssetPo> getMaBySmaId(String sId, List<String> names) {
+		Map<String, Object> m = new HashMap<>();
+		List<String> ns = new ArrayList<>();
+		if (names!=null && names.size()>0) {
+			for (String str : names) {
+				str = "%"+str+"%";
+				ns.add(str);
+			}
+		}
+		m.put("list", ns);
+		m.put("sId", sId);
+		return mediaAssetDao.queryForList("getMaBySmaId", m);
 	}
 	
 	public List<MediaAssetPo> getMaByPublisher(String publisher, int page, int pagesize) {
@@ -234,5 +244,20 @@ public class MediaService {
 		m.put("page", page);
 		m.put("pagesize", pagesize);
 		return seqDao.queryForList("getSmaListByPublisher", m);
+	}
+	
+	public List<SeqMediaAssetPo> getSmaByNames(List<String> names,String publisher) {
+		Map<String, Object> m = new HashMap<>();
+		if (names!=null && names.size()>0) {
+			List<String> ns = new ArrayList<>();
+			for (String str : names) {
+				str = "%"+str+"%";
+				ns.add(str);
+			}
+			m.put("list", ns);
+			m.put("publisher", publisher);
+			return seqDao.queryForList("getSeqSameListByNames", m);
+		}
+		return null;
 	}
 }

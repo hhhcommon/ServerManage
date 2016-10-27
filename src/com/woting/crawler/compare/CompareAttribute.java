@@ -23,11 +23,10 @@ class CompareAttribute {
 		mediaService = (MediaService) SpringShell.getBean("mediaService");
 		int smanum = mediaService.getSmaNum(albumPo.getAlbumPublisher());
 		if (smanum > 0) {
-			for (int i = 0; i <= smanum / pagesize; i++) {
-				List<SeqMediaAssetPo> smalist = mediaService.getSmaByPublisher(albumPo.getAlbumPublisher(), i * pagesize, pagesize);
-				if (smalist != null && smalist.size() > 0) {
-					compareSmaTitle(albumPo, smalist, crawlernum);
-				}
+			List<String> names = SolrServer.getAnalysis(albumPo.getAlbumName());
+			List<SeqMediaAssetPo> smalist = mediaService.getSmaByNames(names, albumPo.getAlbumPublisher());
+			if (smalist != null && smalist.size() > 0) {
+				compareSmaTitle(albumPo, smalist, crawlernum);
 			}
 			String fstr = RedisUtils.getCompareMaxProportion(albumPo, crawlernum);
 			if (fstr == null || fstr.equals("null")) {
@@ -52,8 +51,9 @@ class CompareAttribute {
 	public MediaAssetPo getSameMa(AudioPo audioPo, SeqMediaAssetPo sma) {
 		mediaService = (MediaService) SpringShell.getBean("mediaService");
 		int manum = mediaService.getSeqMaNumBySid(sma.getId());
+		List<String> names = SolrServer.getAnalysis(audioPo.getAudioName());
 		if(manum>0) {
-			List<MediaAssetPo> malist = mediaService.getMaBySmaId(sma.getId());
+			List<MediaAssetPo> malist = mediaService.getMaBySmaId(sma.getId(),names);
 			if(malist!=null&&malist.size()>0) {
 				compareMaTitle(audioPo, malist, crawlernum);
 			}

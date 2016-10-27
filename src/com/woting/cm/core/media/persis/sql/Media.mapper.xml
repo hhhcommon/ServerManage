@@ -213,7 +213,7 @@
 		<result column="resId"         property="resId"         jdbcType="VARCHAR" />
 		<result column="playCount"     property="playCount"     jdbcType="VARCHAR" />
 		<result column="publisher"     property="publisher"     jdbcType="VARCHAR" />
-		<result column="cTime"         property="CTime"         jdbcType="TIMESTAMP" />
+		<result column="cTime"         property="cTime"         jdbcType="TIMESTAMP" />
 	</resultMap>
 	
 	<insert id="insertMediaPlayCount" parameterType="java.util.Map">
@@ -257,6 +257,14 @@
 		<foreach collection="list" item="list" index="index" separator=" or " >
 		smaTitle=#{list}
         </foreach>
+	</select>
+	
+	<select id="getSeqSameListByNames" parameterType="map" resultMap="seqMediaAssetMap">
+		select * from wt_SeqMediaAsset where
+		<foreach collection="list" item="list" index="index" separator=" or " >
+		smaTitle like #{list}
+        </foreach>
+        and smaPublisher=#{publisher}
 	</select>
 	
 	<select id="getMediaPlayCountLatest" parameterType="java.util.Map" resultMap="mediaplaycountmap">
@@ -328,10 +336,10 @@
 		select count(*) from wt_SeqMA_Ref where sId=#{sId,jdbcType=VARCHAR}
 	</select>
 	
-	<select id="getMaBySmaId" parameterType="java.lang.String" resultMap="mediaAssetMap">
-		select * from wt_MediaAsset where id in (select mId from wt_SeqMA_Ref where sId=#{sId,jdbcType=VARCHAR})
+	<select id="getMaBySmaId" parameterType="java.util.Map" resultMap="mediaAssetMap">
+		select * from (select * from wt_MediaAsset where id in (select mId from wt_SeqMA_Ref where sId=#{sId,jdbcType=VARCHAR})) ma where
+		<foreach collection="list" item="list" index="index" separator=" or ">
+		ma.maTitle like #{list}
+        </foreach>
 	</select>
-	
-	
-	
 </mapper>

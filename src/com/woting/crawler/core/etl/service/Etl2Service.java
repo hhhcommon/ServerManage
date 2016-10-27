@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bouncycastle.jce.provider.JDKDSASigner.noneDSA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -34,7 +33,6 @@ import com.woting.crawler.core.album.model.Album;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.core.audio.service.AudioService;
-import com.woting.crawler.core.dict.service.CrawlerDictService;
 import com.woting.crawler.core.etl.model.Etl2Process;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.utils.ConvertUtils;
@@ -64,7 +62,7 @@ public class Etl2Service {
 		dictService = (DictService) SpringShell.getBean("dictService");
 		chlist = channelService.getChannelList();
 		distinct = new Distinct();
-		
+
 		Map<String, Object> m = new HashMap<>();
 		// 删除本次抓取中间库里专辑和单体重复信息
 		distinct.removeSameAlbumAndAudio(etl2Process.getEtlnum());
@@ -81,10 +79,6 @@ public class Etl2Service {
 		m = distinct.compareCMByAlbum(newlist);
 		oldals.addAll((List<Album>) m.get("oldlist"));
 		newlist = (List<AlbumPo>) m.get("newlist"); // 待入库专辑列表
-		List<AlbumPo> ceshi = new ArrayList<>();
-		ceshi.add(newlist.get(1));
-		ceshi .add(newlist.get(2));
-		newlist=ceshi;
 		// 声音跟资源库对比
 		oldals = distinct.compareCMByAudio(oldals); // 专辑帮顶下的声音待入库
 		// 新增资源库已存在的专辑下级声音
@@ -264,20 +258,25 @@ public class Etl2Service {
 					logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}],专辑声音关系数量[{}]", malist.size(),
 							maslist.size(), dictreflist.size(), chalist.size(), seqreflist.size());
 					if (malist.size() > 0) {
-						// 往资源库插入声音数据
-						mediaService.insertMaList(malist);
-						// 往资源库插入资源与外部资源对照
-						resAssService.insertResOrgAssetList(resAss);
-						// 往资源库插入播放流数据
-						mediaService.insertMasList(maslist);
-						// 往资源库插入专辑声音关系表数据
-						mediaService.insertSeqRefList(seqreflist);
-						// 往资源库插入音频播放次数数据
-						mediaService.insertMediaPlayCountList(mecounts);
-						// 往字典关系表里插入内容分类关系数据
-						dictService.insertDictRefList(dictreflist);
-						// 往栏目发布表里插入发布信息
-						channelService.insertChannelAssetList(chalist);
+						try {
+							// 往资源库插入声音数据
+							mediaService.insertMaList(malist);
+							// 往资源库插入资源与外部资源对照
+							resAssService.insertResOrgAssetList(resAss);
+							// 往资源库插入播放流数据
+							mediaService.insertMasList(maslist);
+							// 往资源库插入专辑声音关系表数据
+							mediaService.insertSeqRefList(seqreflist);
+							// 往资源库插入音频播放次数数据
+							mediaService.insertMediaPlayCountList(mecounts);
+							// 往字典关系表里插入内容分类关系数据
+							dictService.insertDictRefList(dictreflist);
+							// 往栏目发布表里插入发布信息
+							channelService.insertChannelAssetList(chalist);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+
 					} else {
 						logger.info("已存在的相似专辑无最新下级声音资源");
 					}
