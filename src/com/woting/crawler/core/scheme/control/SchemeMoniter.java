@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.spiritdata.framework.core.cache.SystemCache;
+import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.scheme.crawlersrc.XMLY.crawler.XMLYCrawlerRedis;
@@ -70,7 +71,10 @@ public class SchemeMoniter extends Thread {
 			controller.start(Crawler.class, numberOfCrawlers);
 			controller.waitUntilFinish();
 			//写入抓取完成信息
-			RedisUtils.writeCrawlerFinishInfo(crawlernum);
+			Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
+			RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+			RedisUtils.writeCrawlerFinishInfo(rs, crawlernum);
+			rs.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

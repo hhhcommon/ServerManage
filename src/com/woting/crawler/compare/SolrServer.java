@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.spiritdata.framework.util.JsonUtils;
 import com.woting.crawler.scheme.utils.CleanDataUtils;
 import com.woting.crawler.scheme.utils.RedisUtils;
@@ -45,9 +46,9 @@ public class SolrServer {
 		return lstr;
 	}
 	
-	public static float getSameProportion(String srcname, Object o) {
+	public static float getSameProportion(RedisOperService rs, String srcname, Object o) {
 		List<String> n1 = getAnalysis(srcname);
-		List<String> n2 = RedisUtils.getSrcParticiple(o);
+		List<String> n2 = RedisUtils.getSrcParticiple(rs, o);
 		int num = 0;
 		for (String str1 : n1) {
 			for (String str2 : n2) {

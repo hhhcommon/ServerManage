@@ -6,7 +6,10 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
+import com.spiritdata.framework.core.cache.SystemCache;
+import com.spiritdata.framework.ext.spring.redis.RedisOperService;
+import com.woting.crawler.CrawlerConstants;
+import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.scheme.utils.HttpUtils;
 import com.woting.crawler.scheme.utils.RedisUtils;
 
@@ -89,7 +92,10 @@ public abstract class XMLYParseUtils {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		RedisUtils.addXMLYOriginalSeq(parseData.get("CrawlerNum") + "", parseData);
+		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
+		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+		RedisUtils.addXMLYOriginalSeq(rs, parseData.get("CrawlerNum") + "", parseData);
+		rs.close();
 	}
 
 	/**
@@ -203,7 +209,10 @@ public abstract class XMLYParseUtils {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		RedisUtils.addXMLYOriginalMa(parseData.get("CrawlerNum") + "", parseData);
+		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
+		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+		RedisUtils.addXMLYOriginalMa(rs, parseData.get("CrawlerNum") + "", parseData);
+		rs.close();
 	}
 
 	/**

@@ -9,15 +9,19 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.spiritdata.framework.core.cache.SystemCache;
+import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.spiritdata.framework.util.SpiritRandom;
 import com.woting.cm.core.media.persis.po.MediaAssetPo;
 import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
 import com.woting.cm.core.media.service.MediaService;
+import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.core.album.model.Album;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.album.service.AlbumService;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.core.audio.service.AudioService;
+import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.utils.RedisUtils;
 
@@ -27,6 +31,12 @@ public class Distinct {
 	private AlbumService albumService;
 	private AudioService audioService;
 	private MediaService mediaService;
+	private RedisOperService rs;
+	
+	public Distinct() {
+		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
+		rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+	}
 
 	/**
 	 * 删除本次抓取中间库里专辑和单体重复信息
@@ -98,7 +108,7 @@ public class Distinct {
 		Iterator<AlbumPo> als = allist.iterator();
 		while (als.hasNext()) {
 			AlbumPo al= (AlbumPo) als.next();
-			if(isOrNoCrawlerSrcRecord(al)) {
+			if(isOrNoCrawlerSrcRecord(rs, al)) {
 				oldlist.add(al);
 				als.remove();
 			}
@@ -127,7 +137,7 @@ public class Distinct {
 			Iterator<AudioPo> aus = aulist.iterator();
 			while (aus.hasNext()) {
 				AudioPo au = (AudioPo) aus.next();
-				if (isOrNoCrawlerSrcRecord(au)) {
+				if (isOrNoCrawlerSrcRecord(rs, au)) {
 					audioService.removeSameAudio(au.getId());
 					aus.remove();
 				}				
@@ -262,15 +272,15 @@ public class Distinct {
 	 * @param o
 	 * @return
 	 */
-	private boolean isOrNoCrawlerSrcRecord(Object o){
+	private boolean isOrNoCrawlerSrcRecord(RedisOperService rs, Object o){
 		if (o!=null) {
 			if(o instanceof AlbumPo) {
 				AlbumPo al = (AlbumPo) o;
-				return RedisUtils.isOrNoCrawlerSrcRecordExist(al.getAlbumName()+al.getAlbumPublisher());
+				return RedisUtils.isOrNoCrawlerSrcRecordExist(rs, al.getAlbumName()+al.getAlbumPublisher());
 			}
 			if(o instanceof AudioPo) {
 				AudioPo au = (AudioPo) o;
-				return RedisUtils.isOrNoCrawlerSrcRecordExist(au.getAudioURL());
+				return RedisUtils.isOrNoCrawlerSrcRecordExist(rs, au.getAudioURL());
 			}
 		}
 		return false;

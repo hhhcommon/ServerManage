@@ -7,7 +7,6 @@ import java.util.Random;
 import com.spiritdata.framework.core.cache.SystemCache;
 import com.spiritdata.framework.util.SpiritRandom;
 import com.woting.crawler.CrawlerConstants;
-import com.woting.crawler.scheme.crawlersrc.KL.crawler.KLParseUtils;
 import com.woting.crawler.scheme.crawlersrc.QT.crawler.QTParseUtils;
 import com.woting.crawler.scheme.crawlersrc.XMLY.crawler.XMLYParseUtils;
 
@@ -49,7 +48,7 @@ public class Crawler extends WebCrawler {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    	String url = page.getWebURL().getURL().trim();;
+    	String url = page.getWebURL().getURL().trim();
     	reloadUrl(url, page.getContentData(), crawlernum);
 	}
 	
@@ -60,8 +59,8 @@ public class Crawler extends WebCrawler {
     	parseData.put("visitUrl", url);
     	switch(pageType){
     	case 0: break;
-    	case 1: KLParseUtils.parseAlbum(htmlByteArray, parseData);break;
-    	case 2: KLParseUtils.parseSond(htmlByteArray, parseData);break;
+//    	case 1: KLParseUtils.parseAlbum(htmlByteArray, parseData);break;
+//    	case 2: KLParseUtils.parseSond(htmlByteArray, parseData);break;
     	case 3: QTParseUtils.parseQTResourceIdAndCategoryId(htmlByteArray, parseData);break;
     	case 4: QTParseUtils.parseAlbum(htmlByteArray, parseData);break;
     	case 5: XMLYParseUtils.parseAlbum(htmlByteArray, parseData);break;

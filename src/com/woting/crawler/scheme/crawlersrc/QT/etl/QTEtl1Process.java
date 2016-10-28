@@ -6,7 +6,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.spiritdata.framework.core.cache.SystemCache;
+import com.spiritdata.framework.ext.spring.redis.RedisOperService;
+import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.core.etl.model.Etl1Process;
+import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.scheme.utils.ConvertUtils;
 import com.woting.crawler.scheme.utils.RedisUtils;
 
@@ -20,15 +24,19 @@ public class QTEtl1Process {
 	private long begintime;
 
 	public QTEtl1Process(Etl1Process etl1Process) {
+		
 		begintime = System.currentTimeMillis();
 //		this.etl1Process = etl1Process;
-		catemap = RedisUtils.getOrigData("QT_ResourceIdAndCategoryId_" + etl1Process.getEtlnum());
-		albumlist = RedisUtils.getOrigDataList("QT_Album_" + etl1Process.getEtlnum());
-		audiolist = RedisUtils.getOrigDataList("QT_Audio_" + etl1Process.getEtlnum());
+		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
+		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+		catemap = RedisUtils.getOrigData(rs,"QT_ResourceIdAndCategoryId_" + etl1Process.getEtlnum());
+		albumlist = RedisUtils.getOrigDataList(rs, "QT_Album_" + etl1Process.getEtlnum());
+		audiolist = RedisUtils.getOrigDataList(rs, "QT_Audio_" + etl1Process.getEtlnum());
 		if (catemap == null || albumlist == null || audiolist == null)
 			loadOk = false;
 		logger.info("蜻蜓第一次转换加载Redis数据是否成功[{}]", loadOk);
 		logger.info("蜻蜓第一次加载Redis数据耗时[{}]秒", (System.currentTimeMillis() - begintime) / 1000);
+		rs.close();
 	}
 
 	public Map<String, Object> makeQTOrigDataList() {

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import com.spiritdata.framework.core.cache.CacheEle;
 import com.spiritdata.framework.core.cache.SystemCache;
+import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.compare.CrawlerSrcRecord;
 import com.woting.crawler.core.etl.control.Etl1Controller;
@@ -26,22 +27,26 @@ public class CrawlerSrcTimerJob implements Job {
 		long begtime = System.currentTimeMillis();
 		// 加载抓取方案
 		Scheme scheme = new Scheme("");
+		if (scheme!=null) {
+			SystemCache.setCache(new CacheEle<Scheme>(CrawlerConstants.SCHEME, "抓取计划", scheme));
+		}
 		String crawlernum = scheme.getSchemenum();
-		while (RedisUtils.isOrNoCrawlerFinish(crawlernum)) {
+		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(),1);
+		while (RedisUtils.isOrNoCrawlerFinish(rs,crawlernum)) {
 			logger.info("开始判断redis里是否存在当前抓取序号[{}]是否已存在", crawlernum);
 			logger.info("抓取序号[{}]已存在", crawlernum);
 			int num = Integer.valueOf(crawlernum) + 1;
 			crawlernum = num + "";
 			logger.info("验证抓取序号[{}]是否存在", crawlernum);
 		}
+		rs.close();
 		logger.info("抓取序号[{}]不存在", crawlernum);
 		logger.info("开始进行序号为[{}]抓取", crawlernum);
 		scheme.setSchemenum(crawlernum);
 		SystemCache.setCache(new CacheEle<String>(CrawlerConstants.CRAWLERNUM, "抓取序号", crawlernum));
-
 		CrawlerSrcRecord srcRecord = new CrawlerSrcRecord(crawlernum);
 		srcRecord.reloadCrawlerInfo();
-
+		
 		// 开始抓取数据
 		SchemeController sc = new SchemeController(scheme);
 		sc.runningScheme();
@@ -59,6 +64,7 @@ public class CrawlerSrcTimerJob implements Job {
 		etl2.runningScheme();
 		
 		logger.info("第[{}]次抓取完成,耗时[{}]", scheme.getSchemenum(), System.currentTimeMillis()-begtime);
+		scheme.getRedisOperService().close();
 	}
 
 }

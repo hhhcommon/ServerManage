@@ -12,4 +12,6 @@ public class CrawlerConstants {
     public final static String CM_DICT="Cm-Dict";//字典内容
     
     public final static String CRAWLERNUM ="crawlernum";//抓取序号
+    
+    public final static String SCHEME = "scheme";
 }

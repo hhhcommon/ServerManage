@@ -1,11 +1,15 @@
 package com.woting.crawler.core.etl.control;
 
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.spiritdata.framework.core.cache.SystemCache;
+import com.spiritdata.framework.ext.spring.redis.RedisOperService;
+import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.core.etl.model.Etl1Process;
 import com.woting.crawler.core.etl.service.Etl1Service;
+import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.crawlersrc.QT.etl.QTEtl1Process;
 import com.woting.crawler.scheme.crawlersrc.XMLY.etl.XMLYEtl1Process;
@@ -22,13 +26,16 @@ public class Etl1Controller {
 	}
 	
 	public void runningScheme() {
-		while(etl1Process!=null && !RedisUtils.isOrNoCrawlerFinish(etl1Process.getEtlnum())){
+		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
+		RedisOperService rs = scheme.getRedisOperService();
+		while(etl1Process!=null && !RedisUtils.isOrNoCrawlerFinish(rs, etl1Process.getEtlnum())){
 			try {
 				logger.info("等待抓取完成");
-				RedisUtils.waitCrawlerFinish(etl1Process.getEtlnum());
+				RedisUtils.waitCrawlerFinish(rs, etl1Process.getEtlnum());
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {e.printStackTrace();}
 		}
+		rs.close();
 		Map<String, Object> qtm =  new QTEtl1Process(etl1Process).makeQTOrigDataList();
 		Map<String, Object> xmlym = new XMLYEtl1Process(etl1Process).makeXMLYOrigDataList();
 		logger.info("蜻蜓FM抓取数据第一次转换数据存放中间库中");
@@ -38,6 +45,6 @@ public class Etl1Controller {
 		etl1Service.insertSqlAlbumAndAudio(xmlym);
 		logger.info("喜马拉雅FM抓取数据第一次转换完成");
 		etl1Service.removeNull();
-		RedisUtils.writeEtl1Finish(etl1Process.getEtlnum(), "");
+		RedisUtils.writeEtl1Finish(rs, etl1Process.getEtlnum(), "");
 	}
 }

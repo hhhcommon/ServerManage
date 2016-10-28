@@ -36,11 +36,13 @@ Class-Path: runlib/spring-boot-starter-1.3.2.RELEASE.jar runlib/spring
  nlib/xml-apis-1.3.03.jar runlib/boilerpipe-1.1.0.jar runlib/rome-0.9.
  jar runlib/jdom-1.0.jar runlib/vorbis-java-core-0.1.jar runlib/junive
  rsalchardet-1.0.3.jar runlib/jhighlight-1.0.jar runlib/jsoup-1.9.2.ja
- r runlib/commons-io-2.4.jar runlib/BasicPlat-0.1.0.10.jar runlib/comm
+ r runlib/commons-io-2.4.jar runlib/BasicPlat-0.1.0.11.jar runlib/comm
  ons-pool2-2.4.2.jar runlib/jedis-2.6.2.jar runlib/pinyin4j-2.5.0.jar r
  unlib/commons-lang3-3.3.2.jar runlib/quartz-2.2.3.jar runlib/solr-core
  -4.3.1.jar runlib/solr-solrj-4.3.1.jar runlib/httpmime-4.5.1.jar runlib/
- noggit-0.5.jar
+ noggit-0.5.jar runlib/spring-data-commons-1.11.2.RELEASE.jar runlib/spri
+ ng-data-keyvalue-1.0.2RELEASE.jar runlib/spring-data-redis-1.7.4.RELEASE
+ .jar runlib/spring-oxm-4.2.4.RELEASE.jar
 Created-By: Apache Maven 3.1.1
 Build-Jdk: 1.8.0_66
 Implementation-Vendor: Pivotal Software, Inc.

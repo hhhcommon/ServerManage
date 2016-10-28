@@ -2,12 +2,11 @@ package com.woting.crawler.scheme.crawlersrc.XMLY.crawler;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
+import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.scheme.utils.RedisUtils;
 
@@ -35,7 +34,9 @@ public class XMLYCrawlerRedis extends Thread {
 					catemap.put(catename, cateid);
 				}
 				if (catemap != null) {
-					RedisUtils.addXMLYCategory(scheme.getSchemenum(), catemap);
+					RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+					RedisUtils.addXMLYCategory(rs, scheme.getSchemenum(), catemap);
+					rs.close();
 				}
 			}
 		} catch (Exception e) {

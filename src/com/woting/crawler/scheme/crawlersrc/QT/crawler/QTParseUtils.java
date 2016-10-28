@@ -7,7 +7,12 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import com.spiritdata.framework.core.cache.SystemCache;
+import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.spiritdata.framework.util.JsonUtils;
+import com.woting.crawler.CrawlerConstants;
+import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.scheme.utils.HttpUtils;
 import com.woting.crawler.scheme.utils.RedisUtils;
 
@@ -46,9 +51,11 @@ public class QTParseUtils {
 			}
 		} catch (Exception e) {e.printStackTrace();}
 //		int num = 0;
+		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
+		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
 		try {
 			els = doc.select("li[class=playable clearfix]");
-			if(els!=null&&!els.isEmpty()){
+			if(els!=null&&!els.isEmpty()) {
 				for (Element e : els) {
 					String jsonstr = e.attr("data-play-info");
 					jsonstr = HttpUtils.getTextByDispose(jsonstr);
@@ -81,9 +88,9 @@ public class QTParseUtils {
 						Map<String, Object> m = l.get(0);
 						pDate.put("playCount",m.get("playcount"));
 					}
-					RedisUtils.addQTAudio(parseData.get("CrawlerNum")+"", pDate);
+					RedisUtils.addQTAudio(rs, parseData.get("CrawlerNum")+"", pDate);
 //					num++;
-//					if(num==2){
+//					if(num==10){
 //						num=0;
 //						break;
 //					}
@@ -101,8 +108,11 @@ public class QTParseUtils {
 				Map<String, Object> m = l.get(0);
 				parseData.put("playCount",m.get("playcount"));
 			}
-			RedisUtils.addQTAlbum(parseData.get("CrawlerNum")+"", parseData);
+			RedisUtils.addQTAlbum(rs, parseData.get("CrawlerNum")+"", parseData);
 		} catch (Exception e) {e.printStackTrace();}
+		finally {
+			rs.close();
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -130,6 +140,9 @@ public class QTParseUtils {
 				}
 			}
 		} catch (Exception e) {e.printStackTrace();}
-		RedisUtils.addQTCategory(parseData.get("CrawlerNum")+"", map);
+		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
+		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+		RedisUtils.addQTCategory(rs, parseData.get("CrawlerNum")+"", map);
+		rs.close();
 	}
 }

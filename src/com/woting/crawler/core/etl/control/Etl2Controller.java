@@ -2,8 +2,13 @@ package com.woting.crawler.core.etl.control;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.spiritdata.framework.core.cache.SystemCache;
+import com.spiritdata.framework.ext.spring.redis.RedisOperService;
+import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.core.etl.model.Etl2Process;
 import com.woting.crawler.core.etl.service.Etl2Service;
+import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.utils.RedisUtils;
 
@@ -18,7 +23,9 @@ public class Etl2Controller {
 	}
 
 	public void runningScheme() {
-		while (etl2Process != null && !RedisUtils.isOrNoEtl1Finish(etl2Process.getEtlnum())) {
+		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
+		RedisOperService rs = scheme.getRedisOperService();
+		while (etl2Process != null && !RedisUtils.isOrNoEtl1Finish(rs, etl2Process.getEtlnum())) {
 			try {
 				logger.info("等待抓取完成");
 				Thread.sleep(5000);
