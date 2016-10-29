@@ -69,7 +69,10 @@ public class AudioService {
 		m.put("publisher", publisher);
 		m.put("crawlerNum", num);
 		List<AudioPo> list = audioDao.queryForList("getAudioByAlbumIdAndPublisher", m);
-		return list;
+		if (list!=null && list.size()>0) {
+			return list;
+		}
+		return null;
 	}
 	
 	public List<AudioPo> getAudioListById(String id) {

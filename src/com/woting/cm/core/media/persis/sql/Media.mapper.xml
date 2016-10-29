@@ -300,8 +300,8 @@
 		select<include refid="Base_SequMedia_List" />from wt_SeqMediaAsset limit 1,500
 	</select>
 
-	<select id="getMaSameList" parameterType="java.lang.String" resultMap="mediaAssetMap">
-		select * from wt_MediaAsset where maURL=#{maURLs,jdbcType=VARCHAR}
+	<select id="getMaSameList" parameterType="java.util.Map" resultMap="mediaAssetMap">
+		select * from wt_MediaAsset where maURL=#{maURL,jdbcType=VARCHAR}  or (maTitle=#{maTitle,jdbcType=VARCHAR} and maPublisher=#{maPublisher,jdbcType=VARCHAR})
 	</select>
 	
 	<select id="getInfoById" parameterType="java.lang.String" resultMap="mediaAssetMap">

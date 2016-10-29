@@ -1,6 +1,7 @@
 package com.woting.crawler.scheme.crawlerplaynum.XMLY;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.jsoup.Jsoup;
@@ -45,7 +46,6 @@ public class XMLYPlayNumCrawler {
 						doc = Jsoup.connect(url).ignoreContentType(true).timeout(10000).get();
 						if (doc != null) {
 							String alstr = doc.body().html();
-//							alstr = StringEscapeUtils.unescapeHtml4(alstr);
 							Map<String, Object> m = null;
 							try {
 								m = (Map<String, Object>) JsonUtils.jsonToObj(alstr, Map.class);
@@ -54,7 +54,11 @@ public class XMLYPlayNumCrawler {
 							}
 							Map<String, Object> album = (Map<String, Object>) ((Map<String, Object>) m.get("data")).get("album");
 							String tracks = "";
-							if (album != null) {
+							Map<String, Object> mp = new HashMap<>();
+							mp.put("resId", resass.getResId());
+							mp.put("resTableName",resass.getResTableName());
+							mp.put("playCount", album.get("playTimes") + "");
+							if (album != null && mediaService.getMediaPlayCount(mp)!=null) {
 								MediaPlayCountPo mpc = new MediaPlayCountPo();
 								mpc.setId(SequenceUUID.getPureUUID());
 								mpc.setResTableName(resass.getResTableName());
@@ -69,7 +73,6 @@ public class XMLYPlayNumCrawler {
 							doc = Jsoup.connect(url).ignoreContentType(true).timeout(10000).get();
 							if (doc != null) {
 								alstr = doc.body().html();
-//								alstr = StringEscapeUtils.unescapeHtml4(alstr);
 								FileUtils.writeFile(alstr, SystemCache.getCache(CrawlerConstants.APP_PATH).getContent() + "XMLYCrawlerInfo/" + albumId + "/" + TimeUtils.getNowTime() + ".txt");
 							}
 						}

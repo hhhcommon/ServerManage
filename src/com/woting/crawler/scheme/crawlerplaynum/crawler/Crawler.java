@@ -31,23 +31,23 @@ public class Crawler {
 		Map<String, Object> m = new HashMap<>();
 		int num = resAssService.getResOrgAssetNum();
 		m.put("num", num);
+		int count = 1;
 		if (num > 0) {
 			for (int i = 0; i <= num / pagesize; i++) {
 				try {
 					Thread.sleep(SpiritRandom.getRandom(new Random(), 10, 20));
-				} catch (Exception e) {}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 				List<ResOrgAssetPo> resAss = resAssService.getResOrgAssetList(i * pagesize, pagesize);
 				logger.info("第[{}]次获取资源与外不资源对照列表数[{}]", i+1, resAss.size());
 				if (resAss != null && resAss.size() > 0) {
 					for (ResOrgAssetPo resass : resAss) {
-						if (resass.getOrgName().equals("喜马拉雅")) {
-							xmlyPlayNumCrawler.parseSmaPlayNum(resass);
-						}
+//						if (resass.getOrgName().equals("喜马拉雅")) {
+//							xmlyPlayNumCrawler.parseSmaPlayNum(resass);
+//						}
 						if (resass.getOrgName().equals("蜻蜓")) {
 							qtPlayNumCrawler.parsePlayNum(resass);
-						}
-						if (resass.getOrgName().equals("考拉")) {
-
 						}
 					}
 				}

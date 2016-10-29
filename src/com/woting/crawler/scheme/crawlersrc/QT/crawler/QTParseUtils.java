@@ -37,7 +37,7 @@ public class QTParseUtils {
 		//专辑封面
 		try {
 			els = doc.select("div[class=channel-info clearfix]");
-			if(els!=null && !els.isEmpty()){
+			if(els!=null && !els.isEmpty()) {
 				el = els.get(0).select("img").get(0);
 				parseData.put("albumImg", el.attr("src"));
 			}
@@ -45,7 +45,7 @@ public class QTParseUtils {
 		//专辑简介
 		try {
 			els = doc.select("div[class=abstract clearfix]").select("div[class=content]");
-			if(els!=null && !els.isEmpty()){
+			if(els!=null && !els.isEmpty()) {
 				el = els.get(0);
 				parseData.put("descript", HttpUtils.getTextByDispose(el.html()));
 			}

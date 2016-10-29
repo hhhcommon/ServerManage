@@ -152,10 +152,9 @@ public class MediaService {
 		return mediaAssetDao.getInfoObject("getInfoById", id);
 	}
 	
-	public MediaPlayCountPo getMediaPlayCount(String resId, String resTableName) {
-		Map<String, Object> m = new HashMap<>();
-		m.put("resId", resId);
-		m.put("resTableName", resTableName);
+	public MediaPlayCountPo getMediaPlayCount(Map<String, Object> m) {
+//		m.put("resId", resId);
+//		m.put("resTableName", resTableName);
 		List<MediaPlayCountPo> mplays = mediaplaycountDao.queryForList("getMediaPlayCountLatest", m);
 		if(mplays!=null && mplays.size()>0) 
 			return mplays.get(0);
@@ -195,8 +194,12 @@ public class MediaService {
 		mediaplaycountDao.insert("insertMediaPlayCount", mpc);
 	}
 	
-	public List<MediaAssetPo> getMaSameList(String maURLs) {
-		List<MediaAssetPo> malist = mediaAssetDao.queryForList("getMaSameList", maURLs);
+	public List<MediaAssetPo> getMaSameList(String maURL, String maTitle, String maPublisher) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("maURL", maURL);
+		m.put("maTitle", maTitle);
+		m.put("maPublisher", maPublisher);
+		List<MediaAssetPo> malist = mediaAssetDao.queryForList("getMaSameList", m);
 		return malist;
 	}
 

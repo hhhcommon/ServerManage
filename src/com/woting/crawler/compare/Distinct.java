@@ -171,7 +171,7 @@ public class Distinct {
 							Thread.sleep(SpiritRandom.getRandom(new Random(), 10, 20));
 						} catch (Exception e) {}
 						AudioPo au = (AudioPo) aus.next();
-						List<MediaAssetPo> mes = mediaService.getMaSameList(au.getAudioURL());
+						List<MediaAssetPo> mes = mediaService.getMaSameList(au.getAudioURL(),au.getAudioName(),au.getAudioPublisher());
 						if (mes!=null&&mes.size()>0)
 							aus.remove();
 					}
