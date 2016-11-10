@@ -26,6 +26,6 @@ public class Crawler {
 	private void startCrawlerCategory() {
 		new QTCrawler().start();
 		new XMLYCrawler().start();
-		new KLCrawler().start();
+//		new KLCrawler().start();
 	}
 }

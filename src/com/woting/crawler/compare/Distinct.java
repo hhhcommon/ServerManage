@@ -32,7 +32,7 @@ public class Distinct {
 	private AudioService audioService;
 	private MediaService mediaService;
 	private RedisOperService rs;
-	
+
 	public Distinct() {
 		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
 		rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
@@ -52,7 +52,8 @@ public class Distinct {
 			String albumstr = "";
 			for (AlbumPo al : allist) {
 				if (albumstr.contains(al.getAlbumName() + al.getAlbumPublisher())) {
-					logger.info("查出抓取到相同专辑[{}]", al.getAlbumName() + "_" + al.getAlbumPublisher() + "_" + al.getAlbumId());
+					logger.info("查出抓取到相同专辑[{}]",
+							al.getAlbumName() + "_" + al.getAlbumPublisher() + "_" + al.getAlbumId());
 					logger.info("进行删除查询到相同专辑下级单体");
 					audioService.removeSameAudio(al.getAlbumId(), al.getAlbumPublisher(), crawlernum);
 					albumService.removeSameAlbum(al.getAlbumId(), al.getAlbumPublisher(), crawlernum);
@@ -66,27 +67,28 @@ public class Distinct {
 			for (int i = 0; i < num / 1000 + 1; i++) {
 				List<AudioPo> aulist = audioService.getAudioList(i * pagesize, pagesize, crawlernum);
 				for (AudioPo au : aulist) {
-					if(audiostr.contains(au.getAudioName()+au.getAudioPublisher())){
+					if (audiostr.contains(au.getAudioName() + au.getAudioPublisher())) {
 						logger.info("查出抓取到的相同声音[{}]", au.getAudioName() + "_" + au.getAudioPublisher());
 						audioService.removeSameAudio(au.getId());
 					}
-					audiostr += au.getAudioName()+au.getAudioPublisher();
+					audiostr += au.getAudioName() + au.getAudioPublisher();
 				}
 			}
 		}
 	}
-	
+
 	/**
 	 * 删除中间库无下级的专辑信息
+	 * 
 	 * @param crawlernum
 	 */
 	public void removeAlbumNoAudio(String crawlernum) {
 		albumService = (AlbumService) SpringShell.getBean("albumService");
 		audioService = (AudioService) SpringShell.getBean("audioService");
 		List<AlbumPo> allist = albumService.getAlbumList(crawlernum);
-		if(allist!=null&&allist.size()>0) {
+		if (allist != null && allist.size() > 0) {
 			for (AlbumPo al : allist) {
-				if(audioService.countNumByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), crawlernum)==0) {
+				if (audioService.countNumByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), crawlernum) == 0) {
 					logger.info("查询到无下级声音的专辑[{}]", al.getAlbumName() + "_" + al.getAlbumPublisher());
 					albumService.removeSameAlbum(al.getAlbumId(), al.getAlbumPublisher(), crawlernum);
 				}
@@ -107,15 +109,15 @@ public class Distinct {
 		List<AlbumPo> allist = albumService.getAlbumList(crawlernum);
 		Iterator<AlbumPo> als = allist.iterator();
 		while (als.hasNext()) {
-			AlbumPo al= (AlbumPo) als.next();
-			if(isOrNoCrawlerSrcRecord(rs, al)) {
+			AlbumPo al = (AlbumPo) als.next();
+			if (isOrNoCrawlerSrcRecord(rs, al)) {
 				oldlist.add(al);
 				als.remove();
 			}
 		}
 		logger.info("Redis快照不存在专辑数目[{}]", allist.size());
 		logger.info("Redis快照存在专辑数目[{}]", oldlist.size());
-		
+
 		Map<String, Object> m = new HashMap<String, Object>();
 		m.put("oldlist", oldlist); // 本次次抓取与Redis快照对比已存在专辑列表
 		m.put("newlist", allist); // 本次抓取新增专辑列表
@@ -134,26 +136,29 @@ public class Distinct {
 		while (als.hasNext()) {
 			AlbumPo al = (AlbumPo) als.next();
 			List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
-			Iterator<AudioPo> aus = aulist.iterator();
-			while (aus.hasNext()) {
-				AudioPo au = (AudioPo) aus.next();
-				if (isOrNoCrawlerSrcRecord(rs, au)) {
-					audioService.removeSameAudio(au.getId());
-					aus.remove();
-				}				
-			}
-			if (aulist.size()>0) {
-				Album album = new Album();
-				album.setAlbumPo(al);
-				album.setAudiolist(aulist);
-				alls.add(album);
+			if (aulist != null && aulist.size() > 0) {
+				Iterator<AudioPo> aus = aulist.iterator();
+				while (aus.hasNext()) {
+					AudioPo au = (AudioPo) aus.next();
+					if (isOrNoCrawlerSrcRecord(rs, au)) {
+						audioService.removeSameAudio(au.getId());
+						aus.remove();
+					}
+				}
+				if (aulist.size() > 0) {
+					Album album = new Album();
+					album.setAlbumPo(al);
+					album.setAudiolist(aulist);
+					alls.add(album);
+				}
 			}
 		}
 		return alls;
 	}
-	
+
 	/**
 	 * 声音跟资源库对比
+	 * 
 	 * @param aulist
 	 * @return
 	 */
@@ -169,38 +174,42 @@ public class Distinct {
 					while (aus.hasNext()) {
 						try {
 							Thread.sleep(SpiritRandom.getRandom(new Random(), 10, 20));
-						} catch (Exception e) {}
+						} catch (Exception e) {
+						}
 						AudioPo au = (AudioPo) aus.next();
-						List<MediaAssetPo> mes = mediaService.getMaSameList(au.getAudioURL(),au.getAudioName(),au.getAudioPublisher());
-						if (mes!=null&&mes.size()>0)
+						List<MediaAssetPo> mes = mediaService.getMaSameList(au.getAudioURL(), au.getAudioName(),
+								au.getAudioPublisher());
+						if (mes != null && mes.size() > 0)
 							aus.remove();
 					}
 				}
-				if (aulist==null||aulist.size()==0)
+				if (aulist == null || aulist.size() == 0)
 					als.remove();
 			}
 		}
 		return allist;
 	}
-	
+
 	/**
 	 * 专辑与资源库对比
+	 * 
 	 * @param allist
 	 * @return
 	 */
-	public Map<String, Object> compareCMByAlbum(List<AlbumPo> allist){
+	public Map<String, Object> compareCMByAlbum(List<AlbumPo> allist) {
 		List<Album> oldlist = new ArrayList<>();
 		audioService = (AudioService) SpringShell.getBean("audioService");
 		mediaService = (MediaService) SpringShell.getBean("mediaService");
-		if(allist!=null&&allist.size()>0) {
+		if (allist != null && allist.size() > 0) {
 			Iterator<AlbumPo> als = allist.iterator();
 			while (als.hasNext()) {
 				AlbumPo al = (AlbumPo) als.next();
 				List<SeqMediaAssetPo> smalist = mediaService.getSeqInfo(al.getAlbumName(), al.getAlbumPublisher());
-				if (smalist!=null&&smalist.size()>0) {
-					logger.info("资源库存在专辑[{}]", al.getAlbumName()+"_"+al.getAlbumPublisher());
+				if (smalist != null && smalist.size() > 0) {
+					logger.info("资源库存在专辑[{}]", al.getAlbumName() + "_" + al.getAlbumPublisher());
 					Album album = new Album();
-					List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
+					List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(),
+							al.getCrawlerNum());
 					album.setAlbumPo(al);
 					album.setAudiolist(aulist);
 					oldlist.add(album);
@@ -213,50 +222,51 @@ public class Distinct {
 		m.put("newlist", allist); // 本次抓取新增专辑列表
 		return m;
 	}
-	
-	public Map<String, Object> comparePublisherSrc(List<AlbumPo> allist, String crawlernum){
+
+	public Map<String, Object> comparePublisherSrc(List<AlbumPo> allist, String crawlernum) {
 		audioService = (AudioService) SpringShell.getBean("audioService");
 		mediaService = (MediaService) SpringShell.getBean("mediaService");
 		List<AlbumPo> newlist = new ArrayList<>();
 		List<Map<String, Object>> samelist = new ArrayList<>();
 		CompareAttribute compareAttribute = new CompareAttribute(crawlernum);
-		if(allist!=null&&allist.size()>0) {
+		if (allist != null && allist.size() > 0) {
 			int processnum = 0;
-			logger.info("相似专辑抓取进度[{}]%",0);
+			logger.info("相似专辑抓取进度[{}]%", 0);
 			for (int i = 0; i < allist.size(); i++) {
-				int procnum = i*100/allist.size();
-				if(procnum!=processnum) {
-					logger.info("相似专辑抓取进度[{}]%",procnum);
+				int procnum = i * 100 / allist.size();
+				if (procnum != processnum) {
+					logger.info("相似专辑抓取进度[{}]%", procnum);
 					processnum = procnum;
 				}
 				AlbumPo al = allist.get(i);
 				SeqMediaAssetPo sma = compareAttribute.getSameSma(al);
-				if(sma!=null) {
-					logger.info("相似专辑抓取库_资源库[{}]", al.getAlbumName()+"_"+sma.getSmaTitle());
+				if (sma != null) {
+					logger.info("相似专辑抓取库_资源库[{}]", al.getAlbumName() + "_" + sma.getSmaTitle());
 					Map<String, Object> m = new HashMap<>();
 					m.put("album", al);
 					m.put("Sma", sma);
-					List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
+					List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(),
+							al.getCrawlerNum());
 					List<Map<String, Object>> lm = new ArrayList<>();
 					List<AudioPo> la = new ArrayList<>();
-					if(aulist!=null&&aulist.size()>0) {
+					if (aulist != null && aulist.size() > 0) {
 						for (int j = 0; j < aulist.size(); j++) {
 							AudioPo au = aulist.get(j);
 							MediaAssetPo ma = compareAttribute.getSameMa(au, sma);
-							if(ma!=null) {
+							if (ma != null) {
 								Map<String, Object> mm = new HashMap<>();
 								mm.put("audio", au);
 								mm.put("ma", ma);
 								lm.add(mm);
-							}else
+							} else
 								la.add(au);
 						}
 					}
 					m.put("sameaudiolist", lm);
 					m.put("newaudiolist", la);
 					samelist.add(m);
-				}else{
-					logger.info("非相似专辑抓取库_资源库[{}]", al.getAlbumName()+"_"+al.getAlbumPublisher());
+				} else {
+					logger.info("非相似专辑抓取库_资源库[{}]", al.getAlbumName() + "_" + al.getAlbumPublisher());
 					newlist.add(al);
 				}
 			}
@@ -269,16 +279,17 @@ public class Distinct {
 
 	/**
 	 * 判断抓取数据快照是否存在
+	 * 
 	 * @param o
 	 * @return
 	 */
-	private boolean isOrNoCrawlerSrcRecord(RedisOperService rs, Object o){
-		if (o!=null) {
-			if(o instanceof AlbumPo) {
+	private boolean isOrNoCrawlerSrcRecord(RedisOperService rs, Object o) {
+		if (o != null) {
+			if (o instanceof AlbumPo) {
 				AlbumPo al = (AlbumPo) o;
-				return RedisUtils.isOrNoCrawlerSrcRecordExist(rs, al.getAlbumName()+al.getAlbumPublisher());
+				return RedisUtils.isOrNoCrawlerSrcRecordExist(rs, al.getAlbumName() + al.getAlbumPublisher());
 			}
-			if(o instanceof AudioPo) {
+			if (o instanceof AudioPo) {
 				AudioPo au = (AudioPo) o;
 				return RedisUtils.isOrNoCrawlerSrcRecordExist(rs, au.getAudioURL());
 			}

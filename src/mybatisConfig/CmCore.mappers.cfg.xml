@@ -16,6 +16,8 @@
     <typeAlias alias="mediaplaycount" type="com.woting.cm.core.media.persis.po.MediaPlayCountPo"/>
     <typeAlias alias="organize"       type="com.woting.cm.core.perimeter.persis.po.OrganizePo"/>
     <typeAlias alias="resorgasset"    type="com.woting.cm.core.ResOrgAsset.persis.po.ResOrgAssetPo"/>
+    <typeAlias alias="keyword"        type="com.woting.cm.core.keyword.persis.po.KeyWordPo"/>
+    <typeAlias alias="kwres"          type="com.woting.cm.core.keyword.persis.po.KwResPo"/>
   </typeAliases>
   <!-- SQL文件设置 -->
   <mappers>
@@ -27,5 +29,7 @@
     <mapper resource="com/woting/cm/core/channel/persis/sql/Channel.mapper.xml"/>
     <mapper resource="com/woting/cm/core/perimeter/persis/sql/Organize.mapper.xml"/>
     <mapper resource="com/woting/cm/core/ResOrgAsset/persis/sql/ResOrgAsset.mapper.xml"/>
+    <mapper resource="com/woting/cm/core/keyword/persis/sql/KeyWord.mapper.xml"/>
+    <mapper resource="com/woting/cm/core/keyword/persis/sql/KwRes.mapper.xml"/>
   </mappers>
 </configuration>
