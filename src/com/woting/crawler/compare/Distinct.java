@@ -52,6 +52,10 @@ public class Distinct {
 			String albumstr = "";
 			for (AlbumPo al : allist) {
 				if (albumstr.contains(al.getAlbumName() + al.getAlbumPublisher())) {
+					List<AudioPo> aus = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
+					if (aus!=null && aus.size()>0) {
+						//TODO 待处理
+					}
 					logger.info("查出抓取到相同专辑[{}]",
 							al.getAlbumName() + "_" + al.getAlbumPublisher() + "_" + al.getAlbumId());
 					logger.info("进行删除查询到相同专辑下级单体");

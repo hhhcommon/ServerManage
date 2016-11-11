@@ -17,7 +17,7 @@ public class SolrServer {
 	public static List<String> getAnalysis(String sentence) {
 		Map<String, Object> map = new HashMap<>();
 		sentence = CleanDataUtils.utf8TOurl(sentence);
-		String url = "http://123.56.254.75:1008/solr/collection1/analysis/field?wt=json&analysis.showmatch=true&analysis.fieldvalue=#fieldvalue#&analysis.fieldtype=text_ik";
+		String url = "http://123.57.7.2:8080/solr/collection1/analysis/field?wt=json&analysis.showmatch=true&analysis.fieldvalue=#fieldvalue#&analysis.fieldtype=text_ik";
 		Document doc;
 		List<String> lstr = new ArrayList<String>();
 		try {

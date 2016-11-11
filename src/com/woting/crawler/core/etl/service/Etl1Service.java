@@ -27,10 +27,10 @@ public class Etl1Service {
 		if(m!=null){
 			audiolist = (List<AudioPo>) m.get("audiolist");
 			albumlist = (List<AlbumPo>) m.get("albumlist");
-			if(audiolist!=null&&audiolist.size()>0){
+			if(audiolist!=null&&audiolist.size()>0) {
 				audioService.insertAudioList(audiolist);
 			}
-			if(albumlist!=null&&albumlist.size()>0){
+			if(albumlist!=null&&albumlist.size()>0) {
 				albumService.insertAlbumList(albumlist);
 			}
 		}
