@@ -178,4 +178,26 @@ public class DictService {
     	m.put("list", dictrefs);
     	dictRefDao.insert("insertList",m);
     }
+    
+    public DictDetailPo getDictDetailInfo(String id, String mId, String pId) {
+    	Map<String, Object> m = new HashMap<>();
+    	m.put("mId", mId);
+    	m.put("id", id);
+    	m.put("pId", pId);
+    	DictDetailPo dd = dictDDao.getInfoObject("getList", m);
+    	if (dd!=null) {
+			return dd;
+		}
+		return null;
+    }
+    
+    public void updateDictD(DictDetailPo dd) {
+    	dictDDao.update("update", dd.toHashMap());
+    }
+    
+    public void insertDictDList(List<DictDetailPo> dds) {
+    	Map<String, Object> m = new HashMap<>();
+    	m.put("list", dds);
+    	dictDDao.insert("insertDictDList", m);
+    }
 }

@@ -61,7 +61,9 @@ public class Booter {
         long _begin=System.currentTimeMillis();
         SpringShell.init();
         logger.info("加载Spring配置，用时[{}]毫秒", System.currentTimeMillis()-_begin);
-        
+//        
+//        Crawler crawler = new Crawler();
+//        crawler.startCrawlerCategory();
         //定时器加载
         Timer timer = new Timer(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent()+"conf/timer.txt");
         Scheduler scheduler = timer.getScheduler();

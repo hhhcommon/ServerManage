@@ -108,6 +108,13 @@
   <select id="getInfoById" resultMap="BaseResultMap" parameterType="java.lang.String">
     select <include refid="Base_Column_List"/>from plat_DictD where id=#{id,jdbcType=VARCHAR}
   </select>
+  
+  <insert id="insertDictDList" parameterType="map">
+    insert into plat_DictD(id, mId, pId, sort, isValidate, ddName, nPy, aliasName, anPy, bCode, dType, dRef, descn, cTime, lmTime) values
+      <foreach collection="list" item="list" index="index" separator=",">
+       (#{list.id},#{list.MId},#{list.parentId},#{list.sort},#{list.isValidate},#{list.ddName},#{list.NPy},#{list.aliasName},#{list.anPy},#{list.BCode},#{list.DType},#{list.DRef},#{list.descn},#{list.CTime},#{list.lmTime})
+      </foreach>
+  </insert>
 
   <!-- 新增数据 -->
   <insert id="insert" parameterType="java.util.Map">
