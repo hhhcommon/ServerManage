@@ -1,31 +1,44 @@
 package com.woting.crawler.core.scheme.model;
 
 import java.sql.Timestamp;
-
+import java.util.Map;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
+import com.spiritdata.framework.util.JsonUtils;
 import com.woting.crawler.core.etl.model.Etl1Process;
 import com.woting.crawler.core.etl.model.Etl2Process;
 import com.woting.crawler.ext.SpringShell;
+import com.woting.crawler.scheme.utils.FileUtils;
 
 public class Scheme {
 
 	private String schemenum;
+	private String crawlerExtent;
 	private Timestamp cTimestamp;
 	private Etl1Process etl1Process;
 	private Etl2Process etl2Process;
 	private RedisOperService redisOperService;
 	private JedisConnectionFactory jedisConnectionFactory;
 	
+	@SuppressWarnings("unchecked")
 	public Scheme(String jsonpath) {
-		this.setSchemenum("1");
+		jsonpath = FileUtils.readFile(jsonpath);
+		Map<String, Object> m = (Map<String, Object>) JsonUtils.jsonToObj(jsonpath, Map.class);
+		this.setSchemenum(m.get("Schemenum")+"");
+		this.setCrawlerExtent(m.get("CrawlerExtent")+"");
+		System.out.println(m.get("Schemenum")+""+m.get("CrawlerExtent"));
 		this.setcTimestamp(new Timestamp(System.currentTimeMillis()));
 		this.etl1Process = new Etl1Process();
 		this.jedisConnectionFactory = (JedisConnectionFactory) SpringShell.getBean("connectionFactory");
 		this.redisOperService = new RedisOperService(jedisConnectionFactory, 1);
 	}
 	
+	public String getCrawlerExtent() {
+		return crawlerExtent;
+	}
+	public void setCrawlerExtent(String crawlerExtent) {
+		this.crawlerExtent = crawlerExtent;
+	}
 	public String getSchemenum() {
 		return schemenum;
 	}

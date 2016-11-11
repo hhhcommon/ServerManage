@@ -26,7 +26,7 @@ public class CrawlerSrcTimerJob implements Job {
 	public void execute(JobExecutionContext arg0) throws JobExecutionException {
 		long begtime = System.currentTimeMillis();
 		// 加载抓取方案
-		Scheme scheme = new Scheme("");
+		Scheme scheme = new Scheme(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent()+"conf/scheme.txt");
 		if (scheme!=null) {
 			SystemCache.setCache(new CacheEle<Scheme>(CrawlerConstants.SCHEME, "抓取计划", scheme));
 		}
@@ -43,6 +43,7 @@ public class CrawlerSrcTimerJob implements Job {
 		logger.info("抓取序号[{}]不存在", crawlernum);
 		logger.info("开始进行序号为[{}]抓取", crawlernum);
 		scheme.setSchemenum(crawlernum);
+		
 		SystemCache.setCache(new CacheEle<String>(CrawlerConstants.CRAWLERNUM, "抓取序号", crawlernum));
 		CrawlerSrcRecord srcRecord = new CrawlerSrcRecord(crawlernum);
 		srcRecord.reloadCrawlerInfo();
