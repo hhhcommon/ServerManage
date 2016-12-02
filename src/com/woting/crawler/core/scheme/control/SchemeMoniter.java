@@ -42,7 +42,7 @@ public class SchemeMoniter extends Thread {
 			int numberOfCrawlers = 10;
 			CrawlConfig config = new CrawlConfig();
 			// 文明请求web：确保我们不发送超过1每秒请求数（1000毫秒之间的请求）。
-//			config.setPolitenessDelay(1000);	
+//			config.setPolitenessDelay(1000);
 			// 深度，即从入口URL开始算，URL是第几层。如入口A是1，从A中找到了B，B中又有C，则B是2，C是3 
 			config.setMaxDepthOfCrawling(Integer.valueOf((scheme.getCrawlerExtent()==null?"1":scheme.getCrawlerExtent())));
 //			config.setUserAgentString("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36");

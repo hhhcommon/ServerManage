@@ -99,6 +99,19 @@
     <property name="password" value="${redis.password}"/>
     <property name="poolConfig" ref="poolConfig"/>
   </bean>
+  
+  <!-- 定时加载功能 -->
+  <bean id="timer" class="com.woting.crawler.core.timer.persis.po.TimerPo" scope="prototype">
+    <property name="CronExpression" value="${timer.CronExpression}"/>
+    <property name="PlayCountCronExpression" value="${timer.PlayCountCronExpression}"/>
+    <property name="CategoryCronExpression" value="${timer.CategoryCronExpression}"/>
+  </bean>
+  
+  <!-- 定时加载功能 -->
+  <bean id="scheme" class="com.woting.crawler.core.scheme.persis.po.SchemePo" scope="prototype">
+    <property name="Schemenum" value="${scheme.Schemenum}"/>
+    <property name="CrawlerExtent" value="${scheme.CrawlerExtent}"/>
+  </bean>
 
   <!-- 扫描类包，将标注Spring注解的类自动转化Bean，同时完成Bean的注入 -->
   <context:component-scan base-package="com.woting.crawler" use-default-filters="false">

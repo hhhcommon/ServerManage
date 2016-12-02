@@ -172,8 +172,7 @@ public abstract class ConvertUtils {
 				dictRefRes.setResTableName("wt_MediaAsset");
 				dictRefRes.setResId(au.getId());
 				for (Map<String, Object> ms : dicts) {
-					if (au.getAudioPublisher().equals(ms.get("publisher"))
-							&& au.getCategoryName().equals(ms.get("crawlerDictdName"))) {
+					if (au.getAudioPublisher().equals(ms.get("publisher")) && au.getCategoryName().equals(ms.get("crawlerDictdName"))) {
 						dictRefRes.setDictMid(ms.get("dictmId") + "");
 						dictRefRes.setDictDid(ms.get("dictdId") + "");
 						dictRefRes.setCTime(new Timestamp(System.currentTimeMillis()));

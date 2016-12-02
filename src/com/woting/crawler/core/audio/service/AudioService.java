@@ -55,6 +55,19 @@ public class AudioService {
 		return l;
 	}
 	
+	public List<AudioPo> getAudios(String audioId, String albumId, String publisher, String crawlernum) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("albumId", albumId);
+		m.put("publisher", publisher);
+		m.put("crawlerNum", crawlernum);
+		m.put("audioId", audioId);
+		List<AudioPo> l = audioDao.queryForList("getAudioList", m);
+		if (l!=null && l.size()>0) {
+			return l;
+		}
+		return null;
+	}
+	
 	public int countNumByAlbumId(String albumId, String publisher, String crawlernum) {
 		Map<String, Object> m = new HashMap<String,Object>();
 		m.put("albumId", albumId);
@@ -81,6 +94,10 @@ public class AudioService {
 	
 	public AudioPo getAudioInfo(String id) {
 		return audioDao.getInfoObject("getAudioInfo", id);
+	}
+	
+	public void updateAudio(AudioPo audioPo) {
+		audioDao.update(audioPo);
 	}
 	
 	public void removeSameAudio(String id){

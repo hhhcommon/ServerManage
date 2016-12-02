@@ -116,7 +116,6 @@ public class QTPlayNumCrawler {
 						e.printStackTrace();
 					}
 				}
-
 			}
 			// if (resass.getOrigTableName().equals("hotspot_Audio")) {
 			// audioService = (AudioService)

@@ -64,7 +64,7 @@
   </select>
   
   <select id="getAudioList" parameterType="java.util.Map" resultMap="BaseResultMap">
-    select * from hotspot_Audio where crawlerNum=#{crawlerNum,jdbcType=VARCHAR} limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
+    select * from hotspot_Audio <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if> limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
   </select>
   
   <select id="getAudioInfo" parameterType="java.lang.String" resultMap="BaseResultMap">
@@ -80,6 +80,17 @@
       <if test="schemeName!=null">schemeName=Null,</if>
     </set>
     <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
+  </update>
+  
+  <update id="update" parameterType="java.util.Map">
+   update hotspot_Audio
+   <set>
+      <if test="albumId!=null">albumId=#{albumId,jdbcType=VARCHAR},</if>
+      <if test="descn!=null">descn=#{descn,jdbcType=VARCHAR},</if>
+      <if test="schemeId!=null">schemeId=#{schemeId,jdbcType=VARCHAR},</if>
+      <if test="schemeName!=null">schemeName=#{schemeName,jdbcType=VARCHAR},</if>
+    </set>
+    where id=#{id,jdbcType=VARCHAR}
   </update>
   
   <update id="updateAlbumIdInfo" >

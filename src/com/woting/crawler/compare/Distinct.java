@@ -52,17 +52,22 @@ public class Distinct {
 			String albumstr = "";
 			for (AlbumPo al : allist) {
 				if (albumstr.contains(al.getAlbumName() + al.getAlbumPublisher())) {
-					List<AudioPo> aus = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
-					if (aus!=null && aus.size()>0) {
-						//TODO 待处理
-					}
+//					List<AudioPo> aus = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
+//					if (aus!=null && aus.size()>0) {
+//						//TODO 待处理
+//						for (AudioPo audioPo : aus) {
+//							audioService.get
+//						}
+//						
+//					}
 					logger.info("查出抓取到相同专辑[{}]",
 							al.getAlbumName() + "_" + al.getAlbumPublisher() + "_" + al.getAlbumId());
-					logger.info("进行删除查询到相同专辑下级单体");
-					audioService.removeSameAudio(al.getAlbumId(), al.getAlbumPublisher(), crawlernum);
+					logger.info("进行删除查询到相同专辑");
+//					audioService.removeSameAudio(al.getAlbumId(), al.getAlbumPublisher(), crawlernum);
 					albumService.removeSameAlbum(al.getAlbumId(), al.getAlbumPublisher(), crawlernum);
+				} else {
+					albumstr += al.getAlbumName() + al.getAlbumPublisher();
 				}
-				albumstr += al.getAlbumName() + al.getAlbumPublisher();
 			}
 		}
 		int num = audioService.getAudioNum(crawlernum);

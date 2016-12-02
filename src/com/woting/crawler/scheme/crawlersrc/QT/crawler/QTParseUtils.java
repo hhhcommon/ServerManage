@@ -13,6 +13,7 @@ import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.spiritdata.framework.util.JsonUtils;
 import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.core.scheme.model.Scheme;
+import com.woting.crawler.scheme.utils.FileUtils;
 import com.woting.crawler.scheme.utils.HttpUtils;
 import com.woting.crawler.scheme.utils.RedisUtils;
 
@@ -50,7 +51,7 @@ public class QTParseUtils {
 				parseData.put("descript", HttpUtils.getTextByDispose(el.html()));
 			}
 		} catch (Exception e) {e.printStackTrace();}
-//		int num = 0;
+		int num = 0;
 		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
 		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
 		try {
@@ -89,11 +90,11 @@ public class QTParseUtils {
 						pDate.put("playCount",m.get("playcount"));
 					}
 					RedisUtils.addQTAudio(rs, parseData.get("CrawlerNum")+"", pDate);
-//					num++;
-//					if(num==10){
-//						num=0;
-//						break;
-//					}
+					num++;
+					if(num==2){
+						num=0;
+						break;
+					}
 				}
 			}
 		} catch (Exception e) {e.printStackTrace();}

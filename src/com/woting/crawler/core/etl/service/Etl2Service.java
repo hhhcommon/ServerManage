@@ -109,8 +109,7 @@ public class Etl2Service {
 			for (Album al : allist) {
 				List<AudioPo> aulist = al.getAudiolist();
 				if (aulist.size() > 0) {
-					List<SeqMediaAssetPo> seqlist = mediaService.getSeqInfo(al.getAlbumPo().getAlbumName(),
-							al.getAlbumPo().getAlbumPublisher());
+					List<SeqMediaAssetPo> seqlist = mediaService.getSeqInfo(al.getAlbumPo().getAlbumName(), al.getAlbumPo().getAlbumPublisher());
 					if (seqlist != null && seqlist.size() > 0) {
 						SeqMediaAssetPo seq = seqlist.get(0);
 						Map<String, Object> mall = ConvertUtils.convert2MediaAsset(aulist, seq, cate2dictdlist, chlist);
@@ -130,8 +129,7 @@ public class Etl2Service {
 			}
 		}
 		logger.info("增添资源库已存在的专辑新下级声音");
-		logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}],专辑声音关系数量[{}]", malist.size(), maslist.size(),
-				dictreflist.size(), chalist.size(), seqreflist.size());
+		logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}],专辑声音关系数量[{}]", malist.size(), maslist.size(), dictreflist.size(), chalist.size(), seqreflist.size());
 		if (malist.size() > 0) {
 			// 往资源库插入声音数据
 			mediaService.insertMaList(malist);
@@ -274,7 +272,6 @@ public class Etl2Service {
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
-
 					} else {
 						logger.info("已存在的相似专辑无最新下级声音资源");
 					}

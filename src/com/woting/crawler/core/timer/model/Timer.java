@@ -1,7 +1,5 @@
 package com.woting.crawler.core.timer.model;
 
-import java.util.Map;
-
 import org.quartz.Scheduler;
 import org.quartz.SchedulerFactory;
 import org.quartz.impl.JobDetailImpl;
@@ -13,7 +11,8 @@ import com.spiritdata.framework.util.JsonUtils;
 import com.woting.crawler.core.timer.CrawlerCategoryJob;
 import com.woting.crawler.core.timer.CrawlerSrcTimerJob;
 import com.woting.crawler.core.timer.PlayNumTimerJob;
-import com.woting.crawler.scheme.utils.FileUtils;
+import com.woting.crawler.core.timer.persis.po.TimerPo;
+import com.woting.crawler.ext.SpringShell;
 
 public class Timer {
 	private Logger logge = LoggerFactory.getLogger(Timer.class);
@@ -28,13 +27,14 @@ public class Timer {
 	private JobDetailImpl jobdetail3; //抓取分类进程执行的任务
 	private CronTriggerImpl cronTrigger3; //抓取分类进程触发器
 	
-	@SuppressWarnings("unchecked")
 	public Timer(String str) {
-		str = FileUtils.readFile(str);
-		Map<String, Object> m = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
-		this.SrcCronExpression = (String) m.get("CronExpression");
-		this.PlayCountCronExpression = (String) m.get("PlayCountCronExpression");
-		this.CategoryCronExpression = (String) m.get("CategoryCronExpression");
+//		str = FileUtils.readFile(str);
+//		Map<String, Object> m = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
+		TimerPo timerPo = (TimerPo) SpringShell.getBean("timer");
+		System.out.println(JsonUtils.objToJson(timerPo));
+		this.SrcCronExpression = timerPo.getCronExpression();// (String) m.get("CronExpression");
+		this.PlayCountCronExpression =timerPo.getPlayCountCronExpression();// (String) m.get("PlayCountCronExpression");
+		this.CategoryCronExpression =timerPo.getCategoryCronExpression();// (String) m.get("CategoryCronExpression");
 	}
 	
 	public String getPlayCountCronExpression() {
