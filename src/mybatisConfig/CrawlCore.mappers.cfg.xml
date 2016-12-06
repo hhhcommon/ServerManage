@@ -8,6 +8,7 @@
     <typeAlias alias="audio"      type="com.woting.crawler.core.audio.persis.po.AudioPo"/>
     <typeAlias alias="dictm"      type="com.woting.crawler.core.dict.persis.po.DictMPo"/>
     <typeAlias alias="dictd"      type="com.woting.crawler.core.dict.persis.po.DictDPo"/>
+    <typeAlias alias="person"     type="com.woting.crawler.core.person.persis.po.PersonPo"/>
   </typeAliases>
   <!-- SQL文件设置 -->
   <mappers>
@@ -15,5 +16,6 @@
     <mapper resource="com/woting/crawler/core/audio/persis/sql/Audio.mapper.xml"/>
     <mapper resource="com/woting/crawler/core/dict/persis/sql/DictM.mapper.xml"/>
     <mapper resource="com/woting/crawler/core/dict/persis/sql/DictD.mapper.xml"/>
+    <mapper resource="com/woting/crawler/core/person/persis/sql/Person.mapper.xml"/>
   </mappers>
 </configuration>

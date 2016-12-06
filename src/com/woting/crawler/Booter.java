@@ -7,6 +7,8 @@ import com.spiritdata.framework.core.cache.CacheEle;
 import com.spiritdata.framework.core.cache.SystemCache;
 import com.woting.crawler.core.timer.model.Timer;
 import com.woting.crawler.ext.SpringShell;
+import com.woting.crawler.scheme.crawlerperson.crawler.Crawler;
+
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
@@ -61,24 +63,33 @@ public class Booter {
         long _begin=System.currentTimeMillis();
         SpringShell.init();
         logger.info("加载Spring配置，用时[{}]毫秒", System.currentTimeMillis()-_begin);
-
-        //定时器加载
-        Timer timer = new Timer(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent()+"conf/timer.txt");
-        Scheduler scheduler = timer.getScheduler();
-        if(scheduler==null) {
-        	logger.info("定时加载出错，结束抓取服务");
-        	return;
-        }
+        
+        Crawler crawler = new Crawler();
+        crawler.beginCrawlerPerson();
         try {
-			scheduler.start();
-			logger.info("首页资源抓取定时功能已加载[{}]", timer.getSrcCronExpression());
-			logger.info("点击量抓取定时功能已加载[{}]", timer.getPlayCountCronExpression());
-			logger.info("分类抓取定时功能已加载[{}]", timer.getCategoryCronExpression());
 			while(true) {
 				Thread.sleep(60*60*1000);
-			}
+		    }
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
+        
+        //定时器加载
+//        Timer timer = new Timer(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent()+"conf/timer.txt");
+//        Scheduler scheduler = timer.getScheduler();
+//        if(scheduler==null) {
+//        	logger.info("定时加载出错，结束抓取服务");
+//        	return;
+//        }
+//        try {
+//			scheduler.start();
+//			logger.info("首页资源抓取定时功能已加载[{}]", timer.getSrcCronExpression());
+//			logger.info("点击量抓取定时功能已加载[{}]", timer.getPlayCountCronExpression());
+//			logger.info("分类抓取定时功能已加载[{}]", timer.getCategoryCronExpression());
+//			while(true) {
+//				Thread.sleep(60*60*1000);
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 	}
 }

@@ -26,7 +26,7 @@
     <result  column="cTime"          property="cTime"          jdbcType="TIMESTAMP"/>
   </resultMap>
   
-   <!-- 条件子句 -->
+  <!-- 条件子句 -->
   <sql id="WhereClauseByEntiey">
     <where>
       <trim prefix="(" suffix=")" prefixOverrides="and">

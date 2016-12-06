@@ -7,13 +7,9 @@ import java.io.InputStreamReader;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.spiritdata.framework.util.ChineseCharactersUtils;
-import com.spiritdata.framework.util.JsonUtils;
 import com.woting.cm.core.dict.persis.po.DictDetailPo;
 import com.woting.cm.core.dict.service.DictService;
-import com.woting.crawler.core.dict.persis.po.DictDPo;
-import com.woting.crawler.core.dict.service.CrawlerDictService;
 import com.woting.crawler.ext.SpringShell;
 
 public class Crawler {

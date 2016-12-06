@@ -123,6 +123,7 @@ public class Etl2Service {
 								seqreflist.addAll((List<SeqMaRefPo>) mall.get("seqmareflist"));
 								mecounts.addAll((List<MediaPlayCountPo>) mall.get("mediaplaycount"));
 							}
+							
 						}
 					}
 				}
@@ -297,4 +298,5 @@ public class Etl2Service {
 			}
 		}
 	}
+	
 }
