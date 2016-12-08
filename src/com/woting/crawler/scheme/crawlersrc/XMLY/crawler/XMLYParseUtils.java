@@ -9,7 +9,11 @@ import org.jsoup.select.Elements;
 import com.spiritdata.framework.core.cache.SystemCache;
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.woting.crawler.CrawlerConstants;
+import com.woting.crawler.core.cperson.persis.po.CPersonPo;
+import com.woting.crawler.core.cperson.service.CPersonService;
 import com.woting.crawler.core.scheme.model.Scheme;
+import com.woting.crawler.ext.SpringShell;
+import com.woting.crawler.scheme.crawlerperson.XMLY.XMLYPersonUtils;
 import com.woting.crawler.scheme.utils.HttpUtils;
 import com.woting.crawler.scheme.utils.RedisUtils;
 
@@ -85,13 +89,24 @@ public abstract class XMLYParseUtils {
 		}
 		// 专辑
 		try {
-			eles = doc.select("a.shareLink");
+			eles = doc.select("link[rel=canonical]");
 			if (eles != null && !eles.isEmpty()) {
-				parseData.put("albumId", eles.get(0).attr("album_id").trim());
+				String zhuboid = eles.get(0).attr("href").trim();
+				zhuboid = zhuboid.substring(zhuboid.lastIndexOf("/")+1, zhuboid.length());
+				parseData.put("albumId", zhuboid);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+		//主播
+		try {
+			eles = doc.select("div[class=picture]");
+			if (eles != null && !eles.isEmpty()) {
+				String zhubos = eles.get(0).select("a").get(0).attr("href");
+				zhubos = zhubos.replace("/zhubo/", "").replace("/", "");
+				saveCPerson(zhubos, "hotspot_Album", parseData.get("albumId")+"");
+			}
+		} catch (Exception ex) {ex.printStackTrace();}
 		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
 		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
 		RedisUtils.addXMLYOriginalSeq(rs, parseData.get("CrawlerNum") + "", parseData);
@@ -209,6 +224,17 @@ public abstract class XMLYParseUtils {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+		//主播
+//		try {
+//			eles = doc.select("div[class=picture]");
+//			if (eles != null && !eles.isEmpty()) {
+//				String zhubos = eles.get(0).select("a").get(0).attr("href");
+//				zhubos = zhubos.replace("/zhubo/", "").replace("/", "");
+//				saveCPerson(zhubos, "hotspot_Audio", parseData.get("audioId")+"");
+//			}
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//		}
 		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
 		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
 		RedisUtils.addXMLYOriginalMa(rs, parseData.get("CrawlerNum") + "", parseData);
@@ -243,8 +269,7 @@ public abstract class XMLYParseUtils {
 			if (isDig && !begin)
 				begin = true;
 			if (begin) {
-				if (isDig)
-					firstNumStr.append(c[i]);
+				if (isDig) firstNumStr.append(c[i]);
 				if (!isDig) {
 					// 是.
 					if (c[i] == '.') {
@@ -268,11 +293,20 @@ public abstract class XMLYParseUtils {
 			gene = 10000;
 			_firstNumStr = _firstNumStr.substring(0, _firstNumStr.length() - 1);
 		}
-		if (_firstNumStr.endsWith("."))
-			_firstNumStr += "0";
+		if (_firstNumStr.endsWith(".")) _firstNumStr += "0";
 		float f = Float.parseFloat(_firstNumStr);
 		f = f * gene;
 		ret = (new Float(f)).longValue();
 		return ret;
+	}
+	
+	private static void saveCPerson(String cpersonId, String resTableName, String resId) {
+		CPersonPo po = XMLYPersonUtils.parsePerson(cpersonId);
+		if (po!=null) {
+			po.setResTableName(resTableName);
+			po.setResId(resId);
+			CPersonService cPersonService = (CPersonService) SpringShell.getBean("CPersonService");
+			cPersonService.insertPerson(po);
+		}
 	}
 }

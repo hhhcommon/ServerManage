@@ -12,6 +12,7 @@ import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.album.service.AlbumService;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.core.audio.service.AudioService;
+import com.woting.crawler.core.cperson.service.CPersonService;
 import com.woting.crawler.ext.SpringShell;
 
 @Service
@@ -40,6 +41,8 @@ public class Etl1Service {
 		logger.info("数据存储完成，开始进行数据库清理！");
 		AlbumService albumService = (AlbumService) SpringShell.getBean("albumService");
 		AudioService audioService = (AudioService) SpringShell.getBean("audioService");
+		CPersonService cPersonService = (CPersonService) SpringShell.getBean("CPersonService");
+		cPersonService.removeSame();
 		albumService.removeNull(SystemCache.getCache(CrawlerConstants.CRAWLERNUM).getContent()+"");
 		audioService.removeNull(SystemCache.getCache(CrawlerConstants.CRAWLERNUM).getContent()+"");
 		logger.info("数据库清理完成！");

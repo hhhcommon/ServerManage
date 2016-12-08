@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.spiritdata.framework.util.SequenceUUID;
@@ -18,9 +19,14 @@ import com.woting.cm.core.media.persis.po.MediaPlayCountPo;
 import com.woting.cm.core.media.persis.po.SeqMaRefPo;
 import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
 import com.woting.cm.core.perimeter.persis.po.OrganizePo;
+import com.woting.cm.core.person.persis.po.PersonPo;
+import com.woting.cm.core.person.persis.po.PersonRefPo;
+import com.woting.cm.core.person.service.PersonService;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
+import com.woting.crawler.core.cperson.persis.po.CPersonPo;
 import com.woting.crawler.core.dict.persis.po.DictDPo;
+import com.woting.crawler.ext.SpringShell;
 
 public abstract class ConvertUtils {
 	private static Logger logger = LoggerFactory.getLogger(ConvertUtils.class);
@@ -118,6 +124,7 @@ public abstract class ConvertUtils {
 		List<ChannelAssetPo> chalist = new ArrayList<ChannelAssetPo>();
 		List<SeqMaRefPo> seqreflist = new ArrayList<SeqMaRefPo>();
 		List<MediaPlayCountPo> mecounts = new ArrayList<MediaPlayCountPo>();
+		List<PersonRefPo> pfs = new ArrayList<>();
 		if (aulist != null && aulist.size() > 0) {
 			for (AudioPo au : aulist) {
 				// 声音数据转换
@@ -165,6 +172,18 @@ public abstract class ConvertUtils {
 				seqMaRef.setColumnNum(0);
 				seqMaRef.setDescn(ma.getDescn());
 				seqMaRef.setcTime(new Timestamp(System.currentTimeMillis()));
+				
+				PersonService personService = (PersonService) SpringShell.getBean("personService");
+				PersonRefPo pf = personService.getPersonRefBy("wt_SeqMediaAsset", seq.getId());
+				System.out.println(seq.getId());
+				if (pf!=null) {
+					pf.setRefName("主播-节目");
+				    pf.setResTableName("wt_MediaAsset");
+				    pf.setResId(ma.getId());
+				    pf.setId(SequenceUUID.getPureUUID());
+				    pf.setcTime(new Timestamp(System.currentTimeMillis()));
+				    pfs.add(pf);
+				}
 
 				DictRefResPo dictRefRes = new DictRefResPo();
 				dictRefRes.setId(SequenceUUID.getPureUUID());
@@ -235,6 +254,7 @@ public abstract class ConvertUtils {
 			m.put("chalist", chalist);
 			m.put("seqmareflist", seqreflist);
 			m.put("mediaplaycount", mecounts);
+			m.put("personRef", pfs);
 			return m;
 		}
 		return null;
@@ -329,6 +349,52 @@ public abstract class ConvertUtils {
 			return map;
 		else
 			return null;
+	}
+	
+	public static PersonPo convert2Person(CPersonPo cpo){
+		PersonPo po = new PersonPo();
+		po.setId(SequenceUUID.getPureUUID());
+		po.setpName(cpo.getpName());
+		po.setpSource(cpo.getpSource());
+		if (po.getpSource().equals("喜马拉雅")) {
+			po.setpSrcId("2");
+		} else {
+			if (po.getpSource().equals("蜻蜓")) {
+				po.setpSrcId("3");
+			} else {
+				if (po.getpSource().equals("考拉")) {
+					po.setpSrcId("4");
+				}
+			}
+		}
+		if (cpo.getPortrait()!=null) {
+			po.setPortrait(cpo.getPortrait());
+		}
+		if (cpo.getAge()!=null) {
+			po.setAge(cpo.getAge());
+		}
+		if (cpo.getBirthday()!=null) {
+			po.setBirthday(cpo.getBirthday());
+		}
+		if (cpo.getConstellation()!=null) {
+			po.setConstellation(cpo.getConstellation());
+		}
+		if(cpo.getEmail()!=null) {
+			po.setEmail(cpo.getEmail());
+		}
+		if (cpo.getDescn()!=null) {
+			po.setDescn(cpo.getDescn());
+		}
+		if (cpo.getPhoneNum()!=null) {
+			po.setPhoneNum(cpo.getPhoneNum());
+		}
+		if (cpo.getpSrcHomePage()!=null) {
+			po.setpSrcHomePage(cpo.getpSrcHomePage());
+		}
+		po.setIsVerified(cpo.getIsVerified());
+		po.setcTime(new Timestamp(System.currentTimeMillis()));
+		po.setLmTime(new Timestamp(System.currentTimeMillis()));
+		return po;
 	}
 
 	public static Map<String, Object> convert2Masource(AudioPo audio, MediaAssetPo media ,List<OrganizePo> oganlist) {

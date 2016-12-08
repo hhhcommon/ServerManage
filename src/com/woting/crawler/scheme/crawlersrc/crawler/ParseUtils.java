@@ -7,7 +7,7 @@ public abstract class ParseUtils {
 //		if(href.startsWith("http://www.kaolafm.com/jm/")) return 2;
 		if(href.startsWith("http://www.qingting.fm/s/home")) return 3;
 		if(href.startsWith("http://www.qingting.fm/s/vchannels")) return 4;
-		if(href.startsWith("http://www.ximalaya.com") && href.contains("/album/")) return 5;
+		if(href.startsWith("http://www.ximalaya.com") && href.contains("/album/") && (href.length()-href.lastIndexOf("/")>3)) return 5;
 		if(href.startsWith("http://www.ximalaya.com") && href.contains("/sound/")) return 6;
 		return 0;
 	}

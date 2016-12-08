@@ -3,7 +3,6 @@ package com.woting.crawler.core.scheme.model;
 import java.sql.Timestamp;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
-import com.spiritdata.framework.util.JsonUtils;
 import com.woting.crawler.core.etl.model.Etl1Process;
 import com.woting.crawler.core.etl.model.Etl2Process;
 import com.woting.crawler.core.scheme.persis.po.SchemePo;
@@ -21,7 +20,6 @@ public class Scheme {
 	
 	public Scheme(String jsonpath) {
 		SchemePo schemePo = (SchemePo) SpringShell.getBean("scheme");
-		System.out.println(JsonUtils.objToJson(schemePo));
 		this.setSchemenum(schemePo.getSchemenum());
 		this.setCrawlerExtent(schemePo.getCrawlerExtent());
 		this.setcTimestamp(new Timestamp(System.currentTimeMillis()));

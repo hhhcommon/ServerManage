@@ -138,7 +138,6 @@ public class XMLYCrawler extends Thread {
 						}
 					}
 					if (kws.size() > 0 && krs.size() > 0) {
-						System.out.println(JsonUtils.objToJson(krs));
 						kwService.insertKeyWords(kws);
 						kwService.insertKwRefs(krs);
 					}

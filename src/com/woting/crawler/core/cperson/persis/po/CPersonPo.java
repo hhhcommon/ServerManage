@@ -1,29 +1,28 @@
-package com.woting.crawler.core.person.persis.po;
+package com.woting.crawler.core.cperson.persis.po;
 
 import java.sql.Timestamp;
 
 import com.spiritdata.framework.core.model.BaseObject;
 
-public class PersonPo extends BaseObject {
+public class CPersonPo extends BaseObject {
 	
 	private static final long serialVersionUID = 6608897039202304824L;
 	private String id;
 	private String pName;
 	private String pSource;
 	private String pSrcId;
-	private int pType;
+	private String resTableName;
+	private String resId;
 	private String age;
 	private String birthday;
 	private int sex;
 	private String constellation;
 	private String location;
-	private String jsonstr;
 	private String descn;
 	private String phoneNum;
 	private String email;
 	private String pSrcHomePage;
 	private String portrait;
-	private int albums;
 	private int isVerified;
 	private Timestamp cTime;
 	public String getId() {
@@ -50,12 +49,6 @@ public class PersonPo extends BaseObject {
 	public void setpSrcId(String pSrcId) {
 		this.pSrcId = pSrcId;
 	}
-	public int getpType() {
-		return pType;
-	}
-	public void setpType(int pType) {
-		this.pType = pType;
-	}
 	public String getAge() {
 		return age;
 	}
@@ -68,23 +61,11 @@ public class PersonPo extends BaseObject {
 	public void setBirthday(String birthday) {
 		this.birthday = birthday;
 	}
-	public String getJsonstr() {
-		return jsonstr;
-	}
-	public void setJsonstr(String jsonstr) {
-		this.jsonstr = jsonstr;
-	}
 	public int getSex() {
 		return sex;
 	}
 	public void setSex(int sex) {
 		this.sex = sex;
-	}
-	public int getAlbums() {
-		return albums;
-	}
-	public void setAlbums(int albums) {
-		this.albums = albums;
 	}
 	public String getConstellation() {
 		return constellation;
@@ -103,6 +84,18 @@ public class PersonPo extends BaseObject {
 	}
 	public void setDescn(String descn) {
 		this.descn = descn;
+	}
+	public String getResTableName() {
+		return resTableName;
+	}
+	public void setResTableName(String resTableName) {
+		this.resTableName = resTableName;
+	}
+	public String getResId() {
+		return resId;
+	}
+	public void setResId(String resId) {
+		this.resId = resId;
 	}
 	public String getPhoneNum() {
 		return phoneNum;
