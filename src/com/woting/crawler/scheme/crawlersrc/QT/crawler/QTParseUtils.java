@@ -10,6 +10,7 @@ import org.jsoup.select.Elements;
 
 import com.spiritdata.framework.core.cache.SystemCache;
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
+import com.spiritdata.framework.util.DateUtils;
 import com.spiritdata.framework.util.JsonUtils;
 import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.core.cperson.persis.po.CPersonPo;
@@ -96,6 +97,16 @@ public class QTParseUtils {
 						List<Map<String, Object>> l = (List<Map<String, Object>>) map.get("data");
 						Map<String, Object> m = l.get(0);
 						pDate.put("playCount",m.get("playcount"));
+					}
+					doc = Jsoup.connect("http://api2.qingting.fm/v6/media/programs/"+au.get("id")).ignoreContentType(true).get();
+					str = doc.select("body").get(0).html();
+					str = HttpUtils.getTextByDispose(str);
+					map = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
+					if(map!=null&&map.containsKey("data")){
+						Map<String, Object> m = (Map<String, Object>) map.get("data");
+						String datestr = m.get("update_time") + "";
+						long date =  DateUtils.getDateTime("yyyy-MM-dd HH:mm:ss", datestr).getTime();
+						pDate.put("cTime", date);
 					}
 					RedisUtils.addQTAudio(rs, parseData.get("CrawlerNum")+"", pDate);
 //					num++;

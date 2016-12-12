@@ -27,12 +27,10 @@ public class Timer {
 	private CronTriggerImpl cronTrigger3; //抓取分类进程触发器
 	
 	public Timer(String str) {
-//		str = FileUtils.readFile(str);
-//		Map<String, Object> m = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
 		TimerPo timerPo = (TimerPo) SpringShell.getBean("timer");
-		this.SrcCronExpression = timerPo.getCronExpression();// (String) m.get("CronExpression");
-		this.PlayCountCronExpression =timerPo.getPlayCountCronExpression();// (String) m.get("PlayCountCronExpression");
-		this.CategoryCronExpression =timerPo.getCategoryCronExpression();// (String) m.get("CategoryCronExpression");
+		this.SrcCronExpression = timerPo.getCronExpression();
+		this.PlayCountCronExpression =timerPo.getPlayCountCronExpression();
+		this.CategoryCronExpression =timerPo.getCategoryCronExpression();
 	}
 	
 	public String getPlayCountCronExpression() {

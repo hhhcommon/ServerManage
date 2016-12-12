@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="A_BCLIVEFLOW">
+  <!-- 对象定义:元数据列模式 -->
+  <resultMap id="BaseResultMap" type="bcliveflow">
+    <id     column="id"               property="id"                  jdbcType="VARCHAR"/>
+    <result column="bcId"             property="bcId"                jdbcType="VARCHAR"/>
+    <result column="bcSrcType"        property="bcSrcType"           jdbcType="VARCHAR"/>
+    <result column="bcSrcId"          property="bcSrcId"             jdbcType="VARCHAR"/>
+    <result column="bcSource"         property="bcSource"            jdbcType="VARCHAR"/>
+    <result column="flowURI"          property="flowURI"             jdbcType="VARCHAR"/>
+    <result column="isMain"           property="isMain"              jdbcType="VARCHAR"/>
+    <result column="descn"            property="descn"               jdbcType="VARCHAR"/>
+    <result column="bcSrcChannelId"   property="bcSrcChannelId"      jdbcType="VARCHAR"/>
+    <result column="cTime"            property="cTime"               jdbcType="TIMESTAMP"/>
+  </resultMap>
+  <!-- 所有列 -->
+  <sql id="Base_Column_List">
+    id, bcId, bcSrcType, bcSrcId, bcSource, flowURI, isMain, descn, cTime, bcSrcChannelId
+  </sql>
+  <!-- 条件子句 -->
+  <sql id="WhereClauseByEntiey">
+    <where>
+      <trim prefix="(" suffix=")" prefixOverrides="and">
+        <if test="id!=null"> and id=#{id,jdbcType=VARCHAR}</if>
+        <if test="bcId!=null"> and bcId=#{bcId,jdbcType=VARCHAR}</if>
+        <if test="bcSrcType!=null"> and bcSrcType=#{bcSrcType,jdbcType=VARCHAR}</if>
+        <if test="bcSrcId!=null"> and bcSrcId=#{bcSrcId,jdbcType=VARCHAR}</if>
+        <if test="bcSource!=null"> and bcSource=#{bcSource,jdbcType=VARCHAR}</if>
+        <if test="isMain!=null"> and isMain=#{isMain,jdbcType=VARCHAR}</if>
+        <if test="flowURI!=null"> and flowURI=#{flowURI,jdbcType=VARCHAR}</if>
+        <if test="descn!=null"> and descn=#{descn,jdbcType=VARCHAR}</if>
+        <if test="bcSrcChannelId!=null"> and bcSrcChannelId=#{bcSrcChannelId,jdbcType=VARCHAR}</if>
+        <if test="cTime!=null"> and cTime=#{cTime,jdbcType=TIMESTAMP}</if>
+      </trim>
+    </where>
+  </sql>
+  
+  <!-- 新增数据 -->
+  <insert id="insert" parameterType="java.util.Map">
+    insert into wt_BCLiveFlow
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id!=null">id,</if>
+      <if test="bcId!=null">bcId,</if>
+      <if test="bcSrcType!=null">bcSrcType,</if>
+      <if test="bcSrcId!=null">bcSrcId,</if>
+      <if test="bcSource!=null">bcSource,</if>
+      <if test="flowURI!=null">flowURI,</if>
+      <if test="isMain!=null and isMain!=0">isMain,</if>
+      <if test="descn!=null">descn,</if>
+      <if test="bcSrcChannelId!=null">bcSrcChannelId,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
+      <if test="bcId!=null">#{bcId,jdbcType=VARCHAR},</if>
+      <if test="bcSrcType!=null">#{bcSrcType,jdbcType=VARCHAR},</if>
+      <if test="bcSrcId!=null">#{bcSrcId,jdbcType=VARCHAR},</if>
+      <if test="bcSource!=null">#{bcSource,jdbcType=VARCHAR},</if>
+      <if test="flowURI!=null">#{flowURI,jdbcType=VARCHAR},</if>
+      <if test="isMain!=null and isMain!=0">#{isMain,jdbcType=INTEGER},</if>
+      <if test="descn!=null">#{descn,jdbcType=VARCHAR},</if>
+      <if test="bcSrcChannelId!=null">#{bcSrcChannelId,jdbcType=VARCHAR},</if>
+    </trim>
+  </insert>
+  
+  <!-- 获得列表 -->
+  <select id="getBCLiveFlowList" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/> from wt_BCLiveFlow 
+    <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
+  </select>
+  
+  <select id="getBCLiveFolwByBcSource" resultMap="BaseResultMap" parameterType="java.lang.String">
+    select <include refid="Base_Column_List"/> from wt_BCLiveFlow where bcSource=#{bcSource,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="getBCLiveFlowNotInResDict" resultMap="BaseResultMap" parameterType="java.lang.String">
+     select <include refid="Base_Column_List"/> from wt_BCLiveFlow where bcId NOT IN (SELECT resId from wt_ResDict_Ref where dictMid=#{dictMid,jdbcType=VARCHAR}) and isMain = 1
+  </select>
+  
+  <select id="getBCLiveFolwBySrcChannelId" resultMap="BaseResultMap" parameterType="java.lang.String">
+    select <include refid="Base_Column_List"/> from wt_BCLiveFlow where bcSrcChannelId=#{bcSrcChannelId,jdbcType=VARCHAR} and bcSource like '%央广网%'
+  </select>
+  
+  <insert id="insertList" parameterType="java.util.List">
+    insert into wt_BCLiveFlow(id,bcId,bcSrcType,bcSrcId,bcSource,flowURI,isMain,descn,bcSrcChannelId,cTime) values
+    <foreach collection="list" item="list" index="index" separator=",">
+     (#{list.id},#{list.bcId},#{list.bcSrcType},#{list.bcSrcId},#{list.bcSource},#{list.flowURI},#{list.isMain},#{list.descn},#{list.bcSrcChannelId},#{list.cTime})
+    </foreach>
+  </insert>
+  
+  <!-- 修改 根据主键-->
+  <update id="update" parameterType="java.util.Map">
+    update wt_BCLiveFlow
+    <set>
+      <if test="bcId!=null">bcId=#{bcId,jdbcType=VARCHAR},</if>
+      <if test="bcSrcType!=null and bcSrcType!=0">bcSrcType=#{bcSrcType,jdbcType=VARCHAR},</if>
+      <if test="bcSrcId!=null">bcSrcId=#{bcSrcId,jdbcType=VARCHAR},</if>
+      <if test="bcSource!=null">bcSource=#{bcSource,jdbcType=VARCHAR},</if>
+      <if test="flowURI!=null">flowURI=#{flowURI,jdbcType=VARCHAR},</if>
+      <if test="isMain!=null">isMain=#{isMain,jdbcType=VARCHAR},</if>
+      <if test="descn!=null">descn=#{descn,jdbcType=VARCHAR},</if>
+      <if test="cTime=null">cTime=#{cTime,jdbcType=TIMESTAMP},</if>
+    </set>
+    where id=#{id,jdbcType=VARCHAR}
+  </update>
+  
+  <update id="updateList" parameterType="java.util.List">
+      <foreach collection="list" item="list" index="index" open="" close="" separator=";">
+        update wt_BCLiveFlow <set>isMain=#{list.isMain}</set> where id=#{list.id}
+      </foreach>
+  </update>
+  
+</mapper>

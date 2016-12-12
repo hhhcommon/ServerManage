@@ -1,5 +1,6 @@
 package com.woting.crawler.scheme.crawlersrc.XMLY.crawler;
 
+import java.util.Date;
 import java.util.Map;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsoup.Jsoup;
@@ -8,12 +9,14 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import com.spiritdata.framework.core.cache.SystemCache;
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
+import com.spiritdata.framework.util.DateUtils;
 import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.core.cperson.persis.po.CPersonPo;
 import com.woting.crawler.core.cperson.service.CPersonService;
 import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.crawlerperson.XMLY.XMLYPersonUtils;
+import com.woting.crawler.scheme.utils.CleanDataUtils;
 import com.woting.crawler.scheme.utils.HttpUtils;
 import com.woting.crawler.scheme.utils.RedisUtils;
 
@@ -147,6 +150,20 @@ public abstract class XMLYParseUtils {
 				if ((parseData.get("audioName") + "").equals(m.get("title") + "")) {
 					parseData.put("playUrl", m.get("play_path"));
 					parseData.put("duration", m.get("duration"));
+					String created_at = m.get("formatted_created_at")+"";
+					String time_utils_now = m.get("time_until_now")+"";
+					if (time_utils_now.contains("年")) {
+						int year = CleanDataUtils.findInt(time_utils_now);
+						year = new Date(System.currentTimeMillis()).getYear() - year + 1900;
+						created_at = year+"年"+created_at;
+						long date = DateUtils.getDateTime("yyyy年MM月dd日 HH:mm", created_at).getTime();
+						parseData.put("cTime", date);
+					} else {
+						int year = new Date(System.currentTimeMillis()).getYear() + 1900;
+						created_at = year+"年"+created_at;
+						long date = DateUtils.getDateTime("yyyy年MM月dd日 HH:mm", created_at).getTime();
+						parseData.put("cTime", date);
+					}
 				}
 			}
 		} catch (Exception ex) {

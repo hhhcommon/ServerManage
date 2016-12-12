@@ -1,6 +1,5 @@
 package com.woting.crawler.core.etl.control;
 
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,19 +31,21 @@ public class Etl1Controller {
 			try {
 				logger.info("等待抓取完成");
 				RedisUtils.waitCrawlerFinish(rs, etl1Process.getEtlnum());
-				Thread.sleep(5000);
+				Thread.sleep(10000);
 			} catch (InterruptedException e) {e.printStackTrace();}
 		}
 		rs.close();
-		Map<String, Object> qtm =  new QTEtl1Process(etl1Process).makeQTOrigDataList();
-		Map<String, Object> xmlym = new XMLYEtl1Process(etl1Process).makeXMLYOrigDataList();
-		logger.info("蜻蜓FM抓取数据第一次转换数据存放中间库中");
-		etl1Service.insertSqlAlbumAndAudio(qtm);
-		logger.info("蜻蜓FM抓取数据第一次转换完成");
-		logger.info("喜马拉雅FM抓取数据第一次转换数据存放中间库中");
-		etl1Service.insertSqlAlbumAndAudio(xmlym);
-		logger.info("喜马拉雅FM抓取数据第一次转换完成");
+		new QTEtl1Process(etl1Process).makeQTOrigDataList();
+		new XMLYEtl1Process(etl1Process).makeXMLYOrigDataList();
 		etl1Service.removeNull();
+		logger.info("抓取第一次数据转换完成");
+//		logger.info("蜻蜓FM抓取数据第一次转换数据存放中间库中");
+//		etl1Service.insertSqlAlbumAndAudio(qtm);
+//		logger.info("蜻蜓FM抓取数据第一次转换完成");
+//		logger.info("喜马拉雅FM抓取数据第一次转换数据存放中间库中");
+//		etl1Service.insertSqlAlbumAndAudio(xmlym);
+//		logger.info("喜马拉雅FM抓取数据第一次转换完成");
+		
 		RedisUtils.writeEtl1Finish(rs, etl1Process.getEtlnum(), "");
 	}
 }

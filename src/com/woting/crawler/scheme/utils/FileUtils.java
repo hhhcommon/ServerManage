@@ -15,11 +15,8 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import com.spiritdata.framework.core.cache.SystemCache;
 import com.spiritdata.framework.util.JsonUtils;
 import com.spiritdata.framework.util.SequenceUUID;
-import com.woting.crawler.CrawlerConstants;
 
 import net.coobird.thumbnailator.Thumbnails;
 
@@ -97,7 +94,7 @@ public class FileUtils {
 	}
 	
 	public static String makeImgFile(String purpose, String imgpath) {
-		String rootpath = SystemCache.getCache(CrawlerConstants.APP_PATH).getContent()+"";
+		String rootpath = "/opt/";// SystemCache.getCache(CrawlerConstants.APP_PATH).getContent()+"";
 		if (purpose.equals("1")) { //用户头像处理
 			String imgName = SequenceUUID.getPureUUID();
 			String path = rootpath + "dataCenter/group03/";
@@ -110,7 +107,7 @@ public class FileUtils {
                 Thumbnails.of(new File(filepath)).size(150, 150).toFile(img150path);
                 Thumbnails.of(new File(filepath)).size(300, 300).toFile(img300path);
                 Thumbnails.of(new File(filepath)).size(450, 450).toFile(img450path);
-                return filepath.replace("/opt/tomcat8_CM/webapps/", "http://www.wotingfm.com:908/");
+                return filepath.replace(rootpath, "http://www.wotingfm.com:908/CM/");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -125,7 +122,7 @@ public class FileUtils {
 	                String img300path = path + "/" + imgName + ".300_300.png";
 	                Thumbnails.of(new File(filepath)).size(180, 180).toFile(img180path);
 	                Thumbnails.of(new File(filepath)).size(300, 300).toFile(img300path);
-	                return filepath.replace("/opt/tomcat8_CM/webapps/", "http://www.wotingfm.com:908/");
+	                return filepath.replace(rootpath, "http://www.wotingfm.com:908/CM/");
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -138,7 +135,7 @@ public class FileUtils {
 						download(imgpath, imgName+".png", path);
 						String img1080_450path = path + "/" + imgName + ".1080_450.png";
 		                Thumbnails.of(new File(filepath)).size(1080, 450).toFile(img1080_450path);
-		                return filepath.replace("/opt/tomcat8_CM/webapps/", "http://www.wotingfm.com:908/");
+		                return filepath.replace(rootpath, "http://www.wotingfm.com:908/CM/");
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -166,7 +163,7 @@ public class FileUtils {
        if(!sf.exists()){
            sf.mkdirs();
        }
-       OutputStream os = new FileOutputStream(sf.getPath()+"\\"+filename);
+       OutputStream os = new FileOutputStream(sf.getPath()+"/"+filename);
         // 开始读取
         while ((len = is.read(bs)) != -1) {
           os.write(bs, 0, len);

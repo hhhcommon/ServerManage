@@ -160,6 +160,12 @@ public class DictService {
 //        }
 //    }
     
+    public void insertDictRef(DictRefResPo dictRefResPo) {
+    	List<DictRefResPo> dictRefResPos = new ArrayList<>();
+    	dictRefResPos.add(dictRefResPo);
+    	insertDictRefList(dictRefResPos);
+    }
+    
     public void insertDictRefList(List<DictRefResPo> dictreflist){
     	List<DictRefResPo> dictrefs = new ArrayList<>();
     	int num=0;
@@ -177,6 +183,18 @@ public class DictService {
     	Map<String, Object> m = new HashMap<String,Object>();
     	m.put("list", dictrefs);
     	dictRefDao.insert("insertList",m);
+    }
+    
+    public  DictDetailPo getDictDetail(String mId, String pId, String ddName) {
+    	Map<String, Object> m = new HashMap<>();
+    	m.put("mId", mId);
+    	m.put("pId", pId);
+    	m.put("likesql", " and ddName like '%"+ddName+"%'");
+    	List<DictDetailPo> dds = dictDDao.queryForList("getList", m);
+    	if (dds!=null && dds.size()>0) {
+			return dds.get(0);
+		}
+		return null;
     }
     
     public DictDetailPo getDictDetailInfo(String id, String mId, String pId) {

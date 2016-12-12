@@ -17,6 +17,15 @@ import com.woting.crawler.core.audio.persis.po.AudioPo;
 public class RedisUtils {
 	public static Logger logger = LoggerFactory.getLogger(RedisUtils.class);
 
+	public static void removeOldCrawler(RedisOperService rs, String num) {
+		try {
+			rs.del("XMLY_Audio_"+num,"XMLY_Album_"+num,"QT_Audio_"+num,"QT_Album_"+num
+					,"KL_Audio_"+num,"KL_Album_"+num);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public static void addXMLYOriginalMa(RedisOperService rs, String num, Object str) {
 		try {
 			rs.rPush("XMLY_Audio_" + num, JsonUtils.objToJson(str));
@@ -102,10 +111,10 @@ public class RedisUtils {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static List<Map<String, Object>> getOrigDataList(RedisOperService rs, String key) {
+	public static List<Map<String, Object>> getOrigDataList(RedisOperService rs, String key, long begin, long end) {
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		try {
-			List<String> l = rs.lRange(key, 0, -1);
+			List<String> l = rs.lRange(key, begin, end);
 			for (String str : l) {
 				list.add((Map<String, Object>) JsonUtils.jsonToObj(str, Map.class));
 			}
@@ -183,7 +192,7 @@ public class RedisUtils {
 
 	public static void addCrawlerSrcRecord(RedisOperService rs, String src, String srcinfo) {
 		if (!rs.exist(src)) {
-			rs.set(src, srcinfo);
+			rs.set(src, srcinfo, 24*60*60*1000);
 		}
 	}
 
@@ -197,15 +206,15 @@ public class RedisUtils {
 		if (o instanceof AlbumPo) {
 			AlbumPo al = (AlbumPo) o;
 			if(f!=0&&srcid!=null&&!srcid.equals("null")) {
-				rs.set(al.getAlbumPublisher()+"_Album_"+al.getId()+"_SameName_MaxProportion_"+crawlernum, f+"");
-				rs.set(al.getAlbumPublisher()+"_Album_"+al.getId()+"_SameName_SmaId_"+crawlernum, srcid);
+				rs.set(al.getAlbumPublisher()+"_Album_"+al.getId()+"_SameName_MaxProportion_"+crawlernum, f+"", 24*60*60*1000);
+				rs.set(al.getAlbumPublisher()+"_Album_"+al.getId()+"_SameName_SmaId_"+crawlernum, srcid, 24*60*60*1000);
 			}
 		} else {
 			if(o instanceof AudioPo) {
 			    AudioPo au = (AudioPo) o;
 			    if(f!=0&&srcid!=null&&!srcid.equals("null")) {
-				    rs.set(au.getAudioPublisher()+"_Audio_"+au.getId()+"_SameName_MaxProportion_"+crawlernum, f+"");
-				    rs.set(au.getAudioPublisher()+"_Audio_"+au.getId()+"_SameName_MaId_"+crawlernum, srcid);
+				    rs.set(au.getAudioPublisher()+"_Audio_"+au.getId()+"_SameName_MaxProportion_"+crawlernum, f+"", 24*60*60*1000);
+				    rs.set(au.getAudioPublisher()+"_Audio_"+au.getId()+"_SameName_MaId_"+crawlernum, srcid, 24*60*60*1000);
 				}
 			}
 		}
@@ -239,12 +248,12 @@ public class RedisUtils {
 		if(o instanceof SeqMediaAssetPo) {
 			SeqMediaAssetPo sma = (SeqMediaAssetPo) o;
 			if (!rs.exist(sma.getSmaPublisher()+"_Sma_"+sma.getId()+"_Participle")) 
-				rs.set(sma.getSmaPublisher()+"_Sma_"+sma.getId()+"_Participle", str);
+				rs.set(sma.getSmaPublisher()+"_Sma_"+sma.getId()+"_Participle", str, 24*60*60*1000);
 		}
 		if(o instanceof MediaAssetPo) {
 			MediaAssetPo ma = new MediaAssetPo();
 			if(!rs.exist(ma.getMaPublisher()+"_Ma_"+ma.getId()+"_Participle"))
-			rs.set(ma.getMaPublisher()+"_Ma_"+ma.getId()+"_Participle", str);
+			rs.set(ma.getMaPublisher()+"_Ma_"+ma.getId()+"_Participle", str, 24*60*60*1000);
 		}
 	}
 	

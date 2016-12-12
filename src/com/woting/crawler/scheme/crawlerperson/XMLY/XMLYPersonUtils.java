@@ -32,12 +32,13 @@ public class XMLYPersonUtils {
 			po.setIsVerified(pm.get("isVerified").equals(true)?1:2);
 			String location = "";
 			if (pm.containsKey("province")) {
-				location += pm.get("province");
+				location += "_"+pm.get("province");
 			}
 			if (pm.containsKey("city")) {
-				location += pm.get("city");
+				location += "_"+pm.get("city");
 			}
 			if (!location.equals("")) {
+				location = location.substring(1);
 				po.setLocation(location);
 			}
 			po.setPortrait(pm.get("mobileLargeLogo")+"");

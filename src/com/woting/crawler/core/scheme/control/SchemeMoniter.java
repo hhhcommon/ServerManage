@@ -39,7 +39,7 @@ public class SchemeMoniter extends Thread {
 	public void startCrawler4j(){
 		try {
 			String crawlStorageFolder = "./tmp";
-			int numberOfCrawlers = 10;
+			int numberOfCrawlers = scheme.getNumberOfCrawlers();
 			CrawlConfig config = new CrawlConfig();
 			// 文明请求web：确保我们不发送超过1每秒请求数（1000毫秒之间的请求）。
 //			config.setPolitenessDelay(1000);

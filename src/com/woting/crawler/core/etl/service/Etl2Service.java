@@ -10,11 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import com.spiritdata.framework.core.cache.SystemCache;
 import com.spiritdata.framework.util.SequenceUUID;
+import com.spiritdata.framework.util.StringUtils;
 import com.woting.cm.core.ResOrgAsset.persis.po.ResOrgAssetPo;
 import com.woting.cm.core.ResOrgAsset.service.ResOrgAssetService;
 import com.woting.cm.core.channel.persis.po.ChannelAssetPo;
 import com.woting.cm.core.channel.persis.po.ChannelPo;
 import com.woting.cm.core.channel.service.ChannelService;
+import com.woting.cm.core.dict.persis.po.DictDetailPo;
 import com.woting.cm.core.dict.persis.po.DictRefResPo;
 import com.woting.cm.core.dict.service.DictService;
 import com.woting.cm.core.media.persis.po.MaSourcePo;
@@ -191,6 +193,7 @@ public class Etl2Service {
 				SeqMediaAssetPo se = (SeqMediaAssetPo) map.get("seq");
 				seqlist.add(se);
 				mediaService.insertSeqList(seqlist);
+				//保存主播信息
 				CPersonPo cps = cPersonService.getCPerson(al.getAlbumId(), "hotspot_Album");
 				if (cps!=null) {
 					PersonPo po = ConvertUtils.convert2Person(cps);
@@ -203,7 +206,51 @@ public class Etl2Service {
 					pf.setResTableName("wt_SeqMediaAsset");
 					pf.setcTime(new Timestamp(System.currentTimeMillis()));
 					personService.insertPersonRef(pf);
+					DictRefResPo dictRefResPo = new DictRefResPo();
+					dictRefResPo.setId(SequenceUUID.getPureUUID());
+					dictRefResPo.setRefName("主播-性别");
+					dictRefResPo.setDictMid("8");
+					if (cps.getSex()==0) {
+						dictRefResPo.setDictDid("xb003");
+					} else if (cps.getSex()==1) {
+						dictRefResPo.setDictDid("xb001");
+					} else if (cps.getSex()==2) {
+						dictRefResPo.setDictDid("xb002");
+					}
+					dictRefResPo.setResTableName("wt_Person");
+					dictRefResPo.setResId(po.getId());
+					dictRefResPo.setCTime(new Timestamp(System.currentTimeMillis()));
+					dictService.insertDictRef(dictRefResPo);
+					if (!StringUtils.isNullOrEmptyOrSpace(cps.getLocation())) {
+						String[] lco = cps.getLocation().split("_");
+						DictDetailPo ddpo = dictService.getDictDetail("2", "0", lco[0]);
+						if (ddpo!=null) {
+							if (lco.length>=2) {
+								DictDetailPo ddpo2 = dictService.getDictDetail("2", ddpo.getId(), lco[1]);
+								if (ddpo2!=null) {
+									dictRefResPo.setId(SequenceUUID.getPureUUID());
+									dictRefResPo.setRefName("主播-地区");
+									dictRefResPo.setDictMid("2");
+									dictRefResPo.setDictDid(ddpo2.getId());
+									dictRefResPo.setResTableName("wt_Person");
+									dictRefResPo.setResId(po.getId());
+									dictRefResPo.setCTime(new Timestamp(System.currentTimeMillis()));
+									dictService.insertDictRef(dictRefResPo);
+								}
+							} else {
+								dictRefResPo.setId(SequenceUUID.getPureUUID());
+								dictRefResPo.setRefName("主播-地区");
+								dictRefResPo.setDictMid("2");
+								dictRefResPo.setDictDid(ddpo.getId());
+								dictRefResPo.setResTableName("wt_Person");
+								dictRefResPo.setResId(po.getId());
+								dictRefResPo.setCTime(new Timestamp(System.currentTimeMillis()));
+								dictService.insertDictRef(dictRefResPo);
+							}
+						}
+					}
 				}
+				
 				dictreflist.add((DictRefResPo) map.get("dictref"));
 				chalist.add((ChannelAssetPo) map.get("cha"));
 				mecounts.add((MediaPlayCountPo) map.get("playnum"));

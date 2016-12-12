@@ -41,8 +41,9 @@
   </sql>
 
   <!-- 获得记录条数-->
-  <select id="getKeyWord" parameterType="java.lang.String" resultMap="BaseResultMap">
-    select * from wt_KeyWord where kwName=#{kwName,jdbcType=VARCHAR}
+  <select id="getList" parameterType="java.util.Map" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/> from wt_KeyWord 
+    <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
   </select>
   
   <insert id="insertKeyWordList" parameterType="map">

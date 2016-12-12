@@ -26,7 +26,7 @@ public class CrawlerSrcTimerJob implements Job {
 	public void execute(JobExecutionContext arg0) throws JobExecutionException {
 		long begtime = System.currentTimeMillis();
 		// 加载抓取方案
-		Scheme scheme = new Scheme(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent()+"conf/scheme.txt");
+		Scheme scheme = new Scheme();
 		if (scheme!=null) {
 			SystemCache.setCache(new CacheEle<Scheme>(CrawlerConstants.SCHEME, "抓取计划", scheme));
 		}
@@ -63,6 +63,10 @@ public class CrawlerSrcTimerJob implements Job {
 		etl2Process.setEtlnum(scheme.getSchemenum());
 		Etl2Controller etl2 = new Etl2Controller(etl2Process);
 		etl2.runningScheme();
+		
+		rs = new RedisOperService(scheme.getJedisConnectionFactory(),1);
+		RedisUtils.removeOldCrawler(rs, crawlernum);
+		rs.close();
 		
 		logger.info("第[{}]次抓取完成,耗时[{}]", scheme.getSchemenum(), System.currentTimeMillis()-begtime);
 		scheme.getRedisOperService().close();

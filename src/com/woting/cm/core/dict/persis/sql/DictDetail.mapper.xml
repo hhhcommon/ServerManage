@@ -83,6 +83,7 @@
   <select id="getList" resultMap="BaseResultMap" parameterType="java.util.Map">
     select <include refid="Base_Column_List"/>from plat_DictD
     <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
+    <if test="likeSql!=null"> ${likeSql}</if>
     <if test="sortByClause!=null">order by ${sortByClause}</if>
   </select>
 

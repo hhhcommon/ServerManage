@@ -177,7 +177,9 @@ public class Distinct {
 			Iterator<Album> als = allist.iterator();
 			while (als.hasNext()) {
 				Album al = (Album) als.next();
+				logger.info("正在进行比对专辑[{}]的下级节目", al.getAlbumPo().getAlbumName()+"_"+al.getAlbumPo().getAlbumPublisher());
 				List<AudioPo> aulist = al.getAudiolist();
+				
 				if (aulist != null && aulist.size() > 0) {
 					Iterator<AudioPo> aus = aulist.iterator();
 					while (aus.hasNext()) {
@@ -213,12 +215,12 @@ public class Distinct {
 			Iterator<AlbumPo> als = allist.iterator();
 			while (als.hasNext()) {
 				AlbumPo al = (AlbumPo) als.next();
+				logger.info("查询资源库是否存在存在专辑[{}]", al.getAlbumName() + "_" + al.getAlbumPublisher());
 				List<SeqMediaAssetPo> smalist = mediaService.getSeqInfo(al.getAlbumName(), al.getAlbumPublisher());
 				if (smalist != null && smalist.size() > 0) {
 					logger.info("资源库存在专辑[{}]", al.getAlbumName() + "_" + al.getAlbumPublisher());
 					Album album = new Album();
-					List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(),
-							al.getCrawlerNum());
+					List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
 					album.setAlbumPo(al);
 					album.setAudiolist(aulist);
 					oldlist.add(album);

@@ -9,10 +9,12 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.spiritdata.framework.util.SequenceUUID;
+import com.spiritdata.framework.util.StringUtils;
 import com.woting.cm.core.ResOrgAsset.persis.po.ResOrgAssetPo;
 import com.woting.cm.core.channel.persis.po.ChannelAssetPo;
 import com.woting.cm.core.channel.persis.po.ChannelPo;
 import com.woting.cm.core.dict.persis.po.DictRefResPo;
+import com.woting.cm.core.keyword.service.KeyWordService;
 import com.woting.cm.core.media.persis.po.MaSourcePo;
 import com.woting.cm.core.media.persis.po.MediaAssetPo;
 import com.woting.cm.core.media.persis.po.MediaPlayCountPo;
@@ -80,7 +82,7 @@ public abstract class ConvertUtils {
 				audio.setCrawlerNum(m.get("CrawlerNum") + "");
 				audio.setSchemeId(m.get("schemeId") + "");
 				audio.setSchemeName(m.get("schemeName") + "");
-				audio.setcTime(new Timestamp(System.currentTimeMillis()));
+				audio.setcTime(new Timestamp(Long.valueOf(m.get("cTime")+"")));
 				audios.add(audio);
 			}
 		}
@@ -131,7 +133,17 @@ public abstract class ConvertUtils {
 				MediaAssetPo ma = new MediaAssetPo();
 				ma.setId(au.getId());
 				ma.setMaTitle(au.getAudioName());
-				ma.setMaImg(au.getAudioImg());
+				if (au.getAudioPublisher().equals("蜻蜓")) {
+					ma.setMaImg(seq.getSmaImg());
+				} else {
+					String imgp = au.getAudioImg();
+					if (!StringUtils.isNullOrEmptyOrSpace(imgp) && imgp.length()>5) {
+						String imgpath = FileUtils.makeImgFile("2", imgp);
+						if (!StringUtils.isNullOrEmptyOrSpace(imgpath)) {
+							ma.setMaImg(imgpath);
+						}
+					}
+				}
 				ma.setMaURL(au.getAudioURL());
 				ma.setMaPubId(seq.getSmaPubId());
 				ma.setMaPublisher(seq.getSmaPublisher());
@@ -143,7 +155,8 @@ public abstract class ConvertUtils {
 				ma.setPubCount(1);
 				ma.setTimeLong(new Long(au.getDuration() + "000"));
 				ma.setMaStatus(1);
-				ma.setCTime(new Timestamp(System.currentTimeMillis()));
+				ma.setCTime(au.getcTime());
+				
 				
 				ResOrgAssetPo roa = new ResOrgAssetPo();
 				roa.setId(SequenceUUID.getPureUUID());
@@ -175,7 +188,6 @@ public abstract class ConvertUtils {
 				
 				PersonService personService = (PersonService) SpringShell.getBean("personService");
 				PersonRefPo pf = personService.getPersonRefBy("wt_SeqMediaAsset", seq.getId());
-				System.out.println(seq.getId());
 				if (pf!=null) {
 					pf.setRefName("主播-节目");
 				    pf.setResTableName("wt_MediaAsset");
@@ -211,7 +223,7 @@ public abstract class ConvertUtils {
 					cha.setFlowFlag(2);
 					cha.setInRuleIds("etl");
 					cha.setCheckRuleIds("etl");
-					cha.setCTime(new Timestamp(System.currentTimeMillis()));
+					cha.setCTime(au.getcTime());
 					cha.setPubTime(cha.getCTime());
 					if (chlist != null && chlist.size() > 0) {
 						for (ChannelPo ch : chlist) {
@@ -223,6 +235,12 @@ public abstract class ConvertUtils {
 					}
 					if (cha.getChannelId() == null || cha.getChannelId().equals("null"))
 						continue;
+					//存储标签关系
+					if (!StringUtils.isNullOrEmptyOrSpace(au.getAudioTags())) {
+						KeyWordService keyWordService = (KeyWordService) SpringShell.getBean("keyWordService");
+						keyWordService.saveKwAndKeRef(au.getAudioTags(), "wt_MediaAsset", ma.getId());
+						keyWordService.saveKwAndKeRef(au.getAudioTags(), "wt_Channel", cha.getChannelId());
+					}
 					chalist.add(cha);
 					malist.add(ma);
 					resAsslist.add(roa);
@@ -266,7 +284,13 @@ public abstract class ConvertUtils {
 		SeqMediaAssetPo seq = new SeqMediaAssetPo();
 		seq.setId(SequenceUUID.getPureUUID());
 		seq.setSmaTitle(al.getAlbumName());
-		seq.setSmaImg(al.getAlbumImg());
+		String imgp = al.getAlbumImg();
+		if (!StringUtils.isNullOrEmptyOrSpace(imgp) && imgp.length()>5) {
+			String imgpath = FileUtils.makeImgFile("2", imgp);
+			if (!StringUtils.isNullOrEmptyOrSpace(imgpath)) {
+				seq.setSmaImg(imgpath);
+			}
+		}
 		seq.setSmaPubType(1);
 		if (al.getAlbumPublisher().equals("喜马拉雅")) {
 			seq.setSmaPubId("2");
@@ -340,13 +364,20 @@ public abstract class ConvertUtils {
 					if (dictRefRes.getDictDid().equals(ch.getId())) {
 						cha.setChannelId(ch.getId());
 						map.put("cha", cha);
+						//存储标签关系
+						if (!StringUtils.isNullOrEmptyOrSpace(al.getAlbumTags())) {
+							KeyWordService keyWordService = (KeyWordService) SpringShell.getBean("keyWordService");
+							keyWordService.saveKwAndKeRef(al.getAlbumTags(), "wt_SeqMediaAsset", seq.getId());
+							keyWordService.saveKwAndKeRef(al.getAlbumTags(), "wt_Channel", cha.getChannelId());
+						}
 						break;
 					}
 				}
 			}
 		}
-		if (map.containsKey("cha"))
+		if (map.containsKey("cha")) {
 			return map;
+		}
 		else
 			return null;
 	}
@@ -367,8 +398,12 @@ public abstract class ConvertUtils {
 				}
 			}
 		}
-		if (cpo.getPortrait()!=null) {
-			po.setPortrait(cpo.getPortrait());
+		String imgp = cpo.getPortrait();
+		if (!StringUtils.isNullOrEmptyOrSpace(imgp) && imgp.length()>5) {
+			String imgpath = FileUtils.makeImgFile("1", imgp);
+			if (!StringUtils.isNullOrEmptyOrSpace(imgpath)) {
+				po.setPortrait(imgpath);
+			}
 		}
 		if (cpo.getAge()!=null) {
 			po.setAge(cpo.getAge());
