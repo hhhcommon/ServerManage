@@ -42,6 +42,7 @@ import com.woting.crawler.core.etl.model.Etl2Process;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.utils.ConvertUtils;
 import com.woting.crawler.scheme.utils.FileUtils;
+import com.woting.crawler.scheme.utils.ShareHtml;
 
 @Service
 public class Etl2Service {
@@ -163,6 +164,7 @@ public class Etl2Service {
 							} else {
 								logger.info("已存在的专辑无最新下级声音资源");
 							}
+							new ShareHtml(seq.getId(), "SEQU").start();;
 						}
 					}
 				}
@@ -288,6 +290,7 @@ public class Etl2Service {
 					} else {
 						logger.info("新专辑无下级声音资源");
 					}
+					new ShareHtml(se.getId(), "SEQU").start();
 				}
 			}
 		}
@@ -334,6 +337,7 @@ public class Etl2Service {
 					} else {
 						logger.info("已存在的相似专辑无最新下级声音资源");
 					}
+					new ShareHtml(sma.getId(), "SEQU").start();
 				}
 				maslist.clear();
 				resAss.clear();
