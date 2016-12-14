@@ -98,16 +98,23 @@ public class QTParseUtils {
 						Map<String, Object> m = l.get(0);
 						pDate.put("playCount",m.get("playcount"));
 					}
-					doc = Jsoup.connect("http://api2.qingting.fm/v6/media/programs/"+au.get("id")).ignoreContentType(true).get();
-					str = doc.select("body").get(0).html();
-					str = HttpUtils.getTextByDispose(str);
-					map = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
-					if(map!=null&&map.containsKey("data")){
-						Map<String, Object> m = (Map<String, Object>) map.get("data");
-						String datestr = m.get("update_time") + "";
-						long date =  DateUtils.getDateTime("yyyy-MM-dd HH:mm:ss", datestr).getTime();
-						pDate.put("cTime", date);
+					try {
+						doc = Jsoup.connect("http://api2.qingting.fm/v6/media/programs/"+au.get("id")).ignoreContentType(true).get();
+					    str = doc.select("body").get(0).html();
+					    str = HttpUtils.getTextByDispose(str);
+					    map = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
+					    if(map!=null&&map.containsKey("data")){
+						    Map<String, Object> m = (Map<String, Object>) map.get("data");
+						    String datestr = m.get("update_time") + "";
+					    	long date =  DateUtils.getDateTime("yyyy-MM-dd HH:mm:ss", datestr).getTime();
+						    pDate.put("cTime", date);
+					    }
+					} catch (Exception e2) {
+						e2.printStackTrace();
+						pDate.put("cTime", System.currentTimeMillis());
+						continue;
 					}
+					
 					RedisUtils.addQTAudio(rs, parseData.get("CrawlerNum")+"", pDate);
 //					num++;
 //					if(num==2){

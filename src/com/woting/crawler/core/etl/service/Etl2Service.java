@@ -156,8 +156,8 @@ public class Etl2Service {
 								dictService.insertDictRefList(dictreflist);
 								// 往栏目发布表里插入发布信息
 								channelService.insertChannelAssetList(chalist);
-								//插入主播信息
-								if (pfs!=null && pfs.size()>0) {
+								// 插入主播信息
+								if (pfs != null && pfs.size() > 0) {
 									personService.insertPersonRef(pfs);
 								}
 							} else {
@@ -172,14 +172,13 @@ public class Etl2Service {
 
 	@SuppressWarnings("unchecked")
 	private void makeNewAlbums(List<AlbumPo> allist) {
-
 		if (allist != null && allist.size() > 0) {
 			for (AlbumPo al : allist) {
 				Map<String, Object> map = ConvertUtils.convert2SeqMediaAsset(al, cate2dictdlist, chlist);
 				if (map == null) {
 					continue;
 				}
-				
+
 				List<SeqMediaAssetPo> seqlist = new ArrayList<SeqMediaAssetPo>();
 				List<MediaAssetPo> malist = new ArrayList<MediaAssetPo>();
 				List<ResOrgAssetPo> resAss = new ArrayList<ResOrgAssetPo>();
@@ -189,13 +188,13 @@ public class Etl2Service {
 				List<SeqMaRefPo> seqreflist = new ArrayList<SeqMaRefPo>();
 				List<MediaPlayCountPo> mecounts = new ArrayList<MediaPlayCountPo>();
 				List<PersonRefPo> pfs = new ArrayList<>();
-				
+
 				SeqMediaAssetPo se = (SeqMediaAssetPo) map.get("seq");
 				seqlist.add(se);
 				mediaService.insertSeqList(seqlist);
-				//保存主播信息
+				// 保存主播信息
 				CPersonPo cps = cPersonService.getCPerson(al.getAlbumId(), "hotspot_Album");
-				if (cps!=null) {
+				if (cps != null) {
 					PersonPo po = ConvertUtils.convert2Person(cps);
 					personService.insertPerson(po);
 					PersonRefPo pf = new PersonRefPo();
@@ -210,11 +209,11 @@ public class Etl2Service {
 					dictRefResPo.setId(SequenceUUID.getPureUUID());
 					dictRefResPo.setRefName("主播-性别");
 					dictRefResPo.setDictMid("8");
-					if (cps.getSex()==0) {
+					if (cps.getSex() == 0) {
 						dictRefResPo.setDictDid("xb003");
-					} else if (cps.getSex()==1) {
+					} else if (cps.getSex() == 1) {
 						dictRefResPo.setDictDid("xb001");
-					} else if (cps.getSex()==2) {
+					} else if (cps.getSex() == 2) {
 						dictRefResPo.setDictDid("xb002");
 					}
 					dictRefResPo.setResTableName("wt_Person");
@@ -224,10 +223,10 @@ public class Etl2Service {
 					if (!StringUtils.isNullOrEmptyOrSpace(cps.getLocation())) {
 						String[] lco = cps.getLocation().split("_");
 						DictDetailPo ddpo = dictService.getDictDetail("2", "0", lco[0]);
-						if (ddpo!=null) {
-							if (lco.length>=2) {
+						if (ddpo != null) {
+							if (lco.length >= 2) {
 								DictDetailPo ddpo2 = dictService.getDictDetail("2", ddpo.getId(), lco[1]);
-								if (ddpo2!=null) {
+								if (ddpo2 != null) {
 									dictRefResPo.setId(SequenceUUID.getPureUUID());
 									dictRefResPo.setRefName("主播-地区");
 									dictRefResPo.setDictMid("2");
@@ -250,7 +249,6 @@ public class Etl2Service {
 						}
 					}
 				}
-				
 				dictreflist.add((DictRefResPo) map.get("dictref"));
 				chalist.add((ChannelAssetPo) map.get("cha"));
 				mecounts.add((MediaPlayCountPo) map.get("playnum"));
@@ -264,6 +262,8 @@ public class Etl2Service {
 				resass.setOrigTableName("hotspot_Album");
 				resass.setcTime(new Timestamp(System.currentTimeMillis()));
 				resAss.add(resass);
+
+				saveContents(malist, resAss, maslist, seqreflist, mecounts, dictreflist, chalist, pfs);
 
 				// 获取抓取到的专辑下级节目信息
 				List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(),
@@ -284,23 +284,7 @@ public class Etl2Service {
 					logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}],专辑声音关系数量[{}]", malist.size(),
 							maslist.size(), dictreflist.size(), chalist.size(), seqreflist.size());
 					if (malist.size() > 0) {
-						// 往资源库插入播放流数据
-						mediaService.insertMasList(maslist);
-						// 往资源库插入专辑声音关系表数据
-						mediaService.insertSeqRefList(seqreflist);
-						// 往资源库插入音频播放次数数据
-						mediaService.insertMediaPlayCountList(mecounts);
-						// 往字典关系表里插入内容分类关系数据
-						dictService.insertDictRefList(dictreflist);
-						// 往栏目发布表里插入发布信息
-						channelService.insertChannelAssetList(chalist);
-						// 往资源库插入声音数据
-						mediaService.insertMaList(malist);
-						// 往资源库插入资源与外部资源对照
-						resAssService.insertResOrgAssetList(resAss);
-						if (pfs!=null && pfs.size()>0) {
-							personService.insertPersonRef(pfs);
-						}
+						saveContents(malist, resAss, maslist, seqreflist, mecounts, dictreflist, chalist, pfs);
 					} else {
 						logger.info("新专辑无下级声音资源");
 					}
@@ -329,38 +313,21 @@ public class Etl2Service {
 					SeqMediaAssetPo sma = (SeqMediaAssetPo) m.get("Sma");
 					Map<String, Object> mall = ConvertUtils.convert2MediaAsset(newaus, sma, cate2dictdlist, chlist);
 					if (mall != null && mall.containsKey("malist")) {
-						malist=(List<MediaAssetPo>) mall.get("malist");
-						resAss=(List<ResOrgAssetPo>) mall.get("resAss");
-						maslist=(List<MaSourcePo>) mall.get("maslist");
-						dictreflist=(List<DictRefResPo>) mall.get("dictreflist");
-						chalist=(List<ChannelAssetPo>) mall.get("chalist");
-						seqreflist=(List<SeqMaRefPo>) mall.get("seqmareflist");
-						mecounts=(List<MediaPlayCountPo>) mall.get("mediaplaycount");
-						pfs=(List<PersonRefPo>) mall.get("personRef");
+						malist = (List<MediaAssetPo>) mall.get("malist");
+						resAss = (List<ResOrgAssetPo>) mall.get("resAss");
+						maslist = (List<MaSourcePo>) mall.get("maslist");
+						dictreflist = (List<DictRefResPo>) mall.get("dictreflist");
+						chalist = (List<ChannelAssetPo>) mall.get("chalist");
+						seqreflist = (List<SeqMaRefPo>) mall.get("seqmareflist");
+						mecounts = (List<MediaPlayCountPo>) mall.get("mediaplaycount");
+						pfs = (List<PersonRefPo>) mall.get("personRef");
 					}
 					logger.info("处理相似专辑数据");
 					logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}],专辑声音关系数量[{}]", malist.size(),
 							maslist.size(), dictreflist.size(), chalist.size(), seqreflist.size());
 					if (malist.size() > 0) {
 						try {
-							// 往资源库插入声音数据
-							mediaService.insertMaList(malist);
-							// 往资源库插入资源与外部资源对照
-							resAssService.insertResOrgAssetList(resAss);
-							// 往资源库插入播放流数据
-							mediaService.insertMasList(maslist);
-							// 往资源库插入专辑声音关系表数据
-							mediaService.insertSeqRefList(seqreflist);
-							// 往资源库插入音频播放次数数据
-							mediaService.insertMediaPlayCountList(mecounts);
-							// 往字典关系表里插入内容分类关系数据
-							dictService.insertDictRefList(dictreflist);
-							// 往栏目发布表里插入发布信息
-							channelService.insertChannelAssetList(chalist);
-							//插入主播关联信息.
-							if (pfs!=null && pfs.size()>0) {
-								personService.insertPersonRef(pfs);
-							}
+							saveContents(malist, resAss, maslist, seqreflist, mecounts, dictreflist, chalist, pfs);
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -387,6 +354,42 @@ public class Etl2Service {
 					}
 				}
 			}
+		}
+	}
+
+	public void saveContents(List<MediaAssetPo> malist, List<ResOrgAssetPo> resAss,
+			List<MaSourcePo> maslist, List<SeqMaRefPo> seqreflist, List<MediaPlayCountPo> mecounts,
+			List<DictRefResPo> dictreflist, List<ChannelAssetPo> chalist, List<PersonRefPo> pfs) {
+		// 往资源库插入声音数据
+		if (malist != null && malist.size() > 0) {
+			mediaService.insertMaList(malist);
+		}
+		// 往资源库插入资源与外部资源对照
+		if (resAss != null && resAss.size() > 0) {
+			resAssService.insertResOrgAssetList(resAss);
+		}
+		if (maslist != null && maslist.size() > 0) {
+			mediaService.insertMasList(maslist);
+		}
+		// 往资源库插入专辑声音关系表数据
+		if (seqreflist != null && seqreflist.size() > 0) {
+			mediaService.insertSeqRefList(seqreflist);
+		}
+		// 往资源库插入音频播放次数数据
+		if (mecounts != null && mecounts.size() > 0) {
+			mediaService.insertMediaPlayCountList(mecounts);
+		}
+		// 往字典关系表里插入内容分类关系数据
+		if (dictreflist != null && dictreflist.size() > 0) {
+			dictService.insertDictRefList(dictreflist);
+		}
+		// 往栏目发布表里插入发布信息
+		if (chalist != null && chalist.size() > 0) {
+			channelService.insertChannelAssetList(chalist);
+		}
+		// 插入主播关联信息.
+		if (pfs != null && pfs.size() > 0) {
+			personService.insertPersonRef(pfs);
 		}
 	}
 }
