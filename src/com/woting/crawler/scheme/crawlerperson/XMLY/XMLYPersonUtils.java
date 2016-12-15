@@ -1,10 +1,8 @@
 package com.woting.crawler.scheme.crawlerperson.XMLY;
 
 import java.util.Map;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-
 import com.spiritdata.framework.util.JsonUtils;
 import com.spiritdata.framework.util.SequenceUUID;
 import com.woting.crawler.core.cperson.persis.po.CPersonPo;
@@ -16,7 +14,7 @@ public class XMLYPersonUtils {
 	public static CPersonPo parsePerson(String personId) {
 		Document doc = null;
 		try {
-			doc = Jsoup.connect("http://www.ximalaya.com/mobile/v1/artist/intro?device=android&statEvent=pageview%2Fuser%40"+personId+"&statPage=tab%40%E5%8F%91%E7%8E%B0_%E4%B8%BB%E6%92%AD&statPosition=2&toUid="+personId).ignoreContentType(true).get();
+			doc = Jsoup.connect("http://www.ximalaya.com/mobile/v1/artist/intro?device=android&statEvent=pageview%2Fuser%40"+personId+"&statPage=tab%40%E5%8F%91%E7%8E%B0_%E4%B8%BB%E6%92%AD&statPosition=2&toUid="+personId).timeout(10000).ignoreContentType(true).get();
 			String jsonstr = doc.body().html();
 			Map<String, Object> pm = (Map<String, Object>) JsonUtils.jsonToObj(jsonstr, Map.class);
 			CPersonPo po = new CPersonPo();

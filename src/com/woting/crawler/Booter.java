@@ -1,10 +1,19 @@
 package com.woting.crawler;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.quartz.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.spiritdata.framework.core.cache.CacheEle;
 import com.spiritdata.framework.core.cache.SystemCache;
+import com.woting.cm.core.channel.service.ChannelService;
+import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
+import com.woting.cm.core.media.service.MediaService;
 import com.woting.crawler.core.timer.model.Timer;
 import com.woting.crawler.ext.SpringShell;
 

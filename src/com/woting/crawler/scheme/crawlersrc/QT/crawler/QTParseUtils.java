@@ -1,5 +1,6 @@
 package com.woting.crawler.scheme.crawlersrc.QT.crawler;
 
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +61,7 @@ public class QTParseUtils {
 			CPersonPo po = QTPersonUtils.parsePerson(parseData.get("albumId")+"");
 			saveCPerson(po, "hotspot_Album", parseData.get("albumId")+"");
 		} catch (Exception e) {e.printStackTrace();}
-		int num = 0;
+//		int num = 0;
 		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
 		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
 		try {
@@ -116,11 +117,11 @@ public class QTParseUtils {
 					}
 					
 					RedisUtils.addQTAudio(rs, parseData.get("CrawlerNum")+"", pDate);
-					num++;
-					if(num==2){
-						num=0;
-						break;
-					}
+//					num++;
+//					if(num==2){
+//						num=0;
+//						break;
+//					}
 				}
 			}
 		} catch (Exception e) {e.printStackTrace();}
@@ -175,10 +176,16 @@ public class QTParseUtils {
 	
 	private static void saveCPerson(CPersonPo po, String resTableName, String resId) {
 		if (po!=null) {
-			po.setResTableName(resTableName);
-			po.setResId(resId);
 			CPersonService cPersonService = (CPersonService) SpringShell.getBean("CPersonService");
-			cPersonService.insertPerson(po);
+			CPersonPo cPo = cPersonService.getCPerson(po.getpSource(), resId, resTableName);
+			if (cPo==null) {
+				po.setResTableName(resTableName);
+			    po.setResId(resId);
+			    po.setcTime(new Timestamp(System.currentTimeMillis()));
+			    cPersonService.insertPerson(po);
+			} else {
+				po = cPo;
+			}
 		}
 	}
 }

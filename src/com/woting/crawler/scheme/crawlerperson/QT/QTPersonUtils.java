@@ -16,7 +16,7 @@ public class QTPersonUtils {
 	public static CPersonPo parsePerson(String albumsId) {
 		Document doc = null;
 		try {
-			doc = Jsoup.connect("http://api2.qingting.fm/v6/media/channelondemands/"+albumsId).ignoreContentType(true).get();
+			doc = Jsoup.connect("http://api2.qingting.fm/v6/media/channelondemands/"+albumsId).timeout(10000).ignoreContentType(true).get();
 			String aljson = doc.body().html();
 			Map<String, Object> alm = (Map<String, Object>) JsonUtils.jsonToObj(aljson, Map.class);
 			alm = (Map<String, Object>) alm.get("data");

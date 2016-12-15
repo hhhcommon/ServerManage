@@ -195,7 +195,7 @@ public class Etl2Service {
 				seqlist.add(se);
 				mediaService.insertSeqList(seqlist);
 				// 保存主播信息
-				CPersonPo cps = cPersonService.getCPerson(al.getAlbumId(), "hotspot_Album");
+				CPersonPo cps = cPersonService.getCPerson(se.getSmaPublisher(), al.getAlbumId(), "hotspot_Album");
 				if (cps != null) {
 					PersonPo po = ConvertUtils.convert2Person(cps);
 					personService.insertPerson(po);
@@ -254,7 +254,6 @@ public class Etl2Service {
 				dictreflist.add((DictRefResPo) map.get("dictref"));
 				chalist.add((ChannelAssetPo) map.get("cha"));
 				mecounts.add((MediaPlayCountPo) map.get("playnum"));
-
 				ResOrgAssetPo resass = new ResOrgAssetPo();
 				resass.setId(SequenceUUID.getPureUUID());
 				resass.setResId(se.getId());
@@ -264,7 +263,6 @@ public class Etl2Service {
 				resass.setOrigTableName("hotspot_Album");
 				resass.setcTime(new Timestamp(System.currentTimeMillis()));
 				resAss.add(resass);
-
 				saveContents(malist, resAss, maslist, seqreflist, mecounts, dictreflist, chalist, pfs);
 
 				// 获取抓取到的专辑下级节目信息

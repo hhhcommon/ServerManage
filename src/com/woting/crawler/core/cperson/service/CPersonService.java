@@ -35,8 +35,9 @@ public class CPersonService {
 		}
 	}
 	
-	public CPersonPo getCPerson(String resId, String resTableName) {
+	public CPersonPo getCPerson(String pSource, String resId, String resTableName) {
 		Map<String, Object> m = new HashMap<>();
+		m.put("pSource", pSource);
 		m.put("resTableName", resTableName);
 		m.put("resId", resId);
 		m.put("orderSql", "cTime Desc");

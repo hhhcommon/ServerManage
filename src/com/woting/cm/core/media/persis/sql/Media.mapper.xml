@@ -325,7 +325,7 @@
 	</select>
 	
 	<select id="getSmaListByPublisher" parameterType="java.util.Map" resultMap="seqMediaAssetMap">
-		select * from wt_SeqMediaAsset where smaPublisher!=#{smaPublisher,jdbcType=VARCHAR} limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
+		select * from wt_SeqMediaAsset where smaPublisher=#{smaPublisher,jdbcType=VARCHAR} limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
 	</select>
 	
 	<select id="getSmaById" parameterType="java.lang.String" resultMap="seqMediaAssetMap">

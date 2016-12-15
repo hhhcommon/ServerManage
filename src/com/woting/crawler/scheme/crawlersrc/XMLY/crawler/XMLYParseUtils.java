@@ -1,5 +1,6 @@
 package com.woting.crawler.scheme.crawlersrc.XMLY.crawler;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Map;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -322,6 +323,7 @@ public abstract class XMLYParseUtils {
 		if (po!=null) {
 			po.setResTableName(resTableName);
 			po.setResId(resId);
+			po.setcTime(new Timestamp(System.currentTimeMillis()));
 			CPersonService cPersonService = (CPersonService) SpringShell.getBean("CPersonService");
 			cPersonService.insertPerson(po);
 		}
