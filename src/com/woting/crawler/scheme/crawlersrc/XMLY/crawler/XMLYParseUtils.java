@@ -112,7 +112,7 @@ public abstract class XMLYParseUtils {
 			}
 		} catch (Exception ex) {ex.printStackTrace();}
 		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
-		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
 		RedisUtils.addXMLYOriginalSeq(rs, parseData.get("CrawlerNum") + "", parseData);
 		rs.close();
 	}
@@ -254,7 +254,7 @@ public abstract class XMLYParseUtils {
 //			ex.printStackTrace();
 //		}
 		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
-		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
 		RedisUtils.addXMLYOriginalMa(rs, parseData.get("CrawlerNum") + "", parseData);
 		rs.close();
 	}

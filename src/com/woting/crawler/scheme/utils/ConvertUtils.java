@@ -150,13 +150,16 @@ public abstract class ConvertUtils {
 				ma.setMaPubType(seq.getSmaPubType());
 				ma.setLangDid(seq.getLangDid());
 				ma.setLanguage(seq.getLanguage());
-				ma.setDescn(au.getDescn());
+				if (au.getDescn()!=null && !au.getDescn().equals("null")) {
+					ma.setDescn(au.getDescn());
+				} else {
+					ma.setDescn("欢迎大家收听"+au.getAudioName());
+				}
 				ma.setKeyWords(au.getAudioTags());
 				ma.setPubCount(1);
 				ma.setTimeLong(new Long(au.getDuration() + "000"));
 				ma.setMaStatus(1);
 				ma.setCTime(au.getcTime());
-				
 				
 				ResOrgAssetPo roa = new ResOrgAssetPo();
 				roa.setId(SequenceUUID.getPureUUID());
@@ -311,8 +314,8 @@ public abstract class ConvertUtils {
 			seq.setKeyWords(al.getAlbumTags());
 		seq.setLangDid("zho");
 		seq.setLanguage("中文");
-		if (al.getDescn() != null && !al.getDescn().equals("null"))
-			seq.setDescn(al.getDescn());
+		if (al.getDescn() != null && !al.getDescn().equals("null")) seq.setDescn(al.getDescn());
+		else seq.setDescn("欢迎大家收听"+seq.getSmaTitle());
 		seq.setCTime(new Timestamp(System.currentTimeMillis()));
 		seq.setPubCount(1);
 		seq.setSmaStatus(1);

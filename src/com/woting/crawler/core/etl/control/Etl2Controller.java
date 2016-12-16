@@ -33,5 +33,6 @@ public class Etl2Controller {
 		}
 		logger.info("开始第二次数据转换");
 		etl2Service.getDictAndCrawlerDict(etl2Process);
+		rs.close();
 	}
 }

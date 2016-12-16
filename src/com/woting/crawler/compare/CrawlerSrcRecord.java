@@ -26,7 +26,7 @@ public class CrawlerSrcRecord {
 	public CrawlerSrcRecord(String crawlwenum) {
 		this.crawlernum = (Integer.valueOf(crawlwenum)-1)+"";
 		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
-		rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+		rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
 	}
 	
 	public void reloadCrawlerInfo(){

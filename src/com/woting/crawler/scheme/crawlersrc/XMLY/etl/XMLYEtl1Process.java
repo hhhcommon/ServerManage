@@ -27,7 +27,7 @@ public class XMLYEtl1Process {
 
 	public XMLYEtl1Process(Etl1Process etl1Process) {
 		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
-		rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+		rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
 		this.crawlerNum = scheme.getSchemenum();
 		this.etl1Service = (Etl1Service) SpringShell.getBean("etl1Service");
 		catemap = RedisUtils.getOrigData(rs, "XMLY_FastGetCategoryId_" + this.crawlerNum);

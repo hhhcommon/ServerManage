@@ -30,7 +30,7 @@ public class QTEtl1Process {
 	public QTEtl1Process(Etl1Process etl1Process) {
 		etl1Service = (Etl1Service) SpringShell.getBean("etl1Service");
 		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
-		this.rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+		this.rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
 		this.crawlerNum = scheme.getSchemenum();
 		catemap = RedisUtils.getOrigData(rs, "QT_ResourceIdAndCategoryId_" + etl1Process.getEtlnum());
 	}

@@ -3,7 +3,8 @@ package com.woting.crawler.core.scheme.persis.po;
 public class SchemePo {
 	private String Schemenum;
 	private String CrawlerExtent;
-	private String numberOfCrawlers;
+	private String NumberOfCrawlers;
+	private String RedisDB;
 	public String getSchemenum() {
 		return Schemenum;
 	}
@@ -17,9 +18,15 @@ public class SchemePo {
 		CrawlerExtent = crawlerExtent;
 	}
 	public String getNumberOfCrawlers() {
-		return numberOfCrawlers;
+		return NumberOfCrawlers;
 	}
 	public void setNumberOfCrawlers(String numberOfCrawlers) {
-		this.numberOfCrawlers = numberOfCrawlers;
+		this.NumberOfCrawlers = numberOfCrawlers;
+	}
+	public String getRedisDB() {
+		return RedisDB;
+	}
+	public void setRedisDB(String redisDB) {
+		RedisDB = redisDB;
 	}
 }

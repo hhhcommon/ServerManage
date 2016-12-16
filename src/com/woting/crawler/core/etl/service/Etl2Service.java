@@ -61,8 +61,7 @@ public class Etl2Service {
 
 	@SuppressWarnings("unchecked")
 	public void getDictAndCrawlerDict(Etl2Process etl2Process) {
-		cate2dictdlist = FileUtils
-				.readFileByJson(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent() + "conf/craw.txt");
+		cate2dictdlist = FileUtils.readFileByJson(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent() + "conf/craw.txt");
 		audioService = (AudioService) SpringShell.getBean("audioService");
 		mediaService = (MediaService) SpringShell.getBean("mediaService");
 		resAssService = (ResOrgAssetService) SpringShell.getBean("resOrgAssetService");

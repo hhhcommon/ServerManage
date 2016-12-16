@@ -61,9 +61,9 @@ public class QTParseUtils {
 			CPersonPo po = QTPersonUtils.parsePerson(parseData.get("albumId")+"");
 			saveCPerson(po, "hotspot_Album", parseData.get("albumId")+"");
 		} catch (Exception e) {e.printStackTrace();}
-//		int num = 0;
+		int num = 0;
 		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
-		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
 		try {
 			els = doc.select("li[class=playable clearfix]");
 			if(els!=null&&!els.isEmpty()) {
@@ -117,11 +117,11 @@ public class QTParseUtils {
 					}
 					
 					RedisUtils.addQTAudio(rs, parseData.get("CrawlerNum")+"", pDate);
-//					num++;
-//					if(num==2){
-//						num=0;
-//						break;
-//					}
+					num++;
+					if(num==2){
+						num=0;
+						break;
+					}
 				}
 			}
 		} catch (Exception e) {e.printStackTrace();}
@@ -169,7 +169,7 @@ public class QTParseUtils {
 			}
 		} catch (Exception e) {e.printStackTrace();}
 		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
-		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
 		RedisUtils.addQTCategory(rs, parseData.get("CrawlerNum")+"", map);
 		rs.close();
 	}

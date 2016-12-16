@@ -34,7 +34,7 @@ public class XMLYCrawlerRedis extends Thread {
 					catemap.put(catename, cateid);
 				}
 				if (catemap != null) {
-					RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+					RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
 					RedisUtils.addXMLYCategory(rs, scheme.getSchemenum(), catemap);
 					rs.close();
 				}

@@ -31,7 +31,7 @@ public class CrawlerSrcTimerJob implements Job {
 			SystemCache.setCache(new CacheEle<Scheme>(CrawlerConstants.SCHEME, "抓取计划", scheme));
 		}
 		String crawlernum = scheme.getSchemenum();
-		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(),1);
+		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(),scheme.getRedisDB());
 		while (RedisUtils.isOrNoCrawlerFinish(rs,crawlernum)) {
 			logger.info("开始判断redis里是否存在当前抓取序号[{}]是否已存在", crawlernum);
 			logger.info("抓取序号[{}]已存在", crawlernum);
@@ -64,7 +64,7 @@ public class CrawlerSrcTimerJob implements Job {
 		Etl2Controller etl2 = new Etl2Controller(etl2Process);
 		etl2.runningScheme();
 		
-		rs = new RedisOperService(scheme.getJedisConnectionFactory(),1);
+		rs = new RedisOperService(scheme.getJedisConnectionFactory(),scheme.getRedisDB());
 		RedisUtils.removeOldCrawler(rs, crawlernum);
 		rs.close();
 		

@@ -111,7 +111,8 @@
   <bean id="scheme" class="com.woting.crawler.core.scheme.persis.po.SchemePo" scope="prototype">
     <property name="Schemenum" value="${scheme.Schemenum}"/>
     <property name="CrawlerExtent" value="${scheme.CrawlerExtent}"/>
-    <property name="numberOfCrawlers" value="${scheme.numberOfCrawlers}"/>
+    <property name="NumberOfCrawlers" value="${scheme.NumberOfCrawlers}"/>
+    <property name="RedisDB" value="${scheme.RedisDB}"/>
   </bean>
 
   <!-- 扫描类包，将标注Spring注解的类自动转化Bean，同时完成Bean的注入 -->

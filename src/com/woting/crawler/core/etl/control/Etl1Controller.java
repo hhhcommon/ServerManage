@@ -34,7 +34,7 @@ public class Etl1Controller {
 				Thread.sleep(10000);
 			} catch (InterruptedException e) {e.printStackTrace();}
 		}
-		rs.close();
+		
 		new QTEtl1Process(etl1Process).makeQTOrigDataList();
 		new XMLYEtl1Process(etl1Process).makeXMLYOrigDataList();
 		etl1Service.removeNull();
@@ -45,7 +45,6 @@ public class Etl1Controller {
 //		logger.info("喜马拉雅FM抓取数据第一次转换数据存放中间库中");
 //		etl1Service.insertSqlAlbumAndAudio(xmlym);
 //		logger.info("喜马拉雅FM抓取数据第一次转换完成");
-		
 		RedisUtils.writeEtl1Finish(rs, etl1Process.getEtlnum(), "");
 	}
 }

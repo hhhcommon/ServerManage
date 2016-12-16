@@ -72,7 +72,7 @@ public class SchemeMoniter extends Thread {
 			controller.waitUntilFinish();
 			//写入抓取完成信息
 			Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
-			RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+			RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
 			RedisUtils.writeCrawlerFinishInfo(rs, crawlernum);
 			rs.close();
 		} catch (Exception e) {

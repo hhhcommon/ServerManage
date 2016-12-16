@@ -14,6 +14,7 @@ public class Scheme {
 	private String schemenum;
 	private String crawlerExtent;
 	private int numberOfCrawlers;
+	private int redisDB;
 	private Timestamp cTimestamp;
 	private Etl1Process etl1Process;
 	private Etl2Process etl2Process;
@@ -25,10 +26,11 @@ public class Scheme {
 		this.setSchemenum(schemePo.getSchemenum());
 		this.setCrawlerExtent(schemePo.getCrawlerExtent());
 		this.setNumberOfCrawlers(StringUtils.isNullOrEmptyOrSpace(schemePo.getNumberOfCrawlers())?10:Integer.valueOf(schemePo.getNumberOfCrawlers()));
+		this.setRedisDB(Integer.valueOf(schemePo.getRedisDB()));
 		this.setcTimestamp(new Timestamp(System.currentTimeMillis()));
 		this.etl1Process = new Etl1Process();
 		this.jedisConnectionFactory = (JedisConnectionFactory) SpringShell.getBean("connectionFactory");
-		this.redisOperService = new RedisOperService(jedisConnectionFactory, 1);
+		this.redisOperService = new RedisOperService(jedisConnectionFactory, this.getRedisDB());
 	}
 	
 	public String getCrawlerExtent() {
@@ -46,11 +48,15 @@ public class Scheme {
 	public int getNumberOfCrawlers() {
 		return numberOfCrawlers;
 	}
-
 	public void setNumberOfCrawlers(int numberOfCrawlers) {
 		this.numberOfCrawlers = numberOfCrawlers;
 	}
-
+	public int getRedisDB() {
+		return redisDB;
+	}
+	public void setRedisDB(int redisDB) {
+		this.redisDB = redisDB;
+	}
 	public JedisConnectionFactory getJedisConnectionFactory() {
 		return jedisConnectionFactory;
 	}

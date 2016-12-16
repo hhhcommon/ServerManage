@@ -35,7 +35,7 @@ public class Distinct {
 
 	public Distinct() {
 		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
-		rs = new RedisOperService(scheme.getJedisConnectionFactory(), 1);
+		rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
 	}
 
 	/**
