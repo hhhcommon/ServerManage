@@ -99,7 +99,7 @@ public class Etl2Service {
 		makeSameAlbums(samelist);
 		newlist = (List<AlbumPo>) m.get("newlist");
 		// 新增资源库
-		makeNewAlbums(newlist);
+		makeNewAlbums(newlist, null);
 	}
 
 	/**
@@ -172,14 +172,13 @@ public class Etl2Service {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void makeNewAlbums(List<AlbumPo> allist) {
+	public void makeNewAlbums(List<AlbumPo> allist , List<AudioPo> aulist) {
 		if (allist != null && allist.size() > 0) {
 			for (AlbumPo al : allist) {
 				Map<String, Object> map = ConvertUtils.convert2SeqMediaAsset(al, cate2dictdlist, chlist);
 				if (map == null) {
 					continue;
 				}
-
 				List<SeqMediaAssetPo> seqlist = new ArrayList<SeqMediaAssetPo>();
 				List<MediaAssetPo> malist = new ArrayList<MediaAssetPo>();
 				List<ResOrgAssetPo> resAss = new ArrayList<ResOrgAssetPo>();
@@ -265,8 +264,10 @@ public class Etl2Service {
 				saveContents(malist, resAss, maslist, seqreflist, mecounts, dictreflist, chalist, pfs);
 
 				// 获取抓取到的专辑下级节目信息
-				List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(),
+				if (aulist==null) {
+					aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(),
 						al.getCrawlerNum());
+				}
 				if (aulist.size() > 0) {
 					Map<String, Object> mall = ConvertUtils.convert2MediaAsset(aulist, se, cate2dictdlist, chlist);
 					if (mall != null && mall.containsKey("malist")) {

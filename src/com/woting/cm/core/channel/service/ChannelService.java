@@ -43,6 +43,14 @@ public class ChannelService {
 		m.put("list", chas);
 		ChannelAssetDao.insert("insertList", m);
 	}
+	
+	public List<ChannelAssetPo> getChannelAssetListBy(Map<String, Object> m) {
+		List<ChannelAssetPo> chas = ChannelAssetDao.queryForList("getList", m);
+		if (chas!=null && chas.size()>0) {
+			return chas;
+		}
+		return null;
+	}
 
 	public List<ChannelPo> getChannelList() {
 		List<ChannelPo> chlist = channelDao.queryForList("getList");

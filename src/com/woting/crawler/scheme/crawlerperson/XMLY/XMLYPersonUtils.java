@@ -15,7 +15,16 @@ public class XMLYPersonUtils {
 	public static CPersonPo parsePerson(String personId) {
 		Document doc = null;
 		try {
-			doc = Jsoup.connect("http://www.ximalaya.com/mobile/v1/artist/intro?device=android&statEvent=pageview%2Fuser%40"+personId+"&statPage=tab%40%E5%8F%91%E7%8E%B0_%E4%B8%BB%E6%92%AD&statPosition=2&toUid="+personId).timeout(10000).ignoreContentType(true).get();
+			doc = Jsoup.connect("http://www.ximalaya.com/mobile/v1/artist/intro?device=android&statEvent=pageview%2Fuser%40"+personId+"&statPage=tab%40%E5%8F%91%E7%8E%B0_%E4%B8%BB%E6%92%AD&statPosition=2&toUid="+personId).timeout(10000)
+					.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36")
+					.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+					.header("Accept-Encoding", "gzip, deflate, sdch")
+					.header("Cookie", "Hm_lvt_4a7d8ec50cfd6af753c4f8aee3425070=1481942163; Hm_lpvt_4a7d8ec50cfd6af753c4f8aee3425070=1481942193; _ga=GA1.2.2074075166.1481942163")
+					.header("Host", "www.ximalaya.com")
+					.header("Connection", "keep-alive")
+					.header("X-Requested-With", "XMLHttpRequest")
+					.header("Referer", "http://www.ximalaya.com/explore/")
+					.ignoreContentType(true).get();
 			String jsonstr = doc.body().html();
 			jsonstr = CleanDataUtils.cleanString(jsonstr);
 			Map<String, Object> pm = (Map<String, Object>) JsonUtils.jsonToObj(jsonstr, Map.class);

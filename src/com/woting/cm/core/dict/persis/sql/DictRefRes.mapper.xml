@@ -17,6 +17,19 @@
   <sql id="Base_Column_List">
     id, refName, resTableName, resId, dictMid,  dictDid, cTime
   </sql>
+  
+  <sql id="WhereClauseByEntiey">
+    <where>
+      <trim prefix="(" suffix=")" prefixOverrides="and">
+        <if test="id!=null"> and id=#{id,jdbcType=VARCHAR}</if>
+        <if test="refName!=null"> and refName=#{refName,jdbcType=VARCHAR}</if>
+        <if test="resTableName!=null"> and resTableName=#{resTableName,jdbcType=VARCHAR}</if>
+        <if test="resId!=null"> and resId=#{resId,jdbcType=VARCHAR}</if>
+        <if test="dictMid!=null"> and dictMid=#{dictMid,jdbcType=VARCHAR}</if>
+        <if test="dictDid!=null"> and dictDid=#{dictDid,jdbcType=VARCHAR}</if>
+      </trim>
+    </where>
+  </sql>
 
   <!-- 新增 对应关系 -->
   <insert id="insert" parameterType="java.util.Map">
@@ -45,5 +58,14 @@
      (#{list.id},#{list.refName},#{list.resTableName},#{list.resId},#{list.dictMid},#{list.dictDid},#{list.CTime})
     </foreach>
   </insert>
+  
+  <select id="getList" parameterType="java.util.Map" resultMap="dictRefResMap">
+       select <include refid="Base_Column_List"/> from wt_ResDict_Ref
+       <if test="_parameter!=null">
+        <include refid="WhereClauseByEntiey"/>
+        <if test="whereSql!=null"> and ${whereSql}</if>
+      </if>
+      <if test="sortByClause!=null">order by ${sortByClause}</if>
+    </select>
   
 </mapper>

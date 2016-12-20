@@ -31,7 +31,7 @@ public abstract class XMLYParseUtils {
 	 * @param parseData
 	 *            返回的数据
 	 */
-	public static void parseAlbum(byte[] htmlByteArray, Map<String, Object> parseData) {
+	public static void parseAlbum(boolean isToRedis, byte[] htmlByteArray, Map<String, Object> parseData) {
 		Elements eles = null;
 		Element e = null;
 		Document doc = Jsoup.parse(new String(htmlByteArray), "UTF-8");
@@ -111,10 +111,12 @@ public abstract class XMLYParseUtils {
 				saveCPerson(zhubos, "hotspot_Album", parseData.get("albumId")+"");
 			}
 		} catch (Exception ex) {ex.printStackTrace();}
-		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
-		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
-		RedisUtils.addXMLYOriginalSeq(rs, parseData.get("CrawlerNum") + "", parseData);
-		rs.close();
+		if (isToRedis) {
+			Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
+		    RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
+		    RedisUtils.addXMLYOriginalSeq(rs, parseData.get("CrawlerNum") + "", parseData);
+		    rs.close();
+		}
 	}
 
 	/**
@@ -125,7 +127,7 @@ public abstract class XMLYParseUtils {
 	 * @param parseData
 	 *            返回的数据
 	 */
-	public static void parseSond(byte[] htmlByteArray, Map<String, Object> parseData) {
+	public static void parseSond(boolean isToRedis, byte[] htmlByteArray, Map<String, Object> parseData) {
 		Elements eles = null;
 		Element e = null;
 		Document doc = Jsoup.parse(new String(htmlByteArray), "UTF-8");
@@ -138,6 +140,8 @@ public abstract class XMLYParseUtils {
 				parseData.put("audioId", e.attr("sound_popsrc").trim());
 				parseData.put("audioName", e.attr("alt").trim());
 				parseData.put("audioImg", e.attr("src").trim());
+			} else {
+				return;
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -253,10 +257,12 @@ public abstract class XMLYParseUtils {
 //		} catch (Exception ex) {
 //			ex.printStackTrace();
 //		}
-		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
-		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
-		RedisUtils.addXMLYOriginalMa(rs, parseData.get("CrawlerNum") + "", parseData);
-		rs.close();
+		if (isToRedis) {
+			Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
+		    RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
+		    RedisUtils.addXMLYOriginalMa(rs, parseData.get("CrawlerNum") + "", parseData);
+		    rs.close();
+		}
 	}
 
 	/**

@@ -3,13 +3,8 @@ package com.woting.crawler.scheme.utils;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import com.spiritdata.framework.util.JsonUtils;
 import com.spiritdata.framework.util.StringUtils;
 
@@ -23,24 +18,66 @@ public abstract class HttpUtils {
 
 	@SuppressWarnings("unchecked")
 	public static Map<String, Object> getJsonMapFromURL(String url) {
-		HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-		CloseableHttpClient httpClient = clientBuilder.build();
-		HttpGet httpget = new HttpGet(url);
 		try {
-			HttpResponse res = httpClient.execute(httpget);
-			if (res.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-				HttpEntity entity = res.getEntity();
-				if (entity != null) {
-					String jsonStr = EntityUtils.toString(entity, "UTF-8");
-					return (Map<String, Object>) JsonUtils.jsonToObj(jsonStr, Map.class);
-				}
+			Document doc = Jsoup.connect(url)
+					.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36")
+					.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+					.header("Accept-Encoding", "gzip, deflate, sdch")
+					.header("Cookie", "Hm_lvt_4a7d8ec50cfd6af753c4f8aee3425070=1481942163; Hm_lpvt_4a7d8ec50cfd6af753c4f8aee3425070=1481942193; _ga=GA1.2.2074075166.1481942163")
+					.header("Host", "www.ximalaya.com")
+					.header("Connection", "keep-alive")
+					.header("X-Requested-With", "XMLHttpRequest")
+					.header("Referer", "http://www.ximalaya.com/explore/")
+					.ignoreContentType(true).get();
+			String jsonstr = doc.body().html();
+			if (!StringUtils.isNullOrEmptyOrSpace(jsonstr) && jsonstr.length()>10) {
+				return (Map<String, Object>) JsonUtils.jsonToObj(jsonstr, Map.class);
+			} else {
+				return getJsonMapFromURL(url);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			httpget.abort();
+			return null;
 		}
-		return null;
+//		HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+//		CloseableHttpClient httpClient = clientBuilder.build();
+//		HttpGet httpget = new HttpGet(url);
+//		System.out.println(url);
+//		try {
+//			HttpResponse res = httpClient.execute(httpget);
+//			if (res.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+//				HttpEntity entity = res.getEntity();
+//				if (entity != null) {
+//					String jsonStr = EntityUtils.toString(entity, "UTF-8");
+//					System.out.println(jsonStr);
+//					return (Map<String, Object>) JsonUtils.jsonToObj(jsonStr, Map.class);
+//				}
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		} finally {
+//			httpget.abort();
+//		}
+//		return null;
+	}
+	
+	public static Document getJsonStrForUrl(String url) {
+		try {
+			Document doc = Jsoup.connect(url)
+					.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36")
+					.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+					.header("Accept-Encoding", "gzip, deflate, sdch")
+					.header("Cookie", "Hm_lvt_4a7d8ec50cfd6af753c4f8aee3425070=1481942163; Hm_lpvt_4a7d8ec50cfd6af753c4f8aee3425070=1481942193; _ga=GA1.2.2074075166.1481942163")
+					.header("Host", "www.ximalaya.com")
+					.header("Connection", "keep-alive")
+					.header("X-Requested-With", "XMLHttpRequest")
+					.header("Referer", "http://www.ximalaya.com/explore/")
+					.ignoreContentType(true).get();
+			return doc;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/**

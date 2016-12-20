@@ -20,7 +20,8 @@
     <typeAlias alias="kwres"          type="com.woting.cm.core.keyword.persis.po.KwResPo"/>
     <typeAlias alias="person"         type="com.woting.cm.core.person.persis.po.PersonPo"/>
     <typeAlias alias="personref"      type="com.woting.cm.core.person.persis.po.PersonRefPo"/>
-    <typeAlias alias="broadcast"     type="com.woting.cm.core.broadcast.persis.po.BroadcastPo"/>
+    <typeAlias alias="broadcast"      type="com.woting.cm.core.broadcast.persis.po.BroadcastPo"/>
+    <typeAlias alias="searchword"     type="com.woting.cm.core.searchword.persis.po.SearchWordPo"/>
   </typeAliases>
   <!-- SQL文件设置 -->
   <mappers>
@@ -37,5 +38,6 @@
     <mapper resource="com/woting/cm/core/person/persis/sql/Person.mapper.xml"/>
     <mapper resource="com/woting/cm/core/person/persis/sql/PersonRef.mapper.xml"/>
     <mapper resource="com/woting/cm/core/broadcast/persis/sql/Broadcast.mapper.xml"/>
+    <mapper resource="com/woting/cm/core/searchword/persis/sql/SearchWord.mapper.xml"/>
   </mappers>
 </configuration>

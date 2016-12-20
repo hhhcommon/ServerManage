@@ -5,21 +5,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.spiritdata.framework.util.SequenceUUID;
 import com.spiritdata.framework.util.StringUtils;
 import com.woting.cm.core.ResOrgAsset.persis.po.ResOrgAssetPo;
+import com.woting.cm.core.ResOrgAsset.service.ResOrgAssetService;
 import com.woting.cm.core.channel.persis.po.ChannelAssetPo;
 import com.woting.cm.core.channel.persis.po.ChannelPo;
+import com.woting.cm.core.channel.service.ChannelService;
 import com.woting.cm.core.dict.persis.po.DictRefResPo;
+import com.woting.cm.core.dict.service.DictService;
 import com.woting.cm.core.keyword.service.KeyWordService;
 import com.woting.cm.core.media.persis.po.MaSourcePo;
 import com.woting.cm.core.media.persis.po.MediaAssetPo;
 import com.woting.cm.core.media.persis.po.MediaPlayCountPo;
 import com.woting.cm.core.media.persis.po.SeqMaRefPo;
 import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
+import com.woting.cm.core.media.service.MediaService;
 import com.woting.cm.core.perimeter.persis.po.OrganizePo;
 import com.woting.cm.core.person.persis.po.PersonPo;
 import com.woting.cm.core.person.persis.po.PersonRefPo;
@@ -29,6 +32,7 @@ import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.core.cperson.persis.po.CPersonPo;
 import com.woting.crawler.core.dict.persis.po.DictDPo;
 import com.woting.crawler.ext.SpringShell;
+import com.woting.crawler.scheme.searchcrawler.model.Festival;
 
 public abstract class ConvertUtils {
 	private static Logger logger = LoggerFactory.getLogger(ConvertUtils.class);
@@ -63,27 +67,29 @@ public abstract class ConvertUtils {
 		List<AudioPo> audios = new ArrayList<AudioPo>();
 		if (list != null && list.size() > 0) {
 			for (Map<String, Object> m : list) {
-				AudioPo audio = new AudioPo();
-				audio.setId(SequenceUUID.getPureUUID());
-				audio.setAudioId(m.get("audioId") + "");
-				audio.setAudioName(m.get("audioName") + "");
-				audio.setAlbumId(m.get("albumId") + "");
-				audio.setAlbumName(m.get("albumName") + "");
-				audio.setAudioImg(m.get("audioImg") + "");
-				audio.setCategoryId(m.get("categoryId") + "");
-				audio.setCategoryName(m.get("categoryName") + "");
-				audio.setAudioURL(m.get("playUrl") + "");
-				audio.setAudioTags(m.get("tags") + "");
-				audio.setDuration(m.get("duration") + "");
-				audio.setPlayCount(m.get("playCount") + "");
-				audio.setDescn(m.get("descript") + "");
-				audio.setAudioPublisher(publisher);
-				audio.setVisitUrl(m.get("visitUrl") + "");
-				audio.setCrawlerNum(m.get("CrawlerNum") + "");
-				audio.setSchemeId(m.get("schemeId") + "");
-				audio.setSchemeName(m.get("schemeName") + "");
-				audio.setcTime(new Timestamp(Long.valueOf(m.get("cTime")+"")));
-				audios.add(audio);
+				if (m.containsKey("audioId")) {
+					AudioPo audio = new AudioPo();
+				    audio.setId(SequenceUUID.getPureUUID());
+				    audio.setAudioId(m.get("audioId") + "");
+				    audio.setAudioName(m.get("audioName") + "");
+				    audio.setAlbumId(m.get("albumId") + "");
+				    audio.setAlbumName(m.get("albumName") + "");
+				    audio.setAudioImg(m.get("audioImg") + "");
+				    audio.setCategoryId(m.get("categoryId") + "");
+				    audio.setCategoryName(m.get("categoryName") + "");
+				    audio.setAudioURL(m.get("playUrl") + "");
+				    audio.setAudioTags(m.get("tags") + "");
+				    audio.setDuration(m.get("duration") + "");
+				    audio.setPlayCount(m.get("playCount") + "");
+				    audio.setDescn(m.get("descript") + "");
+				    audio.setAudioPublisher(publisher);
+				    audio.setVisitUrl(m.get("visitUrl") + "");
+				    audio.setCrawlerNum(m.get("CrawlerNum") + "");
+				    audio.setSchemeId(m.get("schemeId") + "");
+				    audio.setSchemeName(m.get("schemeName") + "");
+				    audio.setcTime(new Timestamp(Long.valueOf(m.get("cTime")+"")));
+				    audios.add(audio);
+				}
 			}
 		}
 		return audios;
@@ -264,8 +270,7 @@ public abstract class ConvertUtils {
 				}
 			}
 		}
-		logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}]", malist.size(), maslist.size(),
-				dictreflist.size(), chalist.size());
+		logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}]", malist.size(), maslist.size(), dictreflist.size(), chalist.size());
 		if (malist != null && malist.size() > 0) {
 			Map<String, Object> m = new HashMap<String, Object>();
 			m.put("malist", malist);
@@ -502,5 +507,153 @@ public abstract class ConvertUtils {
 			}
 		}
 		return playnum;
+	}
+	
+	public static Map<String, Object> convert2MediaAsset(Festival festival, SeqMediaAssetPo sma, List<Map<String, Object>> dicts, List<ChannelPo> chlist) {
+		if (festival!=null && sma!=null && dicts!=null && dicts.size()>0 && chlist!=null && chlist.size()>0) {
+			MediaAssetPo ma = new MediaAssetPo();
+			ma.setId(SequenceUUID.getPureUUID());
+			ma.setMaTitle(festival.getAudioName());
+			if (festival.getContentPub().equals("蜻蜓")) {
+				ma.setMaImg(sma.getSmaImg());
+			} else {
+				String imgp = festival.getAudioPic();
+				if (!StringUtils.isNullOrEmptyOrSpace(imgp) && imgp.length()>5) {
+					String imgpath = FileUtils.makeImgFile("2", imgp);
+					if (!StringUtils.isNullOrEmptyOrSpace(imgpath)) {
+						ma.setMaImg(imgpath);
+					}
+				}
+			}
+			ma.setMaURL(festival.getPlayUrl());
+			ma.setMaPubId(sma.getSmaPubId());
+			ma.setMaPublisher(sma.getSmaPublisher());
+			ma.setMaPubType(sma.getSmaPubType());
+			ma.setLangDid(sma.getLangDid());
+			ma.setLanguage(sma.getLanguage());
+			if (festival.getAudioDes()!=null && !festival.getAudioDes().equals("null")) {
+				ma.setDescn(festival.getAudioDes());
+			} else {
+				ma.setDescn("欢迎大家收听"+festival.getAudioName());
+			}
+//			ma.setKeyWords();
+			ma.setPubCount(1);
+			ma.setTimeLong(new Long(festival.getDuration() + "000"));
+			ma.setMaStatus(1);
+			ma.setCTime(new Timestamp(System.currentTimeMillis()));
+			
+			ResOrgAssetPo roa = new ResOrgAssetPo();
+			roa.setId(SequenceUUID.getPureUUID());
+			roa.setResId(ma.getId());
+			roa.setResTableName("wt_MediaAsset");
+			roa.setOrgName(ma.getMaPublisher());
+			roa.setOrigId(festival.getAudioId());
+			roa.setOrigTableName("hotspot_Audio");
+			roa.setcTime(new Timestamp(System.currentTimeMillis()));
+
+			MaSourcePo maS = new MaSourcePo();
+			maS.setId(SequenceUUID.getPureUUID());
+			maS.setMaId(ma.getId());
+			maS.setIsMain(1);
+			maS.setMaSrcType(sma.getSmaPubType());
+			maS.setMaSrcId(sma.getSmaPubId());
+			maS.setMaSource(sma.getSmaPublisher());
+			maS.setPlayURI(festival.getPlayUrl());
+			maS.setDescn(festival.getAudioDes());
+			maS.setCTime(new Timestamp(System.currentTimeMillis()));
+
+			SeqMaRefPo seqMaRef = new SeqMaRefPo();
+			seqMaRef.setId(SequenceUUID.getPureUUID());
+			seqMaRef.setsId(sma.getId());
+			seqMaRef.setmId(ma.getId());
+			seqMaRef.setColumnNum(0);
+			seqMaRef.setDescn(ma.getDescn());
+			seqMaRef.setcTime(new Timestamp(System.currentTimeMillis()));
+			
+			PersonService personService = (PersonService) SpringShell.getBean("personService");
+			PersonRefPo pf = personService.getPersonRefBy("wt_SeqMediaAsset", sma.getId());
+			if (pf!=null) {
+				pf.setRefName("主播-节目");
+			    pf.setResTableName("wt_MediaAsset");
+			    pf.setResId(ma.getId());
+			    pf.setId(SequenceUUID.getPureUUID());
+			    pf.setcTime(new Timestamp(System.currentTimeMillis()));
+			    personService.insertPersonRef(pf);
+			}
+            DictService dictService = (DictService) SpringShell.getBean("dictService");
+			List<DictRefResPo> drs = dictService.getDictRefs(sma.getId(), "wt_SeqMediaAsset");
+			List<DictRefResPo> newdrs = new ArrayList<>();
+			List<ChannelAssetPo> chas = new ArrayList<>();
+			if (drs!=null) {
+				for (DictRefResPo dictRefResPo : drs) {
+					DictRefResPo dictRef = new DictRefResPo();
+			        dictRef.setId(SequenceUUID.getPureUUID());
+			        dictRef.setRefName("单体-内容分类");
+			        dictRef.setResTableName("wt_MediaAsset");
+			        dictRef.setResId(ma.getId());
+			        dictRef.setDictMid(dictRefResPo.getDictMid());
+			        dictRef.setDictDid(dictRefResPo.getDictDid());
+			        dictRef.setCTime(new Timestamp(System.currentTimeMillis()));
+			        newdrs.add(dictRef);
+			        if (dictRefResPo.getDictDid() != null && !dictRefResPo.getDictDid().equals("null")) {
+				        ChannelAssetPo cha = new ChannelAssetPo();
+				        cha.setId(SequenceUUID.getPureUUID());
+				        cha.setAssetType("wt_MediaAsset");
+				        cha.setAssetId(ma.getId());
+				        cha.setPublisherId(ma.getMaPubId());
+				        cha.setIsValidate(1);
+				        cha.setCheckerId("1");
+				        cha.setPubName(ma.getMaTitle());
+				        cha.setPubImg(ma.getMaImg());
+				        cha.setSort(0);
+				        cha.setFlowFlag(2);
+				        cha.setInRuleIds("etl");
+				        cha.setCheckRuleIds("etl");
+				        cha.setCTime(ma.getCTime());
+				        cha.setPubTime(cha.getCTime());
+				        if (chlist != null && chlist.size() > 0) {
+					        for (ChannelPo ch : chlist) {
+						        if (dictRefResPo.getDictDid().equals(ch.getId())) {
+							        cha.setChannelId(ch.getId());
+							        chas.add(cha);
+							        break;
+						        }
+					        }
+				        }
+				    }
+			    }
+			}
+			MediaService mediaService = (MediaService) SpringShell.getBean("mediaService");
+			List<MediaAssetPo> mas = new ArrayList<>();
+			mas.add(ma);
+			mediaService.insertMaList(mas);
+			List<MaSourcePo> maos = new ArrayList<>();
+			maos.add(maS);
+			mediaService.insertMasList(maos);
+			List<SeqMaRefPo> seqrs = new ArrayList<>();
+			seqrs.add(seqMaRef);
+			mediaService.insertSeqRefList(seqrs);
+			ResOrgAssetService resOrgAssetService = (ResOrgAssetService) SpringShell.getBean("resOrgAssetService");
+			List<ResOrgAssetPo> resos = new ArrayList<>();
+			resos.add(roa);
+			resOrgAssetService.insertResOrgAssetList(resos);
+			if (newdrs!=null && newdrs.size()>0) {
+				dictService.insertDictRefList(newdrs);
+			}
+			if (chas!=null && chas.size()>0) {
+				ChannelService channelService = (ChannelService) SpringShell.getBean("channelService");
+				channelService.insertChannelAssetList(chas);
+			}
+			Map<String, Object> map = new HashMap<>();
+			map.put("ContentId", ma.getId());
+			map.put("ContentName", ma.getMaTitle());
+			map.put("ContentImg", ma.getMaImg());
+			map.put("ContentPlay", ma.getMaURL());
+			map.put("ContentPub", ma.getMaPublisher());
+			map.put("MediaType", "AUDIO");
+			map.put("PlayCount", "1234");
+			return map;
+		}
+		return null;
 	}
 }

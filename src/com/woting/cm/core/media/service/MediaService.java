@@ -38,7 +38,7 @@ public class MediaService {
 	}
 
 	public void insertMa(MediaAssetPo ma) {
-		mediaAssetDao.insert("insertMa", ma.toHashMap());
+		mediaAssetDao.insert("insertMa", ma);
 	}
 
 	public void insertMaList(List<MediaAssetPo> malist) {
@@ -131,6 +131,16 @@ public class MediaService {
 
 	public void insertSeqRef(SeqMaRefPo seqref) {
 		seqrefDao.insert("bindMa2Sma", seqref.toHashMap());
+	}
+	
+	public List<MediaAssetPo> getMaList(Map<String, Object> m) {
+		if (m!=null && m.size()>0) {
+			List<MediaAssetPo> mas = mediaAssetDao.queryForList("getMaList", m);
+			if (mas!=null && mas.size()>0) {
+				return mas;
+			}
+		}
+		return null;
 	}
 
 	public List<SeqMediaAssetPo> getSeqSameList(List<String> ns) {
@@ -247,6 +257,24 @@ public class MediaService {
 		m.put("page", page);
 		m.put("pagesize", pagesize);
 		return seqDao.queryForList("getSmaListByPublisher", m);
+	}
+	
+	public List<SeqMediaAssetPo> getSmaByMaId(String maId, String publisher) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("smaPublisher", publisher);
+		m.put("whereSql", " id in (select sId from wt_SeqMA_Ref where mId = '"+maId+"')");
+		return seqDao.queryForList("getSMaList", m);
+	}
+	
+	public List<SeqMediaAssetPo> getSmaList(String smaTitle, String smaPublisher) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("smaTitle", smaTitle);
+		m.put("smaPublisher", smaPublisher);
+		List<SeqMediaAssetPo> smas = seqDao.queryForList("getSMaList", m);
+		if (smas!=null && smas.size()>0) {
+			return smas;
+		}
+		return null;
 	}
 	
 	public List<SeqMediaAssetPo> getSmaByNames(List<String> names,String publisher) {

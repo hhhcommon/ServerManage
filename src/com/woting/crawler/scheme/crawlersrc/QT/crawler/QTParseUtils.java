@@ -1,6 +1,7 @@
 package com.woting.crawler.scheme.crawlersrc.QT.crawler;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,7 @@ import com.woting.crawler.scheme.utils.RedisUtils;
 public class QTParseUtils {
 	
 	@SuppressWarnings("unchecked")
-	public static void parseAlbum(byte[] htmlByteArray, Map<String, Object> parseData){
+	public static void parseAlbum(boolean isToRedis, byte[] htmlByteArray, Map<String, Object> parseData){
 		Elements els = null;
 		Element el = null;
 		Document doc = Jsoup.parse(new String(htmlByteArray),"UTF-8");
@@ -64,6 +65,7 @@ public class QTParseUtils {
 		int num = 0;
 		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
 		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
+		List<Map<String, Object>> aus = new ArrayList<>();
 		try {
 			els = doc.select("li[class=playable clearfix]");
 			if(els!=null&&!els.isEmpty()) {
@@ -115,8 +117,11 @@ public class QTParseUtils {
 						pDate.put("cTime", System.currentTimeMillis());
 						continue;
 					}
-					
-					RedisUtils.addQTAudio(rs, parseData.get("CrawlerNum")+"", pDate);
+					if (isToRedis) {
+						RedisUtils.addQTAudio(rs, parseData.get("CrawlerNum")+"", pDate);
+					} else {
+						aus.add(pDate);
+					}
 					num++;
 					if(num==2){
 						num=0;
@@ -136,7 +141,11 @@ public class QTParseUtils {
 				Map<String, Object> m = l.get(0);
 				parseData.put("playCount",m.get("playcount"));
 			}
-			RedisUtils.addQTAlbum(rs, parseData.get("CrawlerNum")+"", parseData);
+			if (isToRedis) {
+				RedisUtils.addQTAlbum(rs, parseData.get("CrawlerNum")+"", parseData);
+			} else {
+				parseData.put("audioList",aus);
+			}
 		} catch (Exception e) {e.printStackTrace();}
 		finally {
 			rs.close();

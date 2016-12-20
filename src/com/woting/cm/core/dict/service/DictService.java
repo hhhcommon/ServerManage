@@ -197,6 +197,17 @@ public class DictService {
 		return null;
     }
     
+    public List<DictRefResPo> getDictRefs(String resId, String resTableName) {
+    	Map<String, Object> m = new HashMap<>();
+    	m.put("resTableName", resTableName);
+    	m.put("resId", resId);
+    	List<DictRefResPo> dictRefs = dictRefDao.queryForList("getList", m);
+    	if (dictRefs!=null && dictRefs.size()>0) {
+			return dictRefs;
+		}
+		return null;
+    }
+    
     public DictDetailPo getDictDetailInfo(String id, String mId, String pId) {
     	Map<String, Object> m = new HashMap<>();
     	m.put("mId", mId);

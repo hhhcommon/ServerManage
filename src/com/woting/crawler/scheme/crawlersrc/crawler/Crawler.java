@@ -62,9 +62,9 @@ public class Crawler extends WebCrawler {
 //    	case 1: KLParseUtils.parseAlbum(htmlByteArray, parseData);break;
 //    	case 2: KLParseUtils.parseSond(htmlByteArray, parseData);break;
     	case 3: QTParseUtils.parseQTResourceIdAndCategoryId(htmlByteArray, parseData);break;
-    	case 4: QTParseUtils.parseAlbum(htmlByteArray, parseData);break;
-    	case 5: XMLYParseUtils.parseAlbum(htmlByteArray, parseData);break;
-    	case 6: XMLYParseUtils.parseSond(htmlByteArray, parseData);break;
+    	case 4: QTParseUtils.parseAlbum(true, htmlByteArray, parseData);break;
+    	case 5: XMLYParseUtils.parseAlbum(true, htmlByteArray, parseData);break;
+    	case 6: XMLYParseUtils.parseSond(true, htmlByteArray, parseData);break;
     	}
 	}
 }

@@ -1,5 +1,6 @@
 package com.woting.cm.core.ResOrgAsset.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,16 @@ public class ResOrgAssetService{
     	Map<String, Object> m = new HashMap<>();
     	m.put("list", resAss);
     	resOrgAssetDao.insert("insertList", m);
+    }
+    
+    public void insertResOrgAsset(ResOrgAssetPo resAss){
+    	if (resAss!=null) {
+			List<ResOrgAssetPo> ress = new ArrayList<>();
+    	    ress.add(resAss);
+    	    Map<String, Object> m = new HashMap<>();
+    	    m.put("list", ress);
+    	    resOrgAssetDao.insert("insertList", m);
+		}
     }
     
     public int getResOrgAssetNum() {
