@@ -9,6 +9,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 
 import com.spiritdata.framework.core.cache.SystemCache;
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
@@ -63,8 +64,14 @@ public class QTParseUtils {
 			saveCPerson(po, "hotspot_Album", parseData.get("albumId")+"");
 		} catch (Exception e) {e.printStackTrace();}
 		int num = 0;
-		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
-		RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
+		
+		RedisOperService rs = null;
+		if (isToRedis) {
+			Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
+			rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
+		} else {
+			rs = new RedisOperService((JedisConnectionFactory) SpringShell.getBean("connectionFactory"));
+		}
 		List<Map<String, Object>> aus = new ArrayList<>();
 		try {
 			els = doc.select("li[class=playable clearfix]");

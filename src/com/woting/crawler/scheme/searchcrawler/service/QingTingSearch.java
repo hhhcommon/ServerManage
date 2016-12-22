@@ -3,7 +3,6 @@ package com.woting.crawler.scheme.searchcrawler.service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -19,8 +18,8 @@ import com.woting.crawler.scheme.utils.HttpUtils;
 
 public class QingTingSearch extends Thread {
 
-	private static int S_S_NUM = 4; // 搜索频道的数目
-	private static int F_NUM = 4; // 搜索节目的数目 以上排列顺序按照搜索到的排列顺序
+	private static int S_S_NUM = 10; // 搜索频道的数目
+	private static int F_NUM = 10; // 搜索节目的数目 以上排列顺序按照搜索到的排列顺序
 	private static int T = 5000;
 	private String constr = "";
 
@@ -35,40 +34,42 @@ public class QingTingSearch extends Thread {
 		Document doc = null;
 		doc = HttpUtils.getJsonStrForUrl(station_url);
 		// 获取频道json数据
-		Elements elements = doc.select("ul[class=nav]");
-		Elements elements_stations = elements.get(0).select("li[jump-to=search-virtualchannels]"); // 专辑搜索页面
-		Elements elements_radios = elements.get(0).select("li[jump-to=search-channels]"); // 节目搜索页面
-		String station_num = elements_stations.select("a[href]").html();
-		String radio_num = elements_radios.select("a[href]").html();
-		int r_num = SearchUtils.findint(radio_num); // 电台数量
-		int s_num = SearchUtils.findint(station_num); // 专辑数量
-		elements = doc.select("li[class=playable clearfix]");
-		for (int i = r_num; i < r_num + s_num + F_NUM; i++) {
-			String title = elements.get(i).select("a[href]").get(0).select("span").get(0).html();
-			String href = "http://www.qingting.fm" + elements.get(i).select("a[href]").get(0).attr("data-switch-url");
-			if (i >= r_num + s_num) {
-				Festival festival = new Festival();
-				festival.setAudioName(title);
-				festival = festivalS(href);
-				if(festival!=null) {
-					JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
-					RedisOperService roService=new RedisOperService(conn);
-		            SearchUtils.addListInfo(constr, festival, roService); // 保存到在redis里key为constr的list里
+		if (doc != null) {
+			Elements elements = doc.select("ul[class=nav]");
+			Elements elements_stations = elements.get(0).select("li[jump-to=search-virtualchannels]"); // 专辑搜索页面
+			Elements elements_radios = elements.get(0).select("li[jump-to=search-channels]"); // 节目搜索页面
+			String station_num = elements_stations.select("a[href]").html();
+			String radio_num = elements_radios.select("a[href]").html();
+			int r_num = SearchUtils.findint(radio_num); // 电台数量
+			int s_num = SearchUtils.findint(station_num); // 专辑数量
+			elements = doc.select("li[class=playable clearfix]");
+			for (int i = r_num; i < r_num + s_num + F_NUM; i++) {
+				String title = elements.get(i).select("a[href]").get(0).select("span").get(0).html();
+				String href = "http://www.qingting.fm" + elements.get(i).select("a[href]").get(0).attr("data-switch-url");
+				if (i >= r_num + s_num) {
+					Festival festival = new Festival();
+					festival.setAudioName(title);
+					festival = festivalS(href);
+					if (festival != null) {
+						JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
+						RedisOperService roService = new RedisOperService(conn);
+						SearchUtils.addListInfo(constr, festival, roService); // 保存到在redis里key为constr的list里
+					}
 				}
-			}
-			if (i < r_num + s_num) {
-				Station station = new Station();
-				station = stationS(href);
-				station.setId(href.replaceAll("http://www.qingting.fm/s/vchannels/", ""));
-				station.setName(title);
-				station.setContentPub("蜻蜓");
-				if(station!=null) {
-					JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
-					RedisOperService roService=new RedisOperService(conn);
-		            SearchUtils.addListInfo(constr, station, roService); // 保存到在redis里key为constr的list里
-				}
-				if (i == r_num + (s_num > (S_S_NUM - 1) ? (S_S_NUM - 1) : s_num) && (r_num + s_num) > 0) {
-					i = r_num + s_num - 1;
+				if (i < r_num + s_num) {
+					Station station = new Station();
+					station = stationS(href);
+					station.setId(href.replaceAll("http://www.qingting.fm/s/vchannels/", ""));
+					station.setName(title);
+					station.setContentPub("蜻蜓");
+					if (station != null) {
+						JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
+						RedisOperService roService = new RedisOperService(conn);
+						SearchUtils.addListInfo(constr, station, roService); // 保存到在redis里key为constr的list里
+					}
+					if (i == r_num + (s_num > (S_S_NUM - 1) ? (S_S_NUM - 1) : s_num) && (r_num + s_num) > 0) {
+						i = r_num + s_num - 1;
+					}
 				}
 			}
 		}
@@ -96,6 +97,8 @@ public class QingTingSearch extends Thread {
 				festival.setContentPub("蜻蜓");
 				festival.setAudioPic(testmap.get("thumb").toString());
 				festival.setDuration(testmap.get("duration") + "000");
+				festival.setAlbumId(testmap.get("parentid")+"");
+				festival.setAlbumName(doc.select("div[class=channel-name]").get(0).html());
 				List<String> list_urls = (List<String>) testmap.get("urls");
 				String m4aurl = "http://od.qingting.fm" + list_urls.get(0).toString();
 				festival.setPlayUrl(m4aurl);
@@ -127,6 +130,7 @@ public class QingTingSearch extends Thread {
 			String descstr = doc.select("div[class=channel-info clearfix]").get(0).select("div[class=content]").get(0)
 					.html();
 			station.setDesc(descstr);
+			station.setName(doc.select("div[class=channel-name]").get(0).html());
 			String jsonstr = element.attr("data-play-info").replaceAll("&quot;", "\"");
 			Map<String, Object> testmap = (Map<String, Object>) JsonUtils.jsonToObj(jsonstr, Map.class);
 			festival.setAudioName(testmap.get("name").toString());
@@ -135,21 +139,25 @@ public class QingTingSearch extends Thread {
 			festival.setContentPub("蜻蜓");
 			festival.setAudioPic(testmap.get("thumb").toString());
 			festival.setDuration(testmap.get("duration") + "000");
+			station.setId(testmap.get("parentid")+"");
+			festival.setAlbumId(station.getId());
+			festival.setAlbumName(station.getName());
 			List<String> list_urls = (List<String>) testmap.get("urls");
 			String m4aurl = "http://od.qingting.fm" + list_urls.get(0).toString();
 			festival.setPlayUrl(m4aurl);
 			try {
 				String seqId = getSeqId(url);
-				doc = Jsoup.connect("http://api2.qingting.fm/v6/media/channelondemands/"+seqId).ignoreContentType(true).post();
+				doc = Jsoup.connect("http://api2.qingting.fm/v6/media/channelondemands/" + seqId)
+						.ignoreContentType(true).post();
 				jsonstr = doc.body().html();
 				testmap = (Map<String, Object>) JsonUtils.jsonToObj(jsonstr, Map.class);
 				Map<String, Object> detail = (Map<String, Object>) testmap.get("detail");
-				if (detail!=null && detail.containsKey("podcasters")) {
+				if (detail != null && detail.containsKey("podcasters")) {
 					List<Map<String, Object>> podcasters = (List<Map<String, Object>>) detail.get("podcasters");
-					if (podcasters!=null && podcasters.size()>0) {
+					if (podcasters != null && podcasters.size() > 0) {
 						testmap = podcasters.get(0);
-						festival.setPersonName(testmap.get("nickname")+"");
-						festival.setPersonId(testmap.get("user_system_id")+"");
+						festival.setPersonName(testmap.get("nickname") + "");
+						festival.setPersonId(testmap.get("user_system_id") + "");
 					}
 				}
 			} catch (Exception e) {
@@ -162,7 +170,7 @@ public class QingTingSearch extends Thread {
 		}
 		return station;
 	}
-	
+
 	@Override
 	public void run() {
 		System.out.println("蜻蜓开始搜索");
@@ -171,21 +179,20 @@ public class QingTingSearch extends Thread {
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("蜻蜓搜索异常");
-		}
-		finally {
+		} finally {
 			JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
-			RedisOperService roService=new RedisOperService(conn);
-            SearchUtils.updateSearchFinish(constr, roService);
-		    System.out.println("蜻蜓结束搜索");
+			RedisOperService roService = new RedisOperService(conn);
+			SearchUtils.updateSearchFinish(constr, roService);
+			System.out.println("蜻蜓结束搜索");
 		}
 	}
-	
+
 	private String getSeqId(String url) {
 		int num = url.indexOf("/programs/");
-		if (num<0) {
-			url = url.substring(url.indexOf("/vchannels/")+11, url.length()).replace("/", "");
+		if (num < 0) {
+			url = url.substring(url.indexOf("/vchannels/") + 11, url.length()).replace("/", "");
 		} else {
-			url = url.substring(url.indexOf("/vchannels/")+11, num);
+			url = url.substring(url.indexOf("/vchannels/") + 11, num);
 		}
 		return url;
 	}

@@ -30,17 +30,6 @@ public class Festival implements Serializable {
 	private String playnum;		//播放次数 
 	private String category;	//分类
 	
-
-
-	@Override
-	public String toString() {
-		return "Festival [mediaType=" + mediaType + ", contentPub=" + contentPub + ", audioId=" + audioId
-				+ ", audioName=" + audioName + ", audioPic=" + audioPic + ", audioDes=" + audioDes + ", albumName="
-				+ albumName + ", albumPic=" + albumPic + ", PlayUrl=" + PlayUrl + ", fileSize=" + fileSize
-				+ ", duration=" + duration + ", updateTime=" + updateTime + ", listenNum=" + listenNum + ", host="
-				+  ", playnum=" + playnum + ", category=" + category + "]";
-	}
-
 	public String getCategory() {
 		return category;
 	}

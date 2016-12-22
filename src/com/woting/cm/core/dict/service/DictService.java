@@ -187,9 +187,9 @@ public class DictService {
     
     public  DictDetailPo getDictDetail(String mId, String pId, String ddName) {
     	Map<String, Object> m = new HashMap<>();
-    	m.put("mId", mId);
-    	m.put("pId", pId);
-    	m.put("likesql", " and ddName like '%"+ddName+"%'");
+    	m.put("MId", mId);
+    	m.put("parentId", pId);
+    	m.put("likeSql", " and ddName like '%"+ddName+"%'");
     	List<DictDetailPo> dds = dictDDao.queryForList("getList", m);
     	if (dds!=null && dds.size()>0) {
 			return dds.get(0);

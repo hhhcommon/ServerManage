@@ -1,12 +1,16 @@
 package com.woting.crawler.scheme.utils;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.spiritdata.framework.util.DateUtils;
 import com.spiritdata.framework.util.SequenceUUID;
 import com.spiritdata.framework.util.StringUtils;
 import com.woting.cm.core.ResOrgAsset.persis.po.ResOrgAssetPo;
@@ -165,7 +169,12 @@ public abstract class ConvertUtils {
 				ma.setPubCount(1);
 				ma.setTimeLong(new Long(au.getDuration() + "000"));
 				ma.setMaStatus(1);
-				ma.setCTime(au.getcTime());
+				if (au.getcTime()!=null) {
+					ma.setCTime(au.getcTime());
+				} else {
+					ma.setCTime(new Timestamp(System.currentTimeMillis()));
+				}
+				
 				
 				ResOrgAssetPo roa = new ResOrgAssetPo();
 				roa.setId(SequenceUUID.getPureUUID());
@@ -175,7 +184,7 @@ public abstract class ConvertUtils {
 				roa.setOrigId(au.getId());
 				roa.setOrigTableName("hotspot_Audio");
 				roa.setcTime(new Timestamp(System.currentTimeMillis()));
-
+				
 				MaSourcePo maS = new MaSourcePo();
 				maS.setId(SequenceUUID.getPureUUID());
 				maS.setMaId(au.getId());
@@ -256,15 +265,16 @@ public abstract class ConvertUtils {
 					maslist.add(maS);
 					dictreflist.add(dictRefRes);
 					seqreflist.add(seqMaRef);
-
-					MediaPlayCountPo mecount = new MediaPlayCountPo();
-					mecount.setId(SequenceUUID.getPureUUID());
-					mecount.setResTableName("wt_MediaAsset");
-					mecount.setResId(ma.getId());
-					mecount.setPlayCount(convertPlayNum2Long(au.getPlayCount()));
-					mecount.setPublisher(au.getAudioPublisher());
-					mecount.setcTime(new Timestamp(System.currentTimeMillis()));
-					mecounts.add(mecount);
+					if (!StringUtils.isNullOrEmptyOrSpace(au.getPlayCount())) {
+						MediaPlayCountPo mecount = new MediaPlayCountPo();
+					    mecount.setId(SequenceUUID.getPureUUID());
+					    mecount.setResTableName("wt_MediaAsset");
+					    mecount.setResId(ma.getId());
+					    mecount.setPlayCount(au.getPlayCount()!=null?convertPlayNum2Long(au.getPlayCount()):null);
+					    mecount.setPublisher(au.getAudioPublisher());
+					    mecount.setcTime(new Timestamp(System.currentTimeMillis()));
+					    mecounts.add(mecount);
+					}
 				} else {
 					continue;
 				}
@@ -290,7 +300,7 @@ public abstract class ConvertUtils {
 			List<ChannelPo> chlist) {
 		Map<String, Object> map = new HashMap<>();
 		SeqMediaAssetPo seq = new SeqMediaAssetPo();
-		seq.setId(SequenceUUID.getPureUUID());
+		seq.setId(al.getId());
 		seq.setSmaTitle(al.getAlbumName());
 		String imgp = al.getAlbumImg();
 		if (!StringUtils.isNullOrEmptyOrSpace(imgp) && imgp.length()>5) {
@@ -326,14 +336,16 @@ public abstract class ConvertUtils {
 		seq.setSmaStatus(1);
 		map.put("seq", seq);
 
-		MediaPlayCountPo mecount = new MediaPlayCountPo();
-		mecount.setId(SequenceUUID.getPureUUID());
-		mecount.setResTableName("wt_SeqMediaAsset");
-		mecount.setResId(seq.getId());
-		mecount.setPlayCount(convertPlayNum2Long(al.getPlayCount()));
-		mecount.setPublisher(al.getAlbumPublisher());
-		mecount.setcTime(new Timestamp(System.currentTimeMillis()));
-		map.put("playnum", mecount);
+		if (!StringUtils.isNullOrEmptyOrSpace(al.getPlayCount()) && al.getPlayCount().equals("null")) {
+			MediaPlayCountPo mecount = new MediaPlayCountPo();
+		    mecount.setId(SequenceUUID.getPureUUID());
+		    mecount.setResTableName("wt_SeqMediaAsset");
+		    mecount.setResId(seq.getId());
+		    mecount.setPlayCount(convertPlayNum2Long(al.getPlayCount()));
+		    mecount.setPublisher(al.getAlbumPublisher());
+		    mecount.setcTime(new Timestamp(System.currentTimeMillis()));
+		    map.put("playnum", mecount);
+		}
 
 		DictRefResPo dictRefRes = new DictRefResPo();
 		dictRefRes.setId(SequenceUUID.getPureUUID());
@@ -373,7 +385,7 @@ public abstract class ConvertUtils {
 						cha.setChannelId(ch.getId());
 						map.put("cha", cha);
 						//存储标签关系
-						if (!StringUtils.isNullOrEmptyOrSpace(al.getAlbumTags())) {
+						if (!StringUtils.isNullOrEmptyOrSpace(al.getAlbumTags()) && !al.getAlbumTags().equals("null")) {
 							KeyWordService keyWordService = (KeyWordService) SpringShell.getBean("keyWordService");
 							keyWordService.saveKwAndKeRef(al.getAlbumTags(), "wt_SeqMediaAsset", seq.getId());
 							keyWordService.saveKwAndKeRef(al.getAlbumTags(), "wt_Channel", cha.getChannelId());
@@ -644,16 +656,27 @@ public abstract class ConvertUtils {
 				ChannelService channelService = (ChannelService) SpringShell.getBean("channelService");
 				channelService.insertChannelAssetList(chas);
 			}
-			Map<String, Object> map = new HashMap<>();
-			map.put("ContentId", ma.getId());
-			map.put("ContentName", ma.getMaTitle());
-			map.put("ContentImg", ma.getMaImg());
-			map.put("ContentPlay", ma.getMaURL());
-			map.put("ContentPub", ma.getMaPublisher());
-			map.put("MediaType", "AUDIO");
-			map.put("PlayCount", "1234");
-			return map;
+			Map<String, Object> retM = new HashMap<>();
+			retM.put("ContentId", ma.getId());
+			retM.put("ContentName", ma.getMaTitle());
+			retM.put("ContentImg", ma.getMaImg());
+			retM.put("ContentPlay", ma.getMaURL());
+			retM.put("ContentPub", ma.getMaPublisher());
+			retM.put("ContentTime", ma.getTimeLong());
+			retM.put("MediaType", "AUDIO");
+			retM.put("PlayCount", "1234");
+			return retM;
 		}
 		return null;
+	}
+	
+	public static long makeLongTime(String time) {
+		try {
+			Date date = DateUtils.getDateTime("yyyy-MM-dd HH:mm:ss", time);
+			return date.getTime();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return 0;
 	}
 }

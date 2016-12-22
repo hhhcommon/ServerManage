@@ -86,7 +86,7 @@ public abstract class XMLYParseUtils {
 		try {
 			eles = doc.select("div.detailContent_intro");
 			if (eles != null && !eles.isEmpty()) {
-				parseData.put("descript", StringEscapeUtils.unescapeHtml4(eles.select("div.mid_intro").select("article").get(0).html().trim()));
+				parseData.put("descript", StringEscapeUtils.unescapeHtml4(eles.select("div.rich_intro").select("article").get(0).html().trim()));
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();

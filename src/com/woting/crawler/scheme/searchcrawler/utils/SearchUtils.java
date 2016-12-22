@@ -354,6 +354,7 @@ public abstract class SearchUtils {
 	 */
 	public static void updateSearchFinish(String key, RedisOperService ros) {
 		if (ros.exist("Search_" + key + "_Finish")) {
+			System.out.println("加载完成进度");
 			String finishnum = ros.get("Search_" + key + "_Finish");
 			finishnum = String.valueOf(Integer.valueOf(finishnum) + 1);
 			ros.set("Search_" + key + "_Finish", finishnum);

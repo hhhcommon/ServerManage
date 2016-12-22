@@ -3,6 +3,8 @@ package com.woting.crawler.scheme.searchcrawler.utils;
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.spiritdata.framework.util.JsonUtils;
 import com.spiritdata.framework.util.StringUtils;
+import com.woting.crawler.core.album.model.Album;
+import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.scheme.searchcrawler.model.Festival;
 import com.woting.crawler.scheme.searchcrawler.model.Station;
 
@@ -27,9 +29,15 @@ public class AddInfoThread<T> extends Thread {
             value = JsonUtils.objToJson(DataTransform.datas2Sequ_Audio((Station) T));
         else if (classname.equals("HashMap"))
             value = JsonUtils.objToJson(T);
+        else if (classname.equals("Album"))
+        	value = JsonUtils.objToJson(DataTransform.album2Audio(true,(Album) T));
+        else if (classname.equals("AudioPo"))
+        	value = JsonUtils.objToJson(DataTransform.Audio(false,(AudioPo) T));
         if (!StringUtils.isNullOrEmptyOrSpace(value)&&!value.toLowerCase().equals("null")) {
+        	System.out.println(value);
         	ros.rPush("Search_" + key + "_Data", value);
         }
+        
 	}
 	
 	@Override

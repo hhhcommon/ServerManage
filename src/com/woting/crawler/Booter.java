@@ -8,6 +8,7 @@ import com.spiritdata.framework.core.cache.SystemCache;
 import com.woting.crawler.core.timer.model.Timer;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.searchcrawler.service.CrawlerSearch;
+
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
@@ -76,6 +77,7 @@ public class Booter {
 			logger.info("点击量抓取定时功能已加载[{}]", timer.getPlayCountCronExpression());
 			logger.info("分类抓取定时功能已加载[{}]", timer.getCategoryCronExpression());
 			new CrawlerSearch().start();
+//			new QTSearch("极品").start();
 			while(true) {
 				Thread.sleep(60*60*1000);
 			}

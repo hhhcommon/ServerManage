@@ -58,10 +58,13 @@ public class Etl2Service {
 	private PersonService personService;
 	private CPersonService cPersonService;
 	private List<Map<String, Object>> cate2dictdlist = new ArrayList<Map<String, Object>>();
+	
+	public  Etl2Service() {
+		cate2dictdlist = FileUtils.readFileByJson(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent() + "conf/craw.txt");
+	}
 
 	@SuppressWarnings("unchecked")
 	public void getDictAndCrawlerDict(Etl2Process etl2Process) {
-		cate2dictdlist = FileUtils.readFileByJson(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent() + "conf/craw.txt");
 		audioService = (AudioService) SpringShell.getBean("audioService");
 		mediaService = (MediaService) SpringShell.getBean("mediaService");
 		resAssService = (ResOrgAssetService) SpringShell.getBean("resOrgAssetService");
@@ -99,7 +102,7 @@ public class Etl2Service {
 		makeSameAlbums(samelist);
 		newlist = (List<AlbumPo>) m.get("newlist");
 		// 新增资源库
-		makeNewAlbums(newlist, null);
+		makeNewAlbums(newlist, null, chlist);
 	}
 
 	/**
@@ -108,7 +111,15 @@ public class Etl2Service {
 	 * @param allist
 	 */
 	@SuppressWarnings("unchecked")
-	private void makeExistAlbums(List<Album> allist) {
+	public void makeExistAlbums(List<Album> allist) {
+		audioService = (AudioService) SpringShell.getBean("audioService");
+		mediaService = (MediaService) SpringShell.getBean("mediaService");
+		resAssService = (ResOrgAssetService) SpringShell.getBean("resOrgAssetService");
+		channelService = (ChannelService) SpringShell.getBean("channelService");
+		dictService = (DictService) SpringShell.getBean("dictService");
+		personService = (PersonService) SpringShell.getBean("personService");
+		cPersonService = (CPersonService) SpringShell.getBean("CPersonService");
+		chlist = channelService.getChannelList();
 		List<MediaAssetPo> malist = new ArrayList<MediaAssetPo>();
 		List<ResOrgAssetPo> resAss = new ArrayList<ResOrgAssetPo>();
 		List<MaSourcePo> maslist = new ArrayList<MaSourcePo>();
@@ -121,8 +132,7 @@ public class Etl2Service {
 			for (Album al : allist) {
 				List<AudioPo> aulist = al.getAudiolist();
 				if (aulist.size() > 0) {
-					List<SeqMediaAssetPo> seqlist = mediaService.getSeqInfo(al.getAlbumPo().getAlbumName(),
-							al.getAlbumPo().getAlbumPublisher());
+					List<SeqMediaAssetPo> seqlist = mediaService.getSeqInfo(al.getAlbumPo().getAlbumName(), al.getAlbumPo().getAlbumPublisher());
 					if (seqlist != null && seqlist.size() > 0) {
 						SeqMediaAssetPo seq = seqlist.get(0);
 						Map<String, Object> mall = ConvertUtils.convert2MediaAsset(aulist, seq, cate2dictdlist, chlist);
@@ -134,7 +144,9 @@ public class Etl2Service {
 								dictreflist = (List<DictRefResPo>) mall.get("dictreflist");
 								chalist = (List<ChannelAssetPo>) mall.get("chalist");
 								seqreflist = (List<SeqMaRefPo>) mall.get("seqmareflist");
-								mecounts = (List<MediaPlayCountPo>) mall.get("mediaplaycount");
+								if (mall.containsKey("mediaplaycount")) {
+									mecounts = (List<MediaPlayCountPo>) mall.get("mediaplaycount");
+								}
 								pfs = (List<PersonRefPo>) mall.get("personRef");
 							}
 							logger.info("增添资源库已存在的专辑新下级声音");
@@ -172,13 +184,21 @@ public class Etl2Service {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void makeNewAlbums(List<AlbumPo> allist , List<AudioPo> aulist) {
+	public void makeNewAlbums(List<AlbumPo> allist , List<AudioPo> aulist, List<ChannelPo> chlist) {
 		if (allist != null && allist.size() > 0) {
 			for (AlbumPo al : allist) {
 				Map<String, Object> map = ConvertUtils.convert2SeqMediaAsset(al, cate2dictdlist, chlist);
 				if (map == null) {
 					continue;
 				}
+				audioService = (AudioService) SpringShell.getBean("audioService");
+				mediaService = (MediaService) SpringShell.getBean("mediaService");
+				resAssService = (ResOrgAssetService) SpringShell.getBean("resOrgAssetService");
+				channelService = (ChannelService) SpringShell.getBean("channelService");
+				dictService = (DictService) SpringShell.getBean("dictService");
+				personService = (PersonService) SpringShell.getBean("personService");
+				cPersonService = (CPersonService) SpringShell.getBean("CPersonService");
+				
 				List<SeqMediaAssetPo> seqlist = new ArrayList<SeqMediaAssetPo>();
 				List<MediaAssetPo> malist = new ArrayList<MediaAssetPo>();
 				List<ResOrgAssetPo> resAss = new ArrayList<ResOrgAssetPo>();
@@ -251,7 +271,9 @@ public class Etl2Service {
 				}
 				dictreflist.add((DictRefResPo) map.get("dictref"));
 				chalist.add((ChannelAssetPo) map.get("cha"));
-				mecounts.add((MediaPlayCountPo) map.get("playnum"));
+				if (map.containsKey("playnum")) {
+					mecounts.add((MediaPlayCountPo) map.get("playnum"));
+				}
 				ResOrgAssetPo resass = new ResOrgAssetPo();
 				resass.setId(SequenceUUID.getPureUUID());
 				resass.setResId(se.getId());
@@ -277,7 +299,9 @@ public class Etl2Service {
 						dictreflist = (List<DictRefResPo>) mall.get("dictreflist");
 						chalist = (List<ChannelAssetPo>) mall.get("chalist");
 						seqreflist = (List<SeqMaRefPo>) mall.get("seqmareflist");
-						mecounts = (List<MediaPlayCountPo>) mall.get("mediaplaycount");
+						if (mall.containsKey("mediaplaycount")) {
+							mecounts = (List<MediaPlayCountPo>) mall.get("mediaplaycount");
+						}
 						pfs = (List<PersonRefPo>) mall.get("personRef");
 					}
 					logger.info("新增资源库");
@@ -320,7 +344,9 @@ public class Etl2Service {
 						dictreflist = (List<DictRefResPo>) mall.get("dictreflist");
 						chalist = (List<ChannelAssetPo>) mall.get("chalist");
 						seqreflist = (List<SeqMaRefPo>) mall.get("seqmareflist");
-						mecounts = (List<MediaPlayCountPo>) mall.get("mediaplaycount");
+						if (mall.containsKey("mediaplaycount")) {
+							mecounts = (List<MediaPlayCountPo>) mall.get("mediaplaycount");
+						}
 						pfs = (List<PersonRefPo>) mall.get("personRef");
 					}
 					logger.info("处理相似专辑数据");

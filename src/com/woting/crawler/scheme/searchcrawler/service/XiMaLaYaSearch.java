@@ -1,6 +1,8 @@
 package com.woting.crawler.scheme.searchcrawler.service;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -19,17 +21,17 @@ import com.woting.crawler.scheme.utils.HttpUtils;
 public class XiMaLaYaSearch extends Thread {
 
 	private static int S_S_NUM = 10; // 搜索频道的数目
-	private static int S_F_NUM = 2; // 搜索频道内节目的数目
+	private static int S_F_NUM = 10; // 搜索频道内节目的数目
 	private static int F_NUM = 10; // 搜索节目的数目 以上排列顺序按照搜索到的排列顺序
 	private static int T = 5000;
 	private String constr;
+	private Map<String, Object> result = new HashMap<>();
 
 	public XiMaLaYaSearch(String constr) {
 		this.constr = constr;
 	}
 
 	private void ximalayaService(String content) {
-//		festivalsS(content);
 		new Thread(new  Runnable() {
 			public void run() {
 				stationS(content);
@@ -39,7 +41,7 @@ public class XiMaLaYaSearch extends Thread {
 			public void run() {
 				festivalsS(content);
 			}
-		}).start();//{@Override public void run() {festivalsS(content);}};
+		}).start();
 	}
 
 	// 专辑搜索
@@ -81,6 +83,8 @@ public class XiMaLaYaSearch extends Thread {
 		Document doc = null;
 		doc = HttpUtils.getJsonStrForUrl(url);
 		Elements elements = doc.select("li[sound_id]");
+		Element el = doc.select("div[class=detailContent_title]").get(0);
+		String albumName = el.select("h1").get(0).html();
 		for (int i = 0; i < (elements.size() > S_F_NUM ? S_F_NUM : elements.size()); i++) {
 			Festival festival = new Festival();
 			Element element = elements.get(i).select("a[class=forwardBtn]").get(0);
@@ -91,6 +95,7 @@ public class XiMaLaYaSearch extends Thread {
 			if (elements!=null && elements.size()>0) {
 				festival.setAlbumId(elements.get(0).attr("album_id"));
 			}
+			festival.setAlbumName(albumName);
 			festivals[i] = festivalS(festival.getAudioId(), festival);
 		}
 		return festivals;
@@ -203,6 +208,7 @@ public class XiMaLaYaSearch extends Thread {
 		System.out.println("喜马拉雅搜索开始");
 		try {
 			ximalayaService(constr);
+			Thread.sleep(200);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("喜马拉雅搜索异常");
