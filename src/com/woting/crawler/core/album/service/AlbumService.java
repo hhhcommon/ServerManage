@@ -35,6 +35,14 @@ public class AlbumService {
 		return aus;
 	}
 	
+	public List<AlbumPo> getAlbumListBy(Map<String, Object> m) {
+		List<AlbumPo> als = albumDao.queryForList("getList", m);
+		if (als!=null && als.size()>0) {
+			return als;
+		}
+		return null;
+	}
+	
 	public List<AlbumPo> getAlbumList(String num){
 		Map<String, Object> m = new HashMap<String,Object>();
 		m.put("crawlerNum", num);
@@ -56,12 +64,18 @@ public class AlbumService {
 		return num;
 	}
 	
+	public void removeAlbumById(String id) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("id", id);
+		albumDao.delete("deleteBy", m);
+	}
+	
 	public void removeSameAlbum(String albumId, String publisher ,String num){
 		Map<String, Object> m = new HashMap<String,Object>();
 		m.put("albumId", albumId);
 		m.put("albumPublisher", publisher);
 		m.put("crawlerNum", num);
-		albumDao.delete("deleteByAlbumIdAndPublisher", m);
+		albumDao.delete("deleteBy", m);
 	}
 	
 	public void removeNull(String num){

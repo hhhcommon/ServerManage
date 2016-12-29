@@ -11,12 +11,27 @@
     <result  column="orgName"       property="orgName"       jdbcType="VARCHAR"/>
     <result  column="origTableName" property="origTableName" jdbcType="VARCHAR"/>
     <result  column="origId"        property="origId"        jdbcType="VARCHAR"/>
+    <result  column="origSrcId"     property="origSrcId"     jdbcType="VARCHAR"/>
     <result  column="cTime"         property="cTime"         jdbcType="TIMESTAMP"/>
   </resultMap>
   
   <!-- 所有列 -->
   <sql id="Base_Column_List">
-    id, resTableName, resId, orgName, origTableName, origId, cTime
+    id, resTableName, resId, orgName, origTableName, origId, origSrcId, cTime
+  </sql>
+  
+  <sql id="WhereClauseByEntiey">
+    <where>
+      <trim prefix="(" suffix=")" prefixOverrides="and">
+        <if test="id!=null"> and id=#{id,jdbcType=VARCHAR}</if>
+        <if test="resTableName!=null"> and resTableName=#{resTableName,jdbcType=VARCHAR}</if>
+        <if test="resId!=null"> and resId=#{resId,jdbcType=VARCHAR}</if>
+        <if test="orgName!=null"> and orgName=#{orgName,jdbcType=VARCHAR}</if>
+        <if test="origTableName!=null"> and origTableName=#{origTableName,jdbcType=VARCHAR}</if>
+        <if test="origId!=null"> and origId=#{origId,jdbcType=VARCHAR}</if>
+        <if test="origSrcId!=null"> and origSrcId=#{origSrcId,jdbcType=VARCHAR}</if>
+      </trim>
+    </where>
   </sql>
 
   <!-- 新增 对应关系 -->
@@ -29,6 +44,7 @@
       <if test="orgName!=null">orgName,</if>
       <if test="origTableName!=null">origTableName,</if>
       <if test="origId!=null">origId,</if>
+      <if test="origSrcId!=null">origSrcId,</if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
@@ -37,15 +53,25 @@
       <if test="orgName!=null">#{orgName,jdbcType=VARCHAR},</if>
       <if test="origTableName!=null">#{origTableName,jdbcType=VARCHAR},</if>
       <if test="origId!=null">#{origId,jdbcType=VARCHAR},</if>
+      <if test="origSrcId!=null">#{origSrcId,jdbcType=VARCHAR},</if>
     </trim>
   </insert>
   
   <insert id="insertList" parameterType="java.util.List">
-    insert into wt_ResOrgAsset_Ref(id, resTableName, resId, orgName, origTableName, origId, cTime) values
+    insert into wt_ResOrgAsset_Ref(id, resTableName, resId, orgName, origTableName, origId, origSrcId, cTime) values
     <foreach collection="list" item="list" index="index" separator=",">
-     (#{list.id},#{list.resTableName},#{list.resId},#{list.orgName},#{list.origTableName},#{list.origId},#{list.cTime})
+     (#{list.id},#{list.resTableName},#{list.resId},#{list.orgName},#{list.origTableName},#{list.origId},#{list.origSrcId},#{list.cTime})
     </foreach>
   </insert>
+  
+  <select id="getList" parameterType="java.util.Map" resultMap="resOrgAssetMap">
+       select <include refid="Base_Column_List"/> from wt_ResOrgAsset_Ref
+       <if test="_parameter!=null">
+        <include refid="WhereClauseByEntiey"/>
+        <if test="whereSql!=null"> and ${whereSql}</if>
+      </if>
+      <if test="sortByClause!=null">order by ${sortByClause}</if>
+  </select>
   
   <select id="getResOrgAssetList" parameterType="java.util.Map" resultMap="resOrgAssetMap">
     select * from wt_ResOrgAsset_Ref limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}

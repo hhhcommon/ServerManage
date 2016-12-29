@@ -15,6 +15,7 @@ public class Scheme {
 	private String crawlerExtent;
 	private int numberOfCrawlers;
 	private int redisDB;
+	private int RedisSnapShootDB;
 	private Timestamp cTimestamp;
 	private Etl1Process etl1Process;
 	private Etl2Process etl2Process;
@@ -23,6 +24,7 @@ public class Scheme {
 	
 	public Scheme() {
 		SchemePo schemePo = (SchemePo) SpringShell.getBean("scheme");
+		this.setRedisSnapShootDB(Integer.valueOf(schemePo.getRedisSnapShootDB()));
 		this.setSchemenum(schemePo.getSchemenum());
 		this.setCrawlerExtent(schemePo.getCrawlerExtent());
 		this.setNumberOfCrawlers(StringUtils.isNullOrEmptyOrSpace(schemePo.getNumberOfCrawlers())?10:Integer.valueOf(schemePo.getNumberOfCrawlers()));
@@ -84,5 +86,11 @@ public class Scheme {
 	}
 	public void setEtl2Process(Etl2Process etl2Process) {
 		this.etl2Process = etl2Process;
+	}
+	public int getRedisSnapShootDB() {
+		return RedisSnapShootDB;
+	}
+	public void setRedisSnapShootDB(int redisSnapShootDB) {
+		RedisSnapShootDB = redisSnapShootDB;
 	}
 }

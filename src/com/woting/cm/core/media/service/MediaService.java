@@ -149,6 +149,13 @@ public class MediaService {
 		List<SeqMediaAssetPo> smalist = seqDao.queryForList("getSeqSameList", m);
 		return smalist;
 	}
+	
+	public SeqMediaAssetPo getSeqInfo(String id) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("id", id);
+		SeqMediaAssetPo seqMediaAssetPo = seqDao.getInfoObject("getSMaList", m);
+		return seqMediaAssetPo;
+	}
 
 	public List<SeqMediaAssetPo> getSeqInfo(String albumName, String publisher) {
 		Map<String, Object> m = new HashMap<>();

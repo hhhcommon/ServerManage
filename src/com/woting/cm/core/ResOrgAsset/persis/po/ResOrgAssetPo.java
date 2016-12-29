@@ -14,6 +14,7 @@ public class ResOrgAssetPo extends BaseObject {
 	private String orgName; //组织名称
 	private String origTableName; //中间库表名
 	private String origId; //中间库Id
+	private String origSrcId;
 	private Timestamp cTime; //创建时间
 	public String getId() {
 		return id;
@@ -50,6 +51,12 @@ public class ResOrgAssetPo extends BaseObject {
 	}
 	public void setOrigId(String origId) {
 		this.origId = origId;
+	}
+	public String getOrigSrcId() {
+		return origSrcId;
+	}
+	public void setOrigSrcId(String origSrcId) {
+		this.origSrcId = origSrcId;
 	}
 	public Timestamp getcTime() {
 		return cTime;

@@ -1,45 +1,52 @@
 package com.woting.crawler.scheme.searchcrawler.service;
 
-import java.util.Date;
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
-import com.spiritdata.framework.util.DateUtils;
+import com.spiritdata.framework.util.SequenceUUID;
+import com.woting.crawler.core.album.persis.po.AlbumPo;
+import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.ext.SpringShell;
-import com.woting.crawler.scheme.searchcrawler.model.Festival;
-import com.woting.crawler.scheme.searchcrawler.model.Station;
-import com.woting.crawler.scheme.searchcrawler.utils.DataTransform;
+import com.woting.crawler.scheme.crawlersrc.XMLY.crawler.XMLYParseUtils;
 import com.woting.crawler.scheme.searchcrawler.utils.SearchUtils;
 import com.woting.crawler.scheme.utils.HttpUtils;
 
 public class XiMaLaYaSearch extends Thread {
 
-	private static int S_S_NUM = 10; // 搜索频道的数目
-	private static int S_F_NUM = 10; // 搜索频道内节目的数目
-	private static int F_NUM = 10; // 搜索节目的数目 以上排列顺序按照搜索到的排列顺序
+	private static int S_S_NUM = 5; // 搜索频道的数目
+	private static int S_F_NUM = 5; // 搜索频道内节目的数目
+	private static int F_NUM = 5; // 搜索节目的数目 以上排列顺序按照搜索到的排列顺序
 	private static int T = 5000;
 	private String constr;
 	private Map<String, Object> result = new HashMap<>();
+	private int okNum = 0;
 
 	public XiMaLaYaSearch(String constr) {
 		this.constr = constr;
 	}
+	
+	public XiMaLaYaSearch() {
+		
+	}
 
 	private void ximalayaService(String content) {
-		new Thread(new  Runnable() {
+		new Thread(new Runnable() {
 			public void run() {
 				stationS(content);
 			}
 		}).start();
 		new Thread(new Runnable() {
 			public void run() {
-				festivalsS(content);
+				audiosS(content);
 			}
 		}).start();
 	}
@@ -48,27 +55,57 @@ public class XiMaLaYaSearch extends Thread {
 	private void stationS(String content) {
 		String url = "http://www.ximalaya.com/search/" + SearchUtils.utf8TOurl(content) + "/t3";
 		Document doc = null;
-		doc = HttpUtils.getJsonStrForUrl(url);
-		Elements elements = doc.select("div[class=content_wrap2]");
-		for (int i = 0; i < (elements.size() > S_S_NUM ? S_S_NUM : elements.size()); i++) {
-			Station station = new Station();
-			station.setContentPub("喜马拉雅");
-			Element element1 = elements.get(i).select("a[class=albumface100]").get(0);
-			String hrefstation = element1.attr("href");
-			String stationpic = element1.select("span").select("img").attr("src");
-			String[] strs = hrefstation.split("/");
-			station.setId(strs[3]); // 专辑ID
-			station.setPic(stationpic); // 专辑图片
-			Element element2 = elements.get(i).select("div[class=info title]").select("a[href]").get(0);
-			String stationname = element2.html();
-			station.setName(stationname); // 专辑名称
-			station.setFestival(stationfestiavlS(hrefstation));
-			if (station != null) {
-				JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
-				RedisOperService roService = new RedisOperService(conn);
-				SearchUtils.addListInfo(content, station, roService); // 保存到在redis里key为constr的list里
+		try {
+			doc = HttpUtils.getJsonStrForUrl(url);
+			Elements elements = doc.select("div[class=content_wrap2]");
+			for (int i = 0; i < (elements.size() > S_S_NUM ? S_S_NUM : elements.size()); i++) {
+				AlbumPo albumPo = new AlbumPo();
+				albumPo.setId(SequenceUUID.getPureUUID());
+				albumPo.setAlbumPublisher("喜马拉雅");
+				Element element1 = elements.get(i).select("a[class=albumface100]").get(0);
+				String hrefstation = element1.attr("href");
+				albumPo = albumS("http://www.ximalaya.com"+hrefstation);
+				albumPo.setVisitUrl("http://www.ximalaya.com"+hrefstation);
+				String stationpic = element1.select("span").select("img").attr("src");
+				albumPo.setAlbumId(hrefstation.substring(hrefstation.indexOf("/album/")+7, hrefstation.length()));
+				albumPo.setAlbumImg(stationpic);
+				Elements eles = doc.select("div.detailContent_intro");
+				if (eles != null && !eles.isEmpty()) {
+					albumPo.setDescn(StringEscapeUtils.unescapeHtml4(eles.select("div.rich_intro").select("article").get(0).html().trim()));
+				}
+				List<AudioPo> aus = albumAudioS(hrefstation);
+				albumPo.setcTime(new Timestamp(System.currentTimeMillis()));
+				if (aus != null && aus.size() > 0) {
+					albumPo.setAudioPos(aus);
+					result.put(albumPo.getAlbumName() + "::" + albumPo.getAlbumId(), albumPo);
+				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			okNum++;
 		}
+	}
+	
+	public AlbumPo albumS(String url) {
+		Document doc = HttpUtils.getJsonStrForUrl(url);
+		if (doc!=null) {
+			Map<String, Object> parseData = new HashMap<>();
+			XMLYParseUtils.parseAlbum(false, doc.toString().getBytes(), parseData);
+			AlbumPo albumPo = new AlbumPo();
+			albumPo.setId(SequenceUUID.getPureUUID());
+			albumPo.setAlbumId(parseData.get("albumId")+"");
+			albumPo.setAlbumName(parseData.get("albumName")+"");
+			albumPo.setAlbumImg(parseData.get("albumImg")+"");
+			albumPo.setCategoryName(parseData.get("categoryName")+"");
+			albumPo.setAlbumPublisher("喜马拉雅");
+			albumPo.setPlayCount(parseData.get("playCount")+"");
+			albumPo.setAlbumTags(parseData.get("tags")+"");
+			albumPo.setDescn(parseData.get("descript")+"");
+			albumPo.setVisitUrl(parseData.get("visitUrl")+"");
+			return albumPo;
+		}
+		return null;
 	}
 
 	/**
@@ -77,28 +114,20 @@ public class XiMaLaYaSearch extends Thread {
 	 * @param contentid
 	 * @return
 	 */
-	private Festival[] stationfestiavlS(String contentid) {
+	public List<AudioPo> albumAudioS(String contentid) {
 		String url = "http://www.ximalaya.com" + contentid;
-		Festival[] festivals = new Festival[S_F_NUM];
+		List<AudioPo> aus = new ArrayList<>();
 		Document doc = null;
 		doc = HttpUtils.getJsonStrForUrl(url);
 		Elements elements = doc.select("li[sound_id]");
-		Element el = doc.select("div[class=detailContent_title]").get(0);
-		String albumName = el.select("h1").get(0).html();
 		for (int i = 0; i < (elements.size() > S_F_NUM ? S_F_NUM : elements.size()); i++) {
-			Festival festival = new Festival();
-			Element element = elements.get(i).select("a[class=forwardBtn]").get(0);
-			festival.setAudioId(element.attr("track_id")); // 节目id
-			Elements elementsspan = elements.select("span");
-			festival.setUpdateTime(elementsspan.get(0).html()); // 节目创建时间
-			elements = doc.select("a[class=shareLink shareLink2]");//shareLink shareLink2
-			if (elements!=null && elements.size()>0) {
-				festival.setAlbumId(elements.get(0).attr("album_id"));
+			url = "http://www.ximalaya.com" + elements.get(i).select("a[class=title]").attr("href");
+			AudioPo audioPo = audioS(url);
+			if (audioPo!=null) {
+				aus.add(audioPo);
 			}
-			festival.setAlbumName(albumName);
-			festivals[i] = festivalS(festival.getAudioId(), festival);
 		}
-		return festivals;
+		return aus;
 	}
 
 	/**
@@ -108,43 +137,30 @@ public class XiMaLaYaSearch extends Thread {
 	 * @param festival
 	 * @return
 	 */
-	private Festival festivalS(String contendid, Festival festival) {
-		String url = "http://www.ximalaya.com/tracks/" + contendid + ".json";
-		String jsonstr = SearchUtils.jsoupTOstr(url);
-		Map<String, Object> map = SearchUtils.jsonTOmap(jsonstr);
-		if (map == null)
-			return null;
-		else {
-			festival.setAudioId(contendid); // 节目id
-			festival.setAudioName(map.get("title") + "");
-			festival.setPlayUrl(map.get("play_path") + ""); // 节目音频地址
-			festival.setDuration(map.get("duration") + "000"); // 音频时长 ms
-			festival.setAudioPic(map.get("cover_url_142") + ""); // 节目图片
-			festival.setCategory(map.get("category_name") + ""); // 节目分类
-			festival.setPlaynum(map.get("play_count") + ""); // 节目播放次数
-			festival.setContentPub("喜马拉雅");
-			festival.setPersonName(map.get("nickname") + "");
-			festival.setPersonId(map.get("uid") + "");
-			String created_at = map.get("formatted_created_at") + "";
-			String time_utils_now = map.get("time_until_now") + "";
-			try {
-				if (time_utils_now.contains("年")) {
-					int year = DataTransform.findInt(time_utils_now);
-					year = new Date(System.currentTimeMillis()).getYear() - year + 1900;
-					created_at = year + "年" + created_at;
-					long date = DateUtils.getDateTime("yyyy年MM月dd日 HH:mm", created_at).getTime();
-					festival.setUpdateTime(date + "");
-				} else {
-					int year = new Date(System.currentTimeMillis()).getYear() + 1900;
-					created_at = year + "年" + created_at;
-					long date = DateUtils.getDateTime("yyyy年MM月dd日 HH:mm", created_at).getTime();
-					festival.setUpdateTime(date + "");
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			return festival;
+	public AudioPo audioS(String url) {
+		Document docc = HttpUtils.getJsonStrForUrl(url);
+		Map<String, Object> parseData = new HashMap<>();
+		XMLYParseUtils.parseSond(false, docc.toString().getBytes(), parseData);
+		if (parseData != null && parseData.containsKey("audioId") && parseData.get("audioId")!=null && !parseData.get("audioId").equals("null")) {
+			AudioPo audioPo = new AudioPo();
+			audioPo.setId(SequenceUUID.getPureUUID());
+			audioPo.setAudioPublisher("喜马拉雅");
+			audioPo.setAudioId(parseData.get("audioId") + "");
+			audioPo.setAudioName(parseData.get("audioName") + "");
+			audioPo.setAudioImg(parseData.get("audioImg") + "");
+			audioPo.setAudioURL(parseData.get("playUrl") + ""); //
+			audioPo.setDuration(parseData.get("duration") + "");
+			audioPo.setcTime(new Timestamp(Long.valueOf((parseData.get("cTime") + "").equals("null")?System.currentTimeMillis()+"":(parseData.get("cTime") + ""))));
+			audioPo.setCategoryName(parseData.get("categoryName") + "");
+			audioPo.setAudioTags(parseData.get("tags") + "");
+			audioPo.setPlayCount(parseData.get("playCount") + "");
+			audioPo.setDescn(parseData.containsKey("descript") ? parseData.get("descript") + "" : null);
+			audioPo.setAlbumId(parseData.containsKey("albumId") ? parseData.get("albumId") + "" : null);
+			audioPo.setAlbumName(parseData.containsKey("albumName") ? parseData.get("albumName") + "" : null);
+			audioPo.setVisitUrl(parseData.get("visitUrl")+"");
+			return audioPo;
 		}
+		return null;
 	}
 
 	/**
@@ -152,54 +168,61 @@ public class XiMaLaYaSearch extends Thread {
 	 * 
 	 * @param content
 	 */
-	private void festivalsS(String content) {
+	private void audiosS(String content) {
 		String url = "http://www.ximalaya.com/search/" + SearchUtils.utf8TOurl(content) + "/t2";
 		Document doc = null;
 		try {
 			Thread.sleep(100);
 			doc = Jsoup.connect(url).timeout(T).ignoreContentType(true)
-					.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36")
+					.header("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36")
 					.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
 					.header("Accept-Encoding", "gzip, deflate, sdch")
-					.header("Cookie", "Hm_lvt_4a7d8ec50cfd6af753c4f8aee3425070=1481942163; Hm_lpvt_4a7d8ec50cfd6af753c4f8aee3425070=1481942193; _ga=GA1.2.2074075166.1481942163")
-					.header("Host", "www.ximalaya.com")
-					.header("Connection", "keep-alive")
-					.header("X-Requested-With", "XMLHttpRequest")
-					.header("Referer", "http://www.ximalaya.com/explore/").get();
+					.header("Cookie","Hm_lvt_4a7d8ec50cfd6af753c4f8aee3425070=1481942163; Hm_lpvt_4a7d8ec50cfd6af753c4f8aee3425070=1481942193; _ga=GA1.2.2074075166.1481942163")
+					.header("Host", "www.ximalaya.com").header("Connection", "keep-alive")
+					.header("X-Requested-With", "XMLHttpRequest").header("Referer", "http://www.ximalaya.com/explore/")
+					.get();
 			Elements elements = doc.select("div[class=row soundReport]");
 			if (elements.size() > 0) {
-//				elements.remove(0);
 				for (int i = 0; i < (elements.size() > F_NUM ? F_NUM : elements.size()); i++) {
-					Festival festival = new Festival();
-					Element elf = elements.get(i);
-					if (elf.select("a[class=soundReport_soundname]")==null || elf.select("a[class=soundReport_soundname]").size()==0 ) {
+					try {
+						Element elf = elements.get(i);
+						if (elf.select("a[class=soundReport_soundname]") == null || elf.select("a[class=soundReport_soundname]").size() == 0) {
+							continue;
+						}
+						url = "http://www.ximalaya.com" + elf.select("a[class=soundReport_soundname]").get(0).attr("href");
+						Document docc = HttpUtils.getJsonStrForUrl(url);
+						Map<String, Object> parseData = new HashMap<>();
+						XMLYParseUtils.parseSond(false, docc.toString().getBytes(), parseData);
+						if (parseData != null && parseData.containsKey("audioId") && parseData.get("audioId")!=null && !parseData.get("audioId").equals("null")) {
+							AudioPo audioPo = new AudioPo();
+							audioPo.setId(SequenceUUID.getPureUUID());
+							audioPo.setAudioPublisher("喜马拉雅");
+							audioPo.setAudioId(parseData.get("audioId")==null?null:parseData.get("audioId").toString());
+							audioPo.setAudioName(parseData.get("audioName")==null?null:parseData.get("audioName").toString());
+							audioPo.setAudioImg(parseData.get("audioImg")==null?null:parseData.get("audioImg").toString());
+							audioPo.setAudioURL(parseData.get("playUrl")==null?null:parseData.get("playUrl").toString()); //
+							audioPo.setDuration(parseData.get("duration")==null?null:parseData.get("duration").toString());
+							audioPo.setcTime(new Timestamp(Long.valueOf(parseData.get("cTime") + "")));
+							audioPo.setCategoryName(parseData.get("categoryName")==null?null:parseData.get("categoryName").toString());
+							audioPo.setAudioTags(parseData.get("tags")==null?null:parseData.get("tags").toString());
+							audioPo.setPlayCount(parseData.get("playCount")==null?null:parseData.get("playCount").toString());
+							audioPo.setDescn(parseData.containsKey("descript") ? parseData.get("descript") + "" : null);
+							audioPo.setAlbumId(parseData.containsKey("albumId") ? parseData.get("albumId") + "" : null);
+							audioPo.setAlbumName(parseData.containsKey("albumName") ? parseData.get("albumName") + "" : null);
+							audioPo.setVisitUrl(parseData.get("visitUrl")+"");
+							result.put(audioPo.getAudioName() + "::" + audioPo.getAudioId(), audioPo);
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
 						continue;
-					}
-					String id = elf.select("a[class=soundReport_soundname]").get(0).attr("href").split("/")[3];
-					String desc = elf.select("a[class=soundReport_tag]").size() == 0 ? null : elf.select("a[class=soundReport_tag]").get(0).html();
-					String host = elf.select("div[class=col soundReport_author]").size() == 0 ? null : elf.select("div[class=col soundReport_author]").get(0).select("a").get(0).html();
-					String playnum = elf.select("div[class=col soundReport_playCount]").get(0).select("span").get(0).html();
-					String albumName = elf.select("div[class=col soundReport_album]").get(0).select("a").get(0).html();
-					String albumId = elf.select("div[class=col soundReport_album]").get(0).select("a").get(0).attr("href");
-					albumId = albumId.substring(albumId.indexOf("/album/")+7, albumId.length());
-					albumName = albumName.replace("《", "").replace("》", "");
-					festival.setAudioId(id);
-					festival.setAudioDes(desc);
-					festival.setPersonName(host == null ? null : host.split(" ")[0]);
-					festival.setPlaynum(playnum);
-					festival.setAlbumName(albumName);
-					festival.setAlbumId(albumId);
-					festival = festivalS(festival.getAudioId(), festival);
-					if (festival != null) {
-						JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
-						RedisOperService roService = new RedisOperService(conn);
-						SearchUtils.addListInfo(content, festival, roService); // 保存到在redis里key为constr的list里
 					}
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			festivalsS(content);
+			audioS(content);
+		} finally {
+			okNum++;
 		}
 	}
 
@@ -209,6 +232,56 @@ public class XiMaLaYaSearch extends Thread {
 		try {
 			ximalayaService(constr);
 			Thread.sleep(200);
+			while (true) {
+				Thread.sleep(20);
+				if (okNum == 2) {
+					Map<String, Object> albummap = new HashMap<>();
+					Map<String, Object> audiomap = new HashMap<>();
+					for (String key : result.keySet()) {
+						if (result.get(key)!=null) {
+							try {
+								AlbumPo albumPo = (AlbumPo) result.get(key);
+								albummap.put(albumPo.getAlbumId(), albumPo);
+							} catch (Exception e) {
+								AudioPo audioPo = (AudioPo) result.get(key);
+								audiomap.put(audioPo.getAudioId(), audioPo);
+								if (!albummap.containsKey(audioPo.getAlbumId())) {
+									albummap.put(audioPo.getAlbumId(), null);
+								}
+								continue;
+							}
+						}
+					}
+					JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
+					RedisOperService roService = new RedisOperService(conn);
+					for (String key : albummap.keySet()) {
+						try {
+							if (albummap.get(key)!=null) {
+							    SearchUtils.addListInfo(constr, (AlbumPo)albummap.get(key), roService);
+						    }
+						} catch (Exception e) {
+							e.printStackTrace();
+							continue;
+						}
+						
+					}
+					for (String key : audiomap.keySet()) {
+						try {
+							if (audiomap.get(key)!=null) {
+							    SearchUtils.addListInfo(constr, (AudioPo)audiomap.get(key), roService);
+						    }
+						} catch (Exception e) {
+							e.printStackTrace();
+							continue;
+						}
+					}
+					roService.close();
+					conn.destroy();
+//					System.out.println(JsonUtils.objToJson(albummap));
+//					System.out.println(JsonUtils.objToJson(audiomap));
+					break;
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("喜马拉雅搜索异常");
@@ -217,6 +290,8 @@ public class XiMaLaYaSearch extends Thread {
 			RedisOperService roService = new RedisOperService(conn);
 			SearchUtils.updateSearchFinish(constr, roService);
 			System.out.println("喜马拉雅搜索结束");
+			roService.close();
+			conn.destroy();
 		}
 	}
 }

@@ -66,6 +66,6 @@
         <if test="whereSql!=null"> and ${whereSql}</if>
       </if>
       <if test="sortByClause!=null">order by ${sortByClause}</if>
-    </select>
+  </select>
   
 </mapper>

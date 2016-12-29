@@ -40,11 +40,12 @@ public abstract class XMLYParseUtils {
 			eles = doc.select("div.personal_body").select("div.left").select("img");
 			if (eles != null && !eles.isEmpty()) {
 				e = eles.get(0);
-				parseData.put("albumName", e.attr("alt").trim());
+				parseData.put("albumName", e.attr("alt").replace("《", "").replace("》", "").trim());
 				parseData.put("albumImg", e.attr("src").trim());
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			parseData=null;
 		}
 		// 类别
 		try {
@@ -56,6 +57,7 @@ public abstract class XMLYParseUtils {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			parseData=null;
 		}
 		// 标签
 		try {
@@ -72,6 +74,7 @@ public abstract class XMLYParseUtils {
 				parseData.put("tags", tags.substring(1).trim());
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			parseData=null;
 		}
 		// 播放数
 		try {
@@ -81,6 +84,7 @@ public abstract class XMLYParseUtils {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			parseData=null;
 		}
 		// 描述
 		try {
@@ -90,6 +94,7 @@ public abstract class XMLYParseUtils {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			parseData=null;
 		}
 		// 专辑
 		try {
@@ -101,6 +106,17 @@ public abstract class XMLYParseUtils {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			parseData=null;
+		}
+		//访问地址
+		try {
+			eles = doc.select("link[rel=canonical]");
+			if (eles != null && !eles.isEmpty()) {
+				parseData.put("visitUrl", eles.get(0).attr("href").trim());
+			}
+		} catch (Exception ex) {
+			parseData=null;
+			ex.printStackTrace();
 		}
 		//主播
 		try {
@@ -110,7 +126,7 @@ public abstract class XMLYParseUtils {
 				zhubos = zhubos.replace("/zhubo/", "").replace("/", "");
 				saveCPerson(zhubos, "hotspot_Album", parseData.get("albumId")+"");
 			}
-		} catch (Exception ex) {ex.printStackTrace();}
+		} catch (Exception ex) {ex.printStackTrace();parseData=null;}
 		if (isToRedis) {
 			Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
 		    RedisOperService rs = new RedisOperService(scheme.getJedisConnectionFactory(), scheme.getRedisDB());
@@ -127,6 +143,7 @@ public abstract class XMLYParseUtils {
 	 * @param parseData
 	 *            返回的数据
 	 */
+	@SuppressWarnings("deprecation")
 	public static void parseSond(boolean isToRedis, byte[] htmlByteArray, Map<String, Object> parseData) {
 		Elements eles = null;
 		Element e = null;
@@ -141,10 +158,12 @@ public abstract class XMLYParseUtils {
 				parseData.put("audioName", e.attr("alt").trim());
 				parseData.put("audioImg", e.attr("src").trim());
 			} else {
+				parseData=null;
 				return;
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			parseData=null;
 		}
 		// 声音
 		try {
@@ -170,12 +189,18 @@ public abstract class XMLYParseUtils {
 						parseData.put("cTime", date);
 					}
 				}
+			} else {
+				parseData.put("cTime", System.currentTimeMillis());
 			}
 		} catch (Exception ex) {
+			parseData=null;
 			ex.printStackTrace();
 		}
-		if (parseData.get("playUrl") == null)
+		if (parseData.get("playUrl") == null){
+			parseData=null;
 			return;// 若获得不到声音，则不用进行后续处理了，没有声音的也入原始库
+		}
+			
 		// 类别
 		try {
 			eles = doc.select("div.detailContent_category");
@@ -187,6 +212,7 @@ public abstract class XMLYParseUtils {
 				parseData.put("categoryName", catename);
 			}
 		} catch (Exception ex) {
+			parseData=null;
 			ex.printStackTrace();
 		}
 		// 标签
@@ -203,6 +229,7 @@ public abstract class XMLYParseUtils {
 			if (tags.length() > 0)
 				parseData.put("tags", tags.substring(1));
 		} catch (Exception ex) {
+			parseData=null;
 			ex.printStackTrace();
 		}
 		// 播放数
@@ -212,6 +239,7 @@ public abstract class XMLYParseUtils {
 				parseData.put("playCount", XMLYParseUtils.getFirstNum(eles.get(0).html()));
 			}
 		} catch (Exception ex) {
+			parseData=null;
 			ex.printStackTrace();
 		}
 		// 描述
@@ -221,6 +249,7 @@ public abstract class XMLYParseUtils {
 				parseData.put("descript", HttpUtils.cleanTag(eles.get(0).select("article").get(0).html().trim()));
 			}
 		} catch (Exception ex) {
+			parseData=null;
 			ex.printStackTrace();
 		}
 		// 专辑
@@ -244,6 +273,17 @@ public abstract class XMLYParseUtils {
 				}
 			}
 		} catch (Exception ex) {
+			parseData=null;
+			ex.printStackTrace();
+		}
+		//访问地址
+		try {
+			eles = doc.select("link[rel=canonical]");
+			if (eles != null && !eles.isEmpty()) {
+				parseData.put("visitUrl", eles.get(0).attr("href").trim());
+			}
+		} catch (Exception ex) {
+			parseData=null;
 			ex.printStackTrace();
 		}
 		//主播

@@ -48,4 +48,12 @@ public class ResOrgAssetService{
     	m.put("pagesize", pagesize);
 		return resOrgAssetDao.queryForList("getResOrgAssetList", m);
     }
+    
+    public ResOrgAssetPo getResOrgAssetPo(Map<String, Object> m) {
+    	ResOrgAssetPo resOrgAssetPo = resOrgAssetDao.getInfoObject("getList", m);
+    	if (resOrgAssetPo!=null) {
+			return resOrgAssetPo;
+		}
+		return null;
+    }
 }

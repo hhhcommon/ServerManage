@@ -1,7 +1,10 @@
 package com.woting.crawler.scheme.searchcrawler.model;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.List;
+
 
 /**
  * 
@@ -19,23 +22,8 @@ public class Station implements Serializable {
 	private String desc; // 专辑内容描述
 	private String pic; // 专辑图片链接
 	private String host; // 主播人
-	private String CTime;
-	private Festival[] festival; // 专辑节目信息
-
-	@Override
-	public String toString() {
-		return "Station [MediaType=" + MediaType + ", contentPub=" + contentPub + ", id=" + id + ", name=" + name
-				+ ", desc=" + desc + ", pic=" + pic + ", host=" + host + ", createTime=" + CTime + ", festival="
-				+ Arrays.toString(festival) + "]";
-	}
-
-	public String getCTime() {
-		return CTime;
-	}
-
-	public void setCTime(String cTime) {
-		CTime = cTime;
-	}
+	private Timestamp CTime;
+	private List<Festival> festivals; // 专辑节目信息
 
 	public String getMediaType() {
 		return MediaType;
@@ -89,11 +77,20 @@ public class Station implements Serializable {
 		this.desc = desc;
 	}
 
-	public Festival[] getFestival() {
-		return festival;
+	public List<Festival> getFestivals() {
+		return festivals;
 	}
 
-	public void setFestival(Festival[] festival) {
-		this.festival = festival;
+	public void setFestivals(List<Festival> festivals) {
+		this.festivals = festivals;
 	}
+
+	public Timestamp getCTime() {
+		return CTime;
+	}
+
+	public void setCTime(Timestamp cTime) {
+		CTime = cTime;
+	}
+	
 }

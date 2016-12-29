@@ -33,6 +33,8 @@ public class SchemeMoniter extends Thread {
 		logger.info("开始辅助信息抓取");
 		new XMLYCrawlerRedis(scheme).start();
 		logger.info("开启Crawler4j抓取");
+//		new KLSnapShoot().beginSearch();
+//		new DTSnapShoot().beginSearch();
 		new Thread(){public void run() {startCrawler4j(); }}.start(); //开启Crawler4j抓取
 	}
 	
@@ -65,9 +67,10 @@ public class SchemeMoniter extends Thread {
 			RobotstxtServer robotstxtServer = new RobotstxtServer(robotstxtConfig, pageFetcher);
 			CrawlController controller = new CrawlController(config, pageFetcher, robotstxtServer);
 			controller.getCrawlersLocalData();
-			controller.addSeed("http://www.ximalaya.com/explore/");
-			controller.addSeed("http://www.qingting.fm/s/home");
-			controller.addSeed("http://www.kaolafm.com");
+//			controller.addSeed("http://www.ximalaya.com/explore/");
+//			controller.addSeed("http://www.qingting.fm/s/home");
+			controller.addSeed("http://www.kan8kan.com/");
+			controller.addSeed("http://www.duotin.com/webfm");
 			controller.start(Crawler.class, numberOfCrawlers);
 			controller.waitUntilFinish();
 			//写入抓取完成信息

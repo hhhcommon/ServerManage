@@ -284,7 +284,8 @@ public abstract class SearchUtils {
 	 * @return
 	 */
 	public static <T> void addListInfo(String key, T T, RedisOperService ros) {
-		new AddInfoThread<>(key, T, ros).start();
+//		new AddInfoThread<>(key, T, ros).start();
+		new AddInfoThread<>(key, T, ros).run();
 	}
 
 	/**

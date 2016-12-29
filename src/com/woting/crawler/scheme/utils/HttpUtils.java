@@ -19,7 +19,7 @@ public abstract class HttpUtils {
 	@SuppressWarnings("unchecked")
 	public static Map<String, Object> getJsonMapFromURL(String url) {
 		try {
-			Document doc = Jsoup.connect(url)
+			Document doc = Jsoup.connect(url).timeout(10000)
 					.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36")
 					.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
 					.header("Accept-Encoding", "gzip, deflate, sdch")

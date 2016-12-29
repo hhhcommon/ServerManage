@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.spiritdata.framework.util.JsonUtils;
 import com.woting.cm.core.media.persis.po.MediaAssetPo;
@@ -17,6 +20,45 @@ import com.woting.crawler.core.audio.persis.po.AudioPo;
 public class RedisUtils {
 	public static Logger logger = LoggerFactory.getLogger(RedisUtils.class);
 
+	public static void addSnapShootInfo(RedisOperService rs, String key,String value) {
+		try {
+			rs.set(key, value);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static String getSnapShootInfo(RedisOperService rs, String key) {
+		try {
+			return rs.get(key);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static boolean exeitsSnapShootInfo(RedisOperService rs, String key) {
+		try {
+			return rs.exist(key);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	public static void removeSnapShoots(RedisOperService rs, String keys) {
+		try {
+			Set<String> strs =  rs.keys(keys);
+			if (strs!=null && strs.size()>0) {
+				for (String str : strs) {
+				    rs.del(str);
+			    }
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public static void removeOldCrawler(RedisOperService rs, String num) {
 		try {
 			rs.del("XMLY_Audio_"+num,"XMLY_Album_"+num,"QT_Audio_"+num,"QT_Album_"+num

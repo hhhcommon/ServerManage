@@ -4,6 +4,7 @@ public class SchemePo {
 	private String Schemenum;
 	private String CrawlerExtent;
 	private String NumberOfCrawlers;
+	private String RedisSnapShootDB;
 	private String RedisDB;
 	public String getSchemenum() {
 		return Schemenum;
@@ -28,5 +29,11 @@ public class SchemePo {
 	}
 	public void setRedisDB(String redisDB) {
 		RedisDB = redisDB;
+	}
+	public String getRedisSnapShootDB() {
+		return RedisSnapShootDB;
+	}
+	public void setRedisSnapShootDB(String redisSnapShootDB) {
+		RedisSnapShootDB = redisSnapShootDB;
 	}
 }

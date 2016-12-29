@@ -68,6 +68,14 @@ public class AudioService {
 		return null;
 	}
 	
+	public List<AudioPo> getAudios(Map<String, Object> m) {
+		List<AudioPo> l = audioDao.queryForList("getList", m);
+		if (l!=null && l.size()>0) {
+			return l;
+		}
+		return null;
+	}
+	
 	public int countNumByAlbumId(String albumId, String publisher, String crawlernum) {
 		Map<String, Object> m = new HashMap<String,Object>();
 		m.put("albumId", albumId);

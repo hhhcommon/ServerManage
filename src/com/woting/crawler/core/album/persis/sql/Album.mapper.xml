@@ -26,8 +26,12 @@
   <sql id="WhereClauseByEntiey">
     <where>
       <trim prefix="(" suffix=")" prefixOverrides="and">
+        <if test="id!=null">and id=#{id,jdbcType=VARCHAR}</if>
+        <if test="albumId!=null">and albumId=#{albumId,jdbcType=VARCHAR}</if>
+        <if test="albumName!=null">and albumName=#{albumName,jdbcType=VARCHAR}</if>
         <if test="albumImg!=null">and albumImg=#{albumImg,jdbcType=VARCHAR}</if>
         <if test="albumTags!=null">and albumTags=#{albumTags,jdbcType=VARCHAR}</if>
+        <if test="albumPublisher!=null">and albumPublisher=#{albumPublisher,jdbcType=VARCHAR}</if>
         <if test="descn!=null">and descn=#{descn,jdbcType=VARCHAR}</if>
         <if test="visitUrl!=null">and visitUrl=#{visitUrl,jdbcType=VARCHAR}</if>
         <if test="playCount!=null">and playCount=#{playCount,jdbcType=VARCHAR}</if>
@@ -68,6 +72,14 @@
     select * from hotspot_Album where crawlerNum=#{crawlerNum,jdbcType=VARCHAR} limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
   </select>
   
+  <select id="getList" resultMap="BaseResultMap" parameterType="java.util.Map">
+    select <include refid="Base_Column_List"/> from hotspot_Album
+    <if test="_parameter!=null">
+      <include refid="WhereClauseByEntiey"/>
+      <if test="sortByClause!=null">order by ${sortByClause}</if>
+    </if>
+  </select>
+  
   <select id="getAlbumInfo" parameterType="java.lang.String" resultMap="BaseResultMap">
     select * from hotspot_Album where id=#{id,jdbcType=VARCHAR}
   </select>
@@ -80,8 +92,8 @@
     select count(*) from hotspot_Album where crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
   </select>
   
-  <delete id="deleteByAlbumIdAndPublisher" parameterType="java.util.Map">
-    delete from hotspot_Album where albumId=#{albumId,jdbcType=VARCHAR} and albumPublisher=#{albumPublisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+  <delete id="deleteBy" parameterType="java.util.Map">
+    delete from hotspot_Album <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
   </delete>
   
 </mapper>

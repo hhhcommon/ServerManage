@@ -30,6 +30,11 @@
   <sql id="WhereClauseByEntiey">
     <where>
       <trim prefix="(" suffix=")" prefixOverrides="and">
+        <if test="audioId!=null">and audioId=#{audioId,jdbcType=VARCHAR}</if>
+        <if test="audioName!=null">and audioName=#{audioName,jdbcType=VARCHAR}</if>
+        <if test="audioImg!=null">and audioImg=#{audioImg,jdbcType=VARCHAR}</if>
+        <if test="audioURL!=null">and audioURL=#{audioURL,jdbcType=VARCHAR}</if>
+        <if test="audioPublisher!=null">and audioPublisher=#{audioPublisher,jdbcType=VARCHAR}</if>
         <if test="audioTags!=null">and audioTags=#{audioTags,jdbcType=VARCHAR}</if>
         <if test="descn!=null">and descn=#{descn,jdbcType=VARCHAR}</if>
         <if test="crawlerNum!=null">and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}</if>
@@ -65,6 +70,10 @@
   
   <select id="getAudioList" parameterType="java.util.Map" resultMap="BaseResultMap">
     select * from hotspot_Audio <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if> limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
+  </select>
+  
+   <select id="getList" parameterType="java.util.Map" resultMap="BaseResultMap">
+    select * from hotspot_Audio <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
   </select>
   
   <select id="getAudioInfo" parameterType="java.lang.String" resultMap="BaseResultMap">

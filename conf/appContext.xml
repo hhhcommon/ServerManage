@@ -128,6 +128,7 @@
     <property name="CrawlerExtent" value="${scheme.CrawlerExtent}"/>
     <property name="NumberOfCrawlers" value="${scheme.NumberOfCrawlers}"/>
     <property name="RedisDB" value="${scheme.RedisDB}"/>
+    <property name="RedisSnapShootDB" value="${scheme.RedisSnapShootDB}"/>
   </bean>
 
   <!-- 扫描类包，将标注Spring注解的类自动转化Bean，同时完成Bean的注入 -->

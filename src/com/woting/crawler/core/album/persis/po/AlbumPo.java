@@ -1,8 +1,10 @@
 package com.woting.crawler.core.album.persis.po;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import com.spiritdata.framework.core.model.BaseObject;
+import com.woting.crawler.core.audio.persis.po.AudioPo;
 
 public class AlbumPo extends BaseObject {
 	
@@ -22,6 +24,7 @@ public class AlbumPo extends BaseObject {
 	private String schemeId;
 	private String schemeName;
 	private Timestamp cTime;
+	private List<AudioPo> audioPos;
 	
 	public String getId() {
 		return id;
@@ -112,5 +115,11 @@ public class AlbumPo extends BaseObject {
 	}
 	public void setcTime(Timestamp cTime) {
 		this.cTime = cTime;
+	}
+	public List<AudioPo> getAudioPos() {
+		return audioPos;
+	}
+	public void setAudioPos(List<AudioPo> audioPos) {
+		this.audioPos = audioPos;
 	}
 }

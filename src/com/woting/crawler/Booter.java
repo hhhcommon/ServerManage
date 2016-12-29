@@ -77,44 +77,11 @@ public class Booter {
 			logger.info("点击量抓取定时功能已加载[{}]", timer.getPlayCountCronExpression());
 			logger.info("分类抓取定时功能已加载[{}]", timer.getCategoryCronExpression());
 			new CrawlerSearch().start();
-//			new QTSearch("极品").start();
 			while(true) {
 				Thread.sleep(60*60*1000);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-        
-//        MediaService mediaService = (MediaService) SpringShell.getBean("mediaService");
-//        List<SeqMediaAssetPo> smas = mediaService.getSmaByPublisher("蜻蜓", 1, 1000);
-//        if (smas!=null && smas.size()>0) {
-//			for (SeqMediaAssetPo seqMediaAssetPo : smas) {
-//				try {
-//					Map<String, String> m = new HashMap<>();
-//					m.put("ContentId", seqMediaAssetPo.getId());
-//					m.put("MediaType", "SEQU");
-//					System.out.println(seqMediaAssetPo.getId());
-//					Document doc = Jsoup.connect("http://www.wotingfm.com:908/CM/content/getShareHtml.do").data(m).ignoreContentType(true).timeout(100000).post();
-//					System.out.println(doc.body().html());
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		}
-//        smas = mediaService.getSmaByPublisher("喜马拉雅", 1, 1000);
-//        if (smas!=null && smas.size()>0) {
-//			for (SeqMediaAssetPo seqMediaAssetPo : smas) {
-//				try {
-//					Map<String, String> m = new HashMap<>();
-//					m.put("ContentId", seqMediaAssetPo.getId());
-//					m.put("MediaType", "SEQU");
-//					System.out.println(seqMediaAssetPo.getId());
-//					Document doc = Jsoup.connect("http://www.wotingfm.com:908/CM/content/getShareHtml.do").data(m).ignoreContentType(true).timeout(100000).post();
-//					System.out.println(doc.body().html());
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		}
 	}
 }

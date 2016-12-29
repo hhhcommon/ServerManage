@@ -11,6 +11,7 @@ import com.spiritdata.framework.core.cache.SystemCache;
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.compare.CrawlerSrcRecord;
+import com.woting.crawler.compare.RemoveCrawlerSameRecord;
 import com.woting.crawler.core.etl.control.Etl1Controller;
 import com.woting.crawler.core.etl.control.Etl2Controller;
 import com.woting.crawler.core.etl.model.Etl1Process;
@@ -67,6 +68,10 @@ public class CrawlerSrcTimerJob implements Job {
 		rs = new RedisOperService(scheme.getJedisConnectionFactory(),scheme.getRedisDB());
 		RedisUtils.removeOldCrawler(rs, crawlernum);
 		rs.close();
+		
+		//清理数据
+		RemoveCrawlerSameRecord rSameRecord = new RemoveCrawlerSameRecord();
+		rSameRecord.startCleanData();
 		
 		logger.info("第[{}]次抓取完成,耗时[{}]", scheme.getSchemenum(), System.currentTimeMillis()-begtime);
 		scheme.getRedisOperService().close();

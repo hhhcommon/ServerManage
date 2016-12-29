@@ -72,6 +72,9 @@ public class KeyWordService {
 			String[] kw = kws.split(",");
 			if (kw.length>0) {
 				for (String str : kw) {
+					if (str.equals("null")) {
+						continue;
+					}
 					Map<String, Object> m = new HashMap<>();
 					m.put("kwName", str);
 					m.put("isValidate", 1);
@@ -114,6 +117,8 @@ public class KeyWordService {
 						} else {
 							if (resTableName.equals("wt_MediaAsset")) {
 								kwr.setRefName("标签-节目");
+							} else if (resTableName.equals("wt_Channel")) {
+								kwr.setRefName("标签-栏目");
 							}
 						}
 						kwr.setResTableName(resTableName);

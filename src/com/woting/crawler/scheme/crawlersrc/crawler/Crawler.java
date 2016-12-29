@@ -7,8 +7,8 @@ import java.util.Random;
 import com.spiritdata.framework.core.cache.SystemCache;
 import com.spiritdata.framework.util.SpiritRandom;
 import com.woting.crawler.CrawlerConstants;
-import com.woting.crawler.scheme.crawlersrc.QT.crawler.QTParseUtils;
-import com.woting.crawler.scheme.crawlersrc.XMLY.crawler.XMLYParseUtils;
+import com.woting.crawler.scheme.crawlersrc.DT.crawler.DTParseUtils;
+import com.woting.crawler.scheme.crawlersrc.KL.crawler.KLParseUtils;
 
 import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
@@ -29,7 +29,7 @@ public class Crawler extends WebCrawler {
         href=href.trim().toLowerCase();
         //url判断
         //考拉url判断   只抓取专辑和单体
-        if (href.startsWith("http://www.kaolafm.com/zj/") || href.startsWith("http://www.kaolafm.com/jm/")) return true;
+        if (href.startsWith("http://www.kan8kan.com/zj/") || href.startsWith("http://www.kan8kan.com/jm/")) return true;
         //蜻蜓url判断 只抓去专辑及专辑下单体
         if (href.startsWith("http://www.qingting.fm/vchannels")){
         	url.setURL(href.replace("http://www.qingting.fm", "http://www.qingting.fm/s"));
@@ -38,6 +38,7 @@ public class Crawler extends WebCrawler {
         if(href.startsWith("http://www.qingting.fm/#/home")) return true;
         //喜马拉雅url判断 抓取专辑和单体
         if (href.startsWith("http://www.ximalaya.com")) return true;
+        if (href.startsWith("http://www.duotin.com/webfm/")) return true;
         return false;
 	}
 	
@@ -59,12 +60,14 @@ public class Crawler extends WebCrawler {
     	parseData.put("visitUrl", url);
     	switch(pageType){
     	case 0: break;
-//    	case 1: KLParseUtils.parseAlbum(htmlByteArray, parseData);break;
-//    	case 2: KLParseUtils.parseSond(htmlByteArray, parseData);break;
-    	case 3: QTParseUtils.parseQTResourceIdAndCategoryId(htmlByteArray, parseData);break;
-    	case 4: QTParseUtils.parseAlbum(true, htmlByteArray, parseData);break;
-    	case 5: XMLYParseUtils.parseAlbum(true, htmlByteArray, parseData);break;
-    	case 6: XMLYParseUtils.parseSond(true, htmlByteArray, parseData);break;
+    	case 1: KLParseUtils.parseAlbum(true, htmlByteArray, parseData);break;
+    	case 2: KLParseUtils.parseSond(true, htmlByteArray, parseData);break;
+//    	case 3: QTParseUtils.parseQTResourceIdAndCategoryId(htmlByteArray, parseData);break;
+//    	case 4: QTParseUtils.parseAlbum(true, htmlByteArray, parseData);break;
+//    	case 5: XMLYParseUtils.parseAlbum(true, htmlByteArray, parseData);break;
+//    	case 6: XMLYParseUtils.parseSond(true, htmlByteArray, parseData);break;
+    	case 7: DTParseUtils.parseContent(true, htmlByteArray, parseData);break;
+    	case 8: DTParseUtils.parseAlbum(true, htmlByteArray, parseData);
     	}
 	}
 }
