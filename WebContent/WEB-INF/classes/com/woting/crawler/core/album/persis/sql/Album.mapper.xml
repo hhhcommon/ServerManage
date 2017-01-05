@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- Etl与资源对应关系 -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="A_ALBUM">
+  <!-- 对应关系 -->
+  <resultMap id="BaseResultMap" type="album">
+    <id      column="id"             property="id"             jdbcType="VARCHAR"/>
+    <result  column="albumId"        property="albumId"        jdbcType="VARCHAR"/>
+    <result  column="albumName"      property="albumName"      jdbcType="VARCHAR"/>
+    <result  column="albumPublisher" property="albumPublisher" jdbcType="VARCHAR"/>
+    <result  column="albumImg"       property="albumImg"       jdbcType="VARCHAR"/>
+    <result  column="albumTags"      property="albumTags"      jdbcType="VARCHAR"/>
+    <result  column="categoryId"     property="categoryId"     jdbcType="VARCHAR"/>
+    <result  column="categoryName"   property="categoryName"   jdbcType="VARCHAR"/>
+    <result  column="descn"          property="descn"          jdbcType="VARCHAR"/>
+    <result  column="visitUrl"       property="visitUrl"       jdbcType="VARCHAR"/>
+    <result  column="playCount"      property="playCount"      jdbcType="VARCHAR"/>
+    <result  column="crawlerNum"     property="crawlerNum"     jdbcType="VARCHAR"/>
+    <result  column="schemeId"       property="schemeId"       jdbcType="VARCHAR"/>
+    <result  column="schemeName"     property="schemeName"     jdbcType="VARCHAR"/>
+    <result  column="cTime"          property="cTime"          jdbcType="TIMESTAMP"/>
+  </resultMap>
+  
+  <!-- 条件子句 -->
+  <sql id="WhereClauseByEntiey">
+    <where>
+      <trim prefix="(" suffix=")" prefixOverrides="and">
+        <if test="id!=null">and id=#{id,jdbcType=VARCHAR}</if>
+        <if test="albumId!=null">and albumId=#{albumId,jdbcType=VARCHAR}</if>
+        <if test="albumName!=null">and albumName=#{albumName,jdbcType=VARCHAR}</if>
+        <if test="albumImg!=null">and albumImg=#{albumImg,jdbcType=VARCHAR}</if>
+        <if test="albumTags!=null">and albumTags=#{albumTags,jdbcType=VARCHAR}</if>
+        <if test="albumPublisher!=null">and albumPublisher=#{albumPublisher,jdbcType=VARCHAR}</if>
+        <if test="descn!=null">and descn=#{descn,jdbcType=VARCHAR}</if>
+        <if test="visitUrl!=null">and visitUrl=#{visitUrl,jdbcType=VARCHAR}</if>
+        <if test="playCount!=null">and playCount=#{playCount,jdbcType=VARCHAR}</if>
+        <if test="crawlerNum!=null">and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}</if>
+        <if test="schemeId!=null">and schemeId=#{schemeId,jdbcType=VARCHAR}</if>
+        <if test="schemeName!=null">and schemeName=#{schemeName,jdbcType=VARCHAR}</if>
+      </trim>
+    </where>
+  </sql>
+
+  <!-- 所有列 -->
+  <sql id="Base_Column_List">
+    id, albumId, albumName, albumPublisher, albumImg, albumTags, categoryId, categoryName, descn, visitUrl, playCount, crawlerNum, schemeId, schemeName, cTime
+  </sql>
+
+  <insert id="insertList" parameterType="java.util.List">
+    Insert into hotspot_Album(id,albumId,albumName,albumPublisher,albumImg,albumTags,categoryId,categoryName,descn,visitUrl,playCount,crawlerNum,schemeId,schemeName,cTime) values
+    <foreach collection="list" item="list" index="index" separator=",">
+     (#{list.id},#{list.albumId},#{list.albumName},#{list.albumPublisher},#{list.albumImg},#{list.albumTags},#{list.categoryId},#{list.categoryName},#{list.descn},#{list.visitUrl},#{list.playCount},#{list.crawlerNum},#{list.schemeId},#{list.schemeName},#{list.cTime})
+    </foreach>
+  </insert>
+  
+  <update id="removeNull" parameterType="java.util.Map">
+   update hotspot_Album 
+   <set>
+      <if test="albumImg!=null">albumImg=Null,</if>
+      <if test="albumTags!=null">albumTags=Null,</if>
+      <if test="descn!=null">descn=Null,</if>
+      <if test="visitUrl!=null">visitUrl=Null,</if>
+      <if test="playCount!=null">playCount=Null,</if>
+      <if test="schemeId!=null">schemeId=Null,</if>
+      <if test="schemeName!=null">schemeName=Null,</if>
+    </set>
+    <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
+  </update>
+  
+  <select id="getAlbumList" parameterType="java.util.Map" resultMap="BaseResultMap">
+    select * from hotspot_Album where crawlerNum=#{crawlerNum,jdbcType=VARCHAR} limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
+  </select>
+  
+  <select id="getList" resultMap="BaseResultMap" parameterType="java.util.Map">
+    select <include refid="Base_Column_List"/> from hotspot_Album
+    <if test="_parameter!=null">
+      <include refid="WhereClauseByEntiey"/>
+      <if test="sortByClause!=null">order by ${sortByClause}</if>
+    </if>
+  </select>
+  
+  <select id="getAlbumInfo" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select * from hotspot_Album where id=#{id,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="getAlbumListByCrawlerNum" parameterType="java.util.Map" resultMap="BaseResultMap">
+    select * from hotspot_Album where crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="count" resultType="java.lang.Integer" parameterType="java.lang.String">
+    select count(*) from hotspot_Album where crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+  </select>
+  
+  <delete id="deleteBy" parameterType="java.util.Map">
+    delete from hotspot_Album <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
+  </delete>
+  
+</mapper>

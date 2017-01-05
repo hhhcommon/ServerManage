@@ -4,6 +4,7 @@ public class TimerPo {
 	private String CronExpression;
 	private String PlayCountCronExpression;
 	private String CategoryCronExpression;
+	private String BCPlayIsValidateCronExpression;
 	public String getCronExpression() {
 		return CronExpression;
 	}
@@ -21,5 +22,11 @@ public class TimerPo {
 	}
 	public void setCategoryCronExpression(String categoryCronExpression) {
 		CategoryCronExpression = categoryCronExpression;
+	}
+	public String getBCPlayIsValidateCronExpression() {
+		return BCPlayIsValidateCronExpression;
+	}
+	public void setBCPlayIsValidateCronExpression(String bCPlayIsValidateCronExpression) {
+		BCPlayIsValidateCronExpression = bCPlayIsValidateCronExpression;
 	}
 }

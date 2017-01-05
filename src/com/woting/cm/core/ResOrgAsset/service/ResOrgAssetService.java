@@ -49,10 +49,10 @@ public class ResOrgAssetService{
 		return resOrgAssetDao.queryForList("getResOrgAssetList", m);
     }
     
-    public ResOrgAssetPo getResOrgAssetPo(Map<String, Object> m) {
-    	ResOrgAssetPo resOrgAssetPo = resOrgAssetDao.getInfoObject("getList", m);
-    	if (resOrgAssetPo!=null) {
-			return resOrgAssetPo;
+    public List<ResOrgAssetPo> getResOrgAssetPo(Map<String, Object> m) {
+    	List<ResOrgAssetPo> resList = resOrgAssetDao.queryForList("getList", m);
+    	if (resList!=null) {
+			return resList;
 		}
 		return null;
     }

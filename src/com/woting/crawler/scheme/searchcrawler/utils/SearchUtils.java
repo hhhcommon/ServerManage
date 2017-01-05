@@ -284,60 +284,12 @@ public abstract class SearchUtils {
 	 * @return
 	 */
 	public static <T> void addListInfo(String key, T T, RedisOperService ros) {
-//		new AddInfoThread<>(key, T, ros).start();
-		new AddInfoThread<>(key, T, ros).run();
+		new AddInfoThread<>(key, T, ros).start();
 	}
 
-	/**
-	 * 在三平台搜索
-	 * 
-	 * @param searchStr
-	 * @return
-	 */
-//	public static boolean searchContent(String searchStr, RedisOperService ros) {
-//		createSearchTime(searchStr, ros);
-//		createBeginSearch(searchStr, ros);
-//		new KaoLaSearch(searchStr).start();
-//		new XiMaLaYaSearch(searchStr).start();
-//		new QingTingSearch(searchStr).start();
-//		new BaiDuNewsSearch(searchStr).start();
-//		return true;
-//	}
-
-	/**
-	 * 放入缓存搜索时间
-	 * 
-	 * @param key
-	 */
-//	private static void createSearchTime(String key, RedisOperService ros) {
-//		long time = System.currentTimeMillis();
-//		ros.set("Search_" + key + "_Date", Long.toString(time));
-//	}
-
-	/**
-	 * 是否搜索完成
-	 * 
-	 * @param key
-	 * @return
-	 */
-//	public static boolean isOrNoSearchFinish(String key, RedisOperService ros) {
-//        if (ros.exist("Search_" + key + "_Finish")) {
-//            if (ros.get("Search_" + key + "_Finish").equals("4")) { // 喜马拉雅，考拉，蜻蜓，百度新闻，服务器数据库
-//                System.out.println("key:已搜索完成 ");
-//                return true;
-//            }
-//        }
-//		return false;
-//	}
-	
-//	private static void recordMD5Tag(String key,String str){
-//		Jedis jedis = jedisPool.getResource();
-//		String md5str = jedis.get("Search_"+key+"_MD5")+","+DigestUtils.md5Hex(str);
-//		if (md5str.indexOf(",")==0) md5str.substring(1);
-//		jedis.set("Search_"+key+"_MD5", md5str);
-//	}
-//	
-	
+	public static void addRedisValue(String key,String value, RedisOperService ros) {
+	    ros.set(key, value);
+	}
 
 	/**
 	 * 放入缓存开始搜索标志

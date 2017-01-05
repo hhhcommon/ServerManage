@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- 字典与资源对应关系 -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="A_RESORGASSET">
+  <!-- 对应关系 -->
+  <resultMap id="resOrgAssetMap" type="resorgasset">
+    <id      column="id"            property="id"            jdbcType="VARCHAR"/>
+    <result  column="resTableName"  property="resTableName"  jdbcType="VARCHAR"/>
+    <result  column="resId"         property="resId"         jdbcType="VARCHAR"/>
+    <result  column="orgName"       property="orgName"       jdbcType="VARCHAR"/>
+    <result  column="origTableName" property="origTableName" jdbcType="VARCHAR"/>
+    <result  column="origId"        property="origId"        jdbcType="VARCHAR"/>
+    <result  column="origSrcId"     property="origSrcId"     jdbcType="VARCHAR"/>
+    <result  column="cTime"         property="cTime"         jdbcType="TIMESTAMP"/>
+  </resultMap>
+  
+  <!-- 所有列 -->
+  <sql id="Base_Column_List">
+    id, resTableName, resId, orgName, origTableName, origId, origSrcId, cTime
+  </sql>
+  
+  <sql id="WhereClauseByEntiey">
+    <where>
+      <trim prefix="(" suffix=")" prefixOverrides="and">
+        <if test="id!=null"> and id=#{id,jdbcType=VARCHAR}</if>
+        <if test="resTableName!=null"> and resTableName=#{resTableName,jdbcType=VARCHAR}</if>
+        <if test="resId!=null"> and resId=#{resId,jdbcType=VARCHAR}</if>
+        <if test="orgName!=null"> and orgName=#{orgName,jdbcType=VARCHAR}</if>
+        <if test="origTableName!=null"> and origTableName=#{origTableName,jdbcType=VARCHAR}</if>
+        <if test="origId!=null"> and origId=#{origId,jdbcType=VARCHAR}</if>
+        <if test="origSrcId!=null"> and origSrcId=#{origSrcId,jdbcType=VARCHAR}</if>
+      </trim>
+    </where>
+  </sql>
+
+  <!-- 新增 对应关系 -->
+  <insert id="insert" parameterType="java.util.Map">
+    insert into wt_ResOrgAsset_Ref
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id!=null">id,</if>
+      <if test="resTableName!=null">resTableName,</if>
+      <if test="resId!=null">resId,</if>
+      <if test="orgName!=null">orgName,</if>
+      <if test="origTableName!=null">origTableName,</if>
+      <if test="origId!=null">origId,</if>
+      <if test="origSrcId!=null">origSrcId,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
+      <if test="resTableName!=null">#{resTableName,jdbcType=VARCHAR},</if>
+      <if test="resId!=null">#{resId,jdbcType=VARCHAR},</if>
+      <if test="orgName!=null">#{orgName,jdbcType=VARCHAR},</if>
+      <if test="origTableName!=null">#{origTableName,jdbcType=VARCHAR},</if>
+      <if test="origId!=null">#{origId,jdbcType=VARCHAR},</if>
+      <if test="origSrcId!=null">#{origSrcId,jdbcType=VARCHAR},</if>
+    </trim>
+  </insert>
+  
+  <insert id="insertList" parameterType="java.util.List">
+    insert into wt_ResOrgAsset_Ref(id, resTableName, resId, orgName, origTableName, origId, origSrcId, cTime) values
+    <foreach collection="list" item="list" index="index" separator=",">
+     (#{list.id},#{list.resTableName},#{list.resId},#{list.orgName},#{list.origTableName},#{list.origId},#{list.origSrcId},#{list.cTime})
+    </foreach>
+  </insert>
+  
+  <select id="getList" parameterType="java.util.Map" resultMap="resOrgAssetMap">
+       select <include refid="Base_Column_List"/> from wt_ResOrgAsset_Ref
+       <if test="_parameter!=null">
+        <include refid="WhereClauseByEntiey"/>
+        <if test="whereSql!=null"> and ${whereSql}</if>
+      </if>
+      <if test="sortByClause!=null">order by ${sortByClause}</if>
+  </select>
+  
+  <select id="getResOrgAssetList" parameterType="java.util.Map" resultMap="resOrgAssetMap">
+    select * from wt_ResOrgAsset_Ref limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
+  </select>
+  
+  <select id="count" resultType="java.lang.Integer">
+    select count(*) from wt_ResOrgAsset_Ref
+  </select>
+  
+</mapper>

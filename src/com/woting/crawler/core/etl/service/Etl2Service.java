@@ -137,9 +137,9 @@ public class Etl2Service {
 					    m.put("resTableName", "wt_SeqMediaAsset");
 					    m.put("orgName", al.getAlbumPo().getAlbumPublisher());
 					    m.put("origSrcId", al.getAlbumPo().getAlbumId());
-					    ResOrgAssetPo resOrgAssetPo = resAssService.getResOrgAssetPo(m);
-					    if (resOrgAssetPo != null) {
-						    SeqMediaAssetPo seq = mediaService.getSeqInfo(resOrgAssetPo.getResId());
+					    List<ResOrgAssetPo> resList = resAssService.getResOrgAssetPo(m);
+					    if (resList != null && resList.size()>0) {
+						    SeqMediaAssetPo seq = mediaService.getSeqInfo(resList.get(0).getResId());
 						    if (seq != null) {
 							    Map<String, Object> mall = ConvertUtils.convert2MediaAsset(aulist, seq, cate2dictdlist, chlist);
 							    if (mall != null) {

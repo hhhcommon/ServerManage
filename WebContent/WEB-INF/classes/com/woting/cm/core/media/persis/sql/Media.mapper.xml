@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- 声音资产 -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="A_MEDIA">
+	<!-- 单体节目 -->
+	<resultMap id="mediaAssetMap" type="mediaAsset">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="maTitle" property="maTitle" jdbcType="VARCHAR" />
+		<result column="maPubType" property="maPubType" jdbcType="INTEGER" />
+		<result column="maPubId" property="maPubId" jdbcType="VARCHAR" />
+		<result column="maPublisher" property="maPublisher" jdbcType="VARCHAR" />
+		<result column="maPublishTime" property="maPublishTime" jdbcType="TIMESTAMP" />
+		<result column="maImg" property="maImg" jdbcType="VARCHAR" />
+		<result column="maURL" property="maURL" jdbcType="VARCHAR" />
+		<result column="subjectWords" property="subjectWords" jdbcType="VARCHAR" />
+		<result column="keyWords" property="keyWords" jdbcType="VARCHAR" />
+		<result column="langDid" property="langDid" jdbcType="VARCHAR" />
+		<result column="language" property="language" jdbcType="VARCHAR" />
+		<result column="timeLong" property="timeLong" jdbcType="BIGINT" />
+		<result column="descn" property="descn" jdbcType="VARCHAR" />
+		<result column="pubCount" property="pubCount" jdbcType="INTEGER" />
+		<result column="maStatus" property="maStatus" jdbcType="INTEGER" />
+		<result column="cTime" property="CTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<!-- 所有列 -->
+    <sql id="Base_Media_List">
+      id, maTitle, maPubType, maPubId, maPublisher, maPublishTime, maImg, maURL, subjectWords, keyWords, langDid, language, timeLong, descn, pubCount, maStatus, cTime
+    </sql>
+    
+    <!-- 条件子句 -->
+  <sql id="WhereClauseByMediaEntiey">
+    <where>
+      <trim prefix="(" suffix=")" prefixOverrides="and">
+        <if test="id!=null"> and id=#{id,jdbcType=VARCHAR}</if>
+        <if test="maTitle!=null"> and maTitle=#{maTitle,jdbcType=VARCHAR}</if>
+        <if test="maPubType!=null"> and maPubType=#{maPubType,jdbcType=INTEGER}</if>
+        <if test="maPubId!=null"> and maPubId=#{maPubId,jdbcType=VARCHAR}</if>
+        <if test="maPublisher!=null"> and maPublisher=#{maPublisher,jdbcType=VARCHAR}</if>
+        <if test="maPublishTime!=null"> and maPublishTime=#{maPublishTime,jdbcType=TIMESTAMP}</if>
+        <if test="maImg!=null"> and maImg=#{maImg,jdbcType=VARCHAR}</if>
+        <if test="maURL!=null"> and maURL=#{maURL,jdbcType=VARCHAR}</if>
+        <if test="subjectWords!=null"> and subjectWords=#{subjectWords,jdbcType=VARCHAR}</if>
+        <if test="keyWords!=null"> and keyWords=#{keyWords,jdbcType=VARCHAR}</if>
+        <if test="langDid!=null"> and langDid=#{langDid,jdbcType=VARCHAR}</if>
+        <if test="language!=null"> and language=#{language,jdbcType=VARCHAR}</if>
+        <if test="timeLong!=null"> and timeLong=#{timeLong,jdbcType=VARCHAR}</if>
+        <if test="descn!=null"> and descn=#{descn,jdbcType=VARCHAR}</if>
+        <if test="dmName!=null"> and dmName=#{dmName,jdbcType=VARCHAR}</if>
+        <if test="pubCount!=null"> and pubCount=#{pubCount,jdbcType=INTEGER}</if>
+        <if test="maStatus!=null and maStatus!=0"> and maStatus=#{maStatus,jdbcType=INTEGER}</if>
+        <if test="CTime!=null"> and cTime=#{CTime,jdbcType=TIMESTAMP}</if>
+      </trim>
+    </where>
+  </sql>
+
+	<!-- 单体节目播放源 -->
+	<resultMap id="maSourceMap" type="maSource">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="maId" property="maId" jdbcType="VARCHAR" />
+		<result column="maSrcType" property="maSrcType" jdbcType="INTEGER" />
+		<result column="maSrcId" property="maSrcId" jdbcType="VARCHAR" />
+		<result column="maSource" property="maSource" jdbcType="VARCHAR" />
+		<result column="smType" property="smType" jdbcType="VARCHAR" />
+		<result column="playURI" property="playURI" jdbcType="VARCHAR" />
+		<result column="isMain" property="isMain" jdbcType="INTEGER" />
+		<result column="descn" property="descn" jdbcType="VARCHAR" />
+		<result column="cTime" property="CTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<sql id="Base_MaSource_List">
+      id, maId, maSrcType, maSrcId, maSource, smType, playURI, isMain, descn, cTime
+    </sql>
+
+	<!-- 专辑 -->
+	<resultMap id="seqMediaAssetMap" type="seqMediaAsset">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="smaTitle" property="smaTitle" jdbcType="VARCHAR" />
+		<result column="smaPubType" property="smaPubType" jdbcType="INTEGER" />
+		<result column="smaPubId" property="smaPubId" jdbcType="VARCHAR" />
+		<result column="smaPublisher" property="smaPublisher" jdbcType="VARCHAR" />
+		<result column="smaPublishTime" property="smaPublishTime" jdbcType="TIMESTAMP"/>
+		<result column="smaImg" property="smaImg" jdbcType="VARCHAR" />
+		<result column="smaAllCount" property="smaAllCount" jdbcType="INTEGER" />
+		<result column="subjectWords" property="subjectWords" jdbcType="VARCHAR" />
+		<result column="keyWords" property="keyWords" jdbcType="VARCHAR" />
+		<result column="langDid" property="langDid" jdbcType="VARCHAR" />
+		<result column="language" property="language" jdbcType="VARCHAR" />
+		<result column="descn" property="descn" jdbcType="VARCHAR" />
+		<result column="pubCount" property="pubCount" jdbcType="INTEGER" />
+		<result column="smaStatus" property="smaStatus" jdbcType="INTEGER" />
+		<result column="cTime" property="CTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<sql id="Base_SequMedia_List">
+		id, smaTitle, smaPubType, smaPubId, smaPublisher, smaPublishTime, smaImg, smaAllCount, subjectWords, keyWords, langDid, language, descn, pubCount, smaStatus, cTime
+	</sql>
+	
+	<sql id="WhereClauseBySeqMediaEntiey">
+    <where>
+      <trim prefix="(" suffix=")" prefixOverrides="and">
+        <if test="id!=null"> and id=#{id,jdbcType=VARCHAR}</if>
+        <if test="smaTitle!=null"> and smaTitle=#{smaTitle,jdbcType=VARCHAR}</if>
+        <if test="smaPubType!=null"> and smaPubType=#{smaPubType,jdbcType=INTEGER}</if>
+        <if test="smaPubId!=null"> and smaPubId=#{smaPubId,jdbcType=VARCHAR}</if>
+        <if test="smaPublisher!=null"> and smaPublisher=#{smaPublisher,jdbcType=VARCHAR}</if>
+        <if test="smaPublishTime!=null"> and smaPublishTime=#{smaPublishTime,jdbcType=TIMESTAMP}</if>
+        <if test="smaImg!=null"> and smaImg=#{smaImg,jdbcType=VARCHAR}</if>
+        <if test="smaAllCount!=null"> and smaAllCount=#{smaAllCount,jdbcType=INTEGER}</if>
+        <if test="subjectWords!=null"> and subjectWords=#{subjectWords,jdbcType=VARCHAR}</if>
+        <if test="keyWords!=null"> and keyWords=#{keyWords,jdbcType=VARCHAR}</if>
+        <if test="langDid!=null"> and langDid=#{langDid,jdbcType=VARCHAR}</if>
+        <if test="language!=null"> and language=#{language,jdbcType=VARCHAR}</if>
+        <if test="descn!=null"> and descn=#{descn,jdbcType=VARCHAR}</if>
+        <if test="dmName!=null"> and dmName=#{dmName,jdbcType=VARCHAR}</if>
+        <if test="pubCount!=null"> and pubCount=#{pubCount,jdbcType=INTEGER}</if>
+        <if test="smaStatus!=null and smaStatus!=0"> and smaStatus=#{smaStatus,jdbcType=INTEGER}</if>
+        <if test="CTime!=null"> and cTime=#{CTime,jdbcType=TIMESTAMP}</if>
+      </trim>
+    </where>
+  </sql>
+	
+	<!-- 新增 专辑 -->
+  <insert id="insertSma" parameterType="java.util.Map">
+    insert into wt_SeqMediaAsset
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id!=null">id,</if>
+      <if test="smaTitle!=null">smaTitle,</if>
+      <if test="smaPubType!=null and smaPubType!=0">smaPubType,</if>
+      <if test="smaPubId!=null">smaPubId,</if>
+      <if test="smaPublisher!=null">smaPublisher,</if>
+      <if test="smaImg!=null">smaImg,</if>
+      <if test="smaAllCount!=null and smaAllCount!=0">smaAllCount,</if>
+      <if test="subjectWords!=null">subjectWords,</if>
+      <if test="keyWords!=null">keyWords,</if>
+      <if test="langDid!=null">langDid,</if>
+      <if test="language!=null">language,</if>
+      <if test="descn!=null">descn,</if>
+      <if test="pubCount!=null and pubCount>0">pubCount,</if>
+      <if test="smaStatus!=null and smaStatus>0">smaStatus,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
+      <if test="smaTitle!=null">#{smaTitle,jdbcType=VARCHAR},</if>
+      <if test="smaPubType!=null and smaPubType!=0">#{smaPubType,jdbcType=INTEGER},</if>
+      <if test="smaPubId!=null">#{smaPubId,jdbcType=VARCHAR},</if>
+      <if test="smaPublisher!=null">#{smaPublisher,jdbcType=VARCHAR},</if>
+      <if test="smaImg!=null">#{smaImg,jdbcType=VARCHAR},</if>
+      <if test="smaAllCount!=null and smaAllCount!=0">#{smaAllCount,jdbcType=VARCHAR},</if>
+      <if test="subjectWords!=null">#{subjectWords,jdbcType=VARCHAR},</if>
+      <if test="keyWords!=null">#{keyWords,jdbcType=VARCHAR},</if>
+      <if test="langDid!=null">#{langDid,jdbcType=VARCHAR},</if>
+      <if test="language!=null">#{language,jdbcType=VARCHAR},</if>
+      <if test="descn!=null">#{descn,jdbcType=VARCHAR},</if>
+      <if test="pubCount!=null and pubCount>0">#{pubCount,jdbcType=VARCHAR},</if>
+      <if test="smaStatus!=null and smaStatus>0">#{smaStatus,jdbcType=VARCHAR},</if>
+    </trim>
+  </insert>
+
+	<!-- 专辑和单体节目关系 -->
+	<resultMap id="seqMaRefMap" type="seqMaRef">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="sId" property="sId" jdbcType="VARCHAR" />
+		<result column="mId" property="sId" jdbcType="VARCHAR" />
+		<result column="columnNum" property="columnNum" jdbcType="INTEGER" />
+		<result column="descn" property="descn" jdbcType="VARCHAR" />
+		<result column="cTime" property="cTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<sql id="Base_SeqMaRef_List">
+		id, sId, mId, columnNum, descn, cTime
+	</sql>
+
+	<!-- 新增 单体节目 -->
+	<insert id="insertMa" parameterType="java.util.Map">
+		insert into wt_MediaAsset
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id!=null">id,</if>
+			<if test="maTitle!=null">maTitle,</if>
+			<if test="maPubType!=null and maPubType!=0">maPubType,</if>
+			<if test="maPubId!=null">maPubId,</if>
+			<if test="maPublisher!=null">maPublisher,</if>
+			<if test="maImg!=null">maImg,</if>
+			<if test="maURL!=null">maURL,</if>
+			<if test="subjectWords!=null">subjectWords,</if>
+			<if test="keyWords!=null">keyWords,</if>
+			<if test="langDid!=null">langDid,</if>
+			<if test="language!=null">language,</if>
+			<if test="timeLong!=null and timeLong>0">timeLong,</if>
+			<if test="descn!=null">descn,</if>
+			<if test="pubCount!=null and pubCount>0">pubCount,</if>
+			<if test="maStatus!=null and maStatus>0">maStatus,</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id!=null">#{id,jdbcType=VARCHAR},</if>
+			<if test="maTitle!=null">#{maTitle,jdbcType=VARCHAR},</if>
+			<if test="maPubType!=null and maPubType!=0">#{maPubType,jdbcType=INTEGER},</if>
+			<if test="maPubId=null">#{maPubId,jdbcType=VARCHAR},</if>
+			<if test="maPublisher=null">#{maPublisher,jdbcType=VARCHAR},</if>
+			<if test="maImg!=null">#{maImg,jdbcType=VARCHAR},</if>
+			<if test="maURL!=null">#{maURL,jdbcType=VARCHAR},</if>
+			<if test="subjectWords!=null">#{subjectWords,jdbcType=VARCHAR},</if>
+			<if test="keyWords!=null">#{keyWords,jdbcType=VARCHAR},</if>
+			<if test="langDid!=null">#{langDid,jdbcType=VARCHAR},</if>
+			<if test="language!=null">#{language,jdbcType=VARCHAR},</if>
+			<if test="timeLong!=null and timeLong>0">#{timeLong,jdbcType=BIGINT},</if>
+			<if test="descn!=null">#{descn,jdbcType=VARCHAR},</if>
+			<if test="pubCount!=null and pubCount>0">#{pubCount,jdbcType=VARCHAR},</if>
+			<if test="maStatus!=null and maStatus>0">#{maStatus,jdbcType=INTEGER},</if>
+		</trim>
+	</insert>
+
+	<!-- 新增 单体节目播放源 -->
+	<insert id="insertMas" parameterType="java.util.Map">
+		insert into wt_MaSource
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id!=null">id,</if>
+			<if test="maId!=null">maId,</if>
+			<if test="maSrcType!=null and maSrcType!=0">maSrcType,</if>
+			<if test="maSrcId!=null">maSrcId,</if>
+			<if test="maSource!=null">maSource,</if>
+			<if test="smType!=null">smType,</if>
+			<if test="playURI!=null">playURI,</if>
+			<if test="isMain!=null and isMain!=0">isMain,</if>
+			<if test="descn!=null">descn,</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id!=null">#{id,jdbcType=VARCHAR},</if>
+			<if test="maId!=null">#{maId,jdbcType=VARCHAR},</if>
+			<if test="maSrcType!=null and maSrcType!=0">#{maSrcType,jdbcType=INTEGER},</if>
+			<if test="maSrcId=null">#{maSrcId,jdbcType=VARCHAR},</if>
+			<if test="maSource!=null">#{maSource,jdbcType=VARCHAR},</if>
+			<if test="smType!=null">#{smType,jdbcType=VARCHAR},</if>
+			<if test="playURI!=null">#{playURI,jdbcType=VARCHAR},</if>
+			<if test="isMain!=null and isMain!=0">#{isMain,jdbcType=INTEGER},</if>
+			<if test="descn!=null">#{descn,jdbcType=VARCHAR},</if>
+		</trim>
+	</insert>
+	
+	 <!-- 新增/绑定 单体节目到专辑 -->
+  <insert id="bindMa2Sma" parameterType="java.util.Map">
+    insert into wt_SeqMA_Ref
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id!=null">id,</if>
+      <if test="sId!=null">sId,</if>
+      <if test="mId!=null">mId,</if>
+      <if test="columnNum!=null and columnNum>0">columnNum,</if>
+      <if test="descn!=null">descn,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
+      <if test="sId!=null">#{sId,jdbcType=VARCHAR},</if>
+      <if test="mId!=null">#{mId,jdbcType=VARCHAR},</if>
+      <if test="columnNum!=null and columnNum>0">#{columnNum,jdbcType=VARCHAR},</if>
+      <if test="descn!=null">#{descn,jdbcType=VARCHAR},</if>
+    </trim>
+  </insert>
+    <!-- 点击量 -->
+    <resultMap id="mediaplaycountmap" type="mediaplaycount">
+		<id     column="id"            property="id"            jdbcType="VARCHAR" />
+		<result column="resTableName"  property="resTableName"  jdbcType="VARCHAR" />
+		<result column="resId"         property="resId"         jdbcType="VARCHAR" />
+		<result column="playCount"     property="playCount"     jdbcType="VARCHAR" />
+		<result column="publisher"     property="publisher"     jdbcType="VARCHAR" />
+		<result column="cTime"         property="cTime"         jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<insert id="insertMediaPlayCount" parameterType="java.util.Map">
+    insert into wt_MediaPlayCount
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id!=null">id,</if>
+      <if test="resId!=null">resId,</if>
+      <if test="resTableName!=null">resTableName,</if>
+      <if test="playCount!=null">playCount,</if>
+      <if test="publisher!=null">publisher,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
+      <if test="resId!=null">#{resId,jdbcType=VARCHAR},</if>
+      <if test="resTableName!=null">#{resTableName,jdbcType=VARCHAR},</if>
+      <if test="playCount!=null">#{playCount,jdbcType=VARCHAR},</if>
+      <if test="publisher!=null">#{publisher,jdbcType=VARCHAR},</if>
+    </trim>
+  </insert>
+	
+	<sql id="Base_MediaPlayCount_List">
+		id, resTableName, resId, playCount, publisher, cTime
+	</sql>
+	
+	<select id="getMaList" parameterType="java.util.Map" resultMap="mediaAssetMap">
+       select <include refid="Base_Media_List"/> from wt_MediaAsset
+       <if test="_parameter!=null">
+        <include refid="WhereClauseByMediaEntiey"/>
+        <if test="whereSql!=null"> and ${whereSql}</if>
+      </if>
+      <if test="sortByClause!=null">order by ${sortByClause}</if>
+    </select>
+    
+    <select id="getSMaList" parameterType="java.util.Map" resultMap="seqMediaAssetMap">
+       select <include refid="Base_SequMedia_List"/> from wt_SeqMediaAsset
+       <if test="_parameter!=null">
+        <include refid="WhereClauseBySeqMediaEntiey"/>
+        <if test="whereSql!=null"> and ${whereSql}</if>
+      </if>
+      <if test="sortByClause!=null">order by ${sortByClause}</if>
+    </select>
+	
+	<insert id="insertMediaPlayCountList" parameterType="map">
+    insert into wt_MediaPlayCount(id, resTableName, resId, playCount, publisher, cTime) values
+      <foreach collection="list" item="list" index="index" separator=",">
+       (#{list.id},#{list.resTableName},#{list.resId},#{list.playCount},#{list.publisher},#{list.cTime})
+      </foreach>
+    </insert>
+	
+	<insert id="insertMaList" parameterType="java.util.List">
+    insert into wt_MediaAsset(id, maTitle, maPubType, maPubId, maPublisher, maPublishTime, maImg, maURL, subjectWords, keyWords, langDid, language, timeLong, descn, pubCount, maStatus, cTime) values
+      <foreach collection="list" item="list" index="index" separator=",">
+       (#{list.id},#{list.maTitle},#{list.maPubType},#{list.maPubId},#{list.maPublisher},#{list.maPublishTime},#{list.maImg},#{list.maURL},#{list.subjectWords},#{list.keyWords},#{list.langDid},#{list.language},#{list.timeLong},#{list.descn},#{list.pubCount},#{list.maStatus},#{list.CTime})
+      </foreach>
+    </insert>
+
+	<select id="getSeqSameList" parameterType="map" resultMap="seqMediaAssetMap">
+		select * from wt_SeqMediaAsset where
+		<foreach collection="list" item="list" index="index" separator=" or " >
+		smaTitle=#{list}
+        </foreach>
+	</select>
+	
+	<select id="getSeqSameListByNames" parameterType="map" resultMap="seqMediaAssetMap">
+		select * from wt_SeqMediaAsset where
+		<foreach collection="list" item="list" index="index" separator=" or " >
+		smaTitle like #{list}
+        </foreach>
+        and smaPublisher=#{publisher}
+	</select>
+	
+	<select id="getMediaPlayCountLatest" parameterType="java.util.Map" resultMap="mediaplaycountmap">
+		select * from wt_MediaPlayCount where resId=#{resId,jdbcType=VARCHAR} and resTableName=#{resTableName,jdbcType=VARCHAR} order by cTime desc
+	</select>
+	
+	<insert id="insertSeqRefList" parameterType="map">
+    insert into wt_SeqMA_Ref(id, sId, mId, columnNum, descn, cTime) values
+      <foreach collection="list" item="list" index="index" separator=",">
+       (#{list.id},#{list.sId},#{list.mId},#{list.columnNum},#{list.descn},#{list.cTime})
+      </foreach>
+    </insert>
+    
+    <insert id="insertSeqList" parameterType="map">
+    insert into wt_SeqMediaAsset(id, smaTitle, smaPubType, smaPubId, smaPublisher, smaPublishTime, smaImg, smaAllCount, subjectWords, keyWords, langDid, language, descn, pubCount, smaStatus, cTime) values
+      <foreach collection="list" item="list" index="index" separator=",">
+       (#{list.id},#{list.smaTitle},#{list.smaPubType},#{list.smaPubId},#{list.smaPublisher},#{list.smaPublishTime},#{list.smaImg},#{list.smaAllCount},#{list.subjectWords},#{list.keyWords},#{list.langDid},#{list.language},#{list.descn},#{list.pubCount},#{list.smaStatus},#{list.CTime})
+      </foreach>
+    </insert>
+    
+    <insert id="insertMasList" parameterType="map">
+    insert into wt_MaSource(id, maId, maSrcType, maSrcId, maSource, smType, playURI, isMain, descn, cTime) values
+      <foreach collection="list" item="list" index="index" separator=",">
+       (#{list.id},#{list.maId},#{list.maSrcType},#{list.maSrcId},#{list.maSource},#{list.smType},#{list.playURI},#{list.isMain},#{list.descn},#{list.CTime})
+      </foreach>
+    </insert>
+	
+	<select id="getSeqSame" parameterType="java.util.Map" resultMap="seqMediaAssetMap">
+		select<include refid="Base_SequMedia_List" />from wt_SeqMediaAsset where smaTitle=#{smaTitle,jdbcType=VARCHAR} and smaPublisher=#{smaPublisher,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getSeqList" parameterType="java.lang.String" resultMap="seqMediaAssetMap">
+		select<include refid="Base_SequMedia_List" />from wt_SeqMediaAsset limit 1,500
+	</select>
+
+	<select id="getMaSameList" parameterType="java.util.Map" resultMap="mediaAssetMap">
+		select * from wt_MediaAsset where maURL=#{maURL,jdbcType=VARCHAR}  or (maTitle=#{maTitle,jdbcType=VARCHAR} and maPublisher=#{maPublisher,jdbcType=VARCHAR})
+	</select>
+	
+	<select id="getInfoById" parameterType="java.lang.String" resultMap="mediaAssetMap">
+		select * from wt_MediaAsset where id=#{id,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getMaSame" parameterType="java.lang.String" resultType="java.lang.Integer">
+		select count(*) from wt_MediaAsset where maURL=#{value,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getMaNumByPublisher" parameterType="java.lang.String" resultType="java.lang.Integer">
+		select count(*) from wt_MediaAsset where maPublisher!=#{maPublisher,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getMaListByPublisher" parameterType="java.util.Map" resultMap="mediaAssetMap">
+		select <include refid="Base_Media_List"/> from wt_MediaAsset where maPublisher!=#{maPublisher,jdbcType=VARCHAR} limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
+	</select>
+	
+	<select id="getSmaNum" parameterType="java.lang.String" resultType="java.lang.Integer">
+		select count(*) from wt_SeqMediaAsset where smaPublisher!=#{smaPublisher,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getSmaListByPublisher" parameterType="java.util.Map" resultMap="seqMediaAssetMap">
+		select * from wt_SeqMediaAsset where smaPublisher=#{smaPublisher,jdbcType=VARCHAR} limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
+	</select>
+	
+	<select id="getSmaById" parameterType="java.lang.String" resultMap="seqMediaAssetMap">
+		select * from wt_SeqMediaAsset where id=#{id,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getSeqMaNumBySid" parameterType="java.lang.String" resultType="java.lang.Integer">
+		select count(*) from wt_SeqMA_Ref where sId=#{sId,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getMaBySmaId" parameterType="java.util.Map" resultMap="mediaAssetMap">
+		select * from (select * from wt_MediaAsset where id in (select mId from wt_SeqMA_Ref where sId=#{sId,jdbcType=VARCHAR})) ma where
+		<foreach collection="list" item="list" index="index" separator=" or ">
+		ma.maTitle like #{list}
+        </foreach>
+	</select>
+</mapper>

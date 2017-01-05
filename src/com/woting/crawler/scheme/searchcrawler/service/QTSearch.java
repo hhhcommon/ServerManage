@@ -14,6 +14,7 @@ import com.woting.crawler.core.album.model.Album;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.ext.SpringShell;
+import com.woting.crawler.scheme.searchcrawler.utils.DataTransform;
 import com.woting.crawler.scheme.searchcrawler.utils.SearchUtils;
 import com.woting.crawler.scheme.utils.ConvertUtils;
 import com.woting.crawler.scheme.utils.HttpUtils;
@@ -29,9 +30,7 @@ public class QTSearch extends Thread {
 		this.content = content;
 	}
 	
-	public QTSearch() {
-		
-	}
+	public QTSearch() {}
 
 	@SuppressWarnings("unchecked")
 	public void qtSeqSearch() {
@@ -39,8 +38,6 @@ public class QTSearch extends Thread {
 		try {
 			Map<String, Object> seqm = HttpUtils.getJsonMapFromURL(url);
 			if (seqm != null && seqm.size() > 0) {
-				JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
-				RedisOperService roService = new RedisOperService(conn);
 				Map<String, Object> datam = (Map<String, Object>) seqm.get("data");
 				List<Map<String, Object>> datal = (List<Map<String, Object>>) datam.get("data");
 				if (datal != null && datal.size() > 0) {
@@ -109,8 +106,6 @@ public class QTSearch extends Thread {
 						}
 					}
 				}
-				roService.close();
-				conn.destroy();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -178,8 +173,6 @@ public class QTSearch extends Thread {
 		try {
 			Map<String, Object> mam = HttpUtils.getJsonMapFromURL(url);
 			if (mam != null && mam.size() > 0) {
-				JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
-				RedisOperService roService = new RedisOperService(conn);
 				Map<String, Object> datam = (Map<String, Object>) mam.get("data");
 				List<Map<String, Object>> datal = (List<Map<String, Object>>) datam.get("data");
 				if (datal != null && datal.size() > 0) {
@@ -231,8 +224,6 @@ public class QTSearch extends Thread {
 						}
 					}
 				}
-				roService.close();
-				conn.destroy();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -254,9 +245,8 @@ public class QTSearch extends Thread {
 					qtMaSearch();
 				}
 			}).start();
-			
 			while (true) {
-				Thread.sleep(20);
+				Thread.sleep(10);
 				if (okNum==2) {
 					Map<String, Object> albummap = new HashMap<>();
 					Map<String, Object> audiomap = new HashMap<>();
@@ -279,6 +269,30 @@ public class QTSearch extends Thread {
 					RedisOperService roService = new RedisOperService(conn);
 					for (String key : albummap.keySet()) {
 						try {
+							new Thread(new Runnable() {
+								public void run() {
+									DataTransform.AlbumToReturn(content, (Album)albummap.get(key));
+								}
+							}).start();
+						} catch (Exception e) {
+							e.printStackTrace();
+							continue;
+						}
+					}
+					for (String key : audiomap.keySet()) {
+						try {
+							new Thread(new Runnable() {
+								public void run() {
+									DataTransform.AudioPoToReturn(content,(AudioPo)audiomap.get(key));
+								}
+							}).start();
+						} catch (Exception e) {
+							e.printStackTrace();
+							continue;
+						}
+					}
+					for (String key : albummap.keySet()) {
+						try {
 							if (albummap.get(key)!=null) {
 							    SearchUtils.addListInfo(content, (Album)albummap.get(key), roService);
 						    }
@@ -286,7 +300,6 @@ public class QTSearch extends Thread {
 							e.printStackTrace();
 							continue;
 						}
-						
 					}
 					for (String key : audiomap.keySet()) {
 						try {

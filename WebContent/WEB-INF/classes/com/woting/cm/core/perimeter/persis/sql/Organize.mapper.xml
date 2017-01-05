@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- 字典与资源对应关系 -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="A_ORGANIZE">
+  <!-- 对应关系 -->
+  <resultMap id="organizeMap" type="organize">
+    <id      column="id"            property="id"            jdbcType="VARCHAR"/>
+    <result  column="oName"         property="orgName"       jdbcType="VARCHAR"/>
+    <result  column="orgTypeId"     property="orgTypeId"     jdbcType="VARCHAR"/>
+    <result  column="orgTypeName"   property="orgTypeName"   jdbcType="VARCHAR"/>
+    <result  column="webPage"       property="webPageUrl"    jdbcType="VARCHAR"/>
+    <result  column="orgImg"        property="orgImg"        jdbcType="VARCHAR"/>
+    <result  column="descn"         property="descn"         jdbcType="VARCHAR"/>
+    <result  column="protraitBig"   property="protraitBig"   jdbcType="VARCHAR"/>
+    <result  column="protraitMini"  property="protraitMini"  jdbcType="VARCHAR"/>
+    <result  column="cTime"         property="CTime"         jdbcType="TIMESTAMP"/>
+  </resultMap>
+  
+  <!-- 所有列 -->
+  <sql id="Base_Column_List">
+    id, orgName, orgTypeId, orgTypeName, webPageUrl,  orgImg, descn, protraitBig, protraitMini, cTime
+  </sql>
+
+  <!-- 新增 对应关系 -->
+  <insert id="insert" parameterType="java.util.Map">
+    insert into wt_Organize
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id!=null">id,</if>
+      <if test="orgName!=null">orgName,</if>
+      <if test="orgTypeId!=null">orgTypeId,</if>
+      <if test="orgTypeName!=null">orgTypeName,</if>
+      <if test="webPageUrl!=null">webPageUrl,</if>
+      <if test="orgImg!=null">orgImg,</if>
+      <if test="descn!=null">descn,</if>
+      <if test="protraitBig!=null">protraitBig,</if>
+      <if test="protraitMini!=null">protraitMini,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
+      <if test="orgName!=null">#{orgName,jdbcType=VARCHAR},</if>
+      <if test="orgTypeId!=null">#{orgTypeId,jdbcType=VARCHAR},</if>
+      <if test="orgTypeName!=null">#{orgTypeName,jdbcType=VARCHAR},</if>
+      <if test="webPageUrl!=null">#{webPageUrl,jdbcType=VARCHAR},</if>
+      <if test="orgImg!=null">#{orgImg,jdbcType=VARCHAR},</if>
+      <if test="descn!=null">#{descn,jdbcType=VARCHAR},</if>
+      <if test="protraitBig!=null">#{protraitBig,jdbcType=VARCHAR},</if>
+      <if test="protraitMini!=null">#{protraitMini,jdbcType=VARCHAR},</if>
+    </trim>
+  </insert>
+  
+  <select id="getOrganizeList" resultMap="organizeMap">
+    select * from wt_Organize
+  </select>
+</mapper>

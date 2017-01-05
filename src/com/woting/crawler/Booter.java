@@ -76,6 +76,7 @@ public class Booter {
 			logger.info("首页资源抓取定时功能已加载[{}]", timer.getSrcCronExpression());
 			logger.info("点击量抓取定时功能已加载[{}]", timer.getPlayCountCronExpression());
 			logger.info("分类抓取定时功能已加载[{}]", timer.getCategoryCronExpression());
+			logger.info("电台播放地址检测[{}]", timer.getBCPlayIsValidateCronExpression());
 			new CrawlerSearch().start();
 			while(true) {
 				Thread.sleep(60*60*1000);

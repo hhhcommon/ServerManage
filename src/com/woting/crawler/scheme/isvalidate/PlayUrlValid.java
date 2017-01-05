@@ -13,8 +13,6 @@ import com.woting.crawler.core.m3u8.persis.po.M3U8;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.utils.M3U8Utils;
 
-
-
 public class PlayUrlValid {
 	
 	public void verifyUrlValid() {

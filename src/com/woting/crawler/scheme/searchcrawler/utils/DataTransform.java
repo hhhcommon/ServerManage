@@ -7,8 +7,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.jsoup.nodes.Document;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 
 import com.spiritdata.framework.core.cache.SystemCache;
+import com.spiritdata.framework.ext.spring.redis.RedisOperService;
+import com.spiritdata.framework.util.FileNameUtils;
+import com.spiritdata.framework.util.JsonUtils;
 import com.spiritdata.framework.util.SequenceUUID;
 import com.woting.cm.core.ResOrgAsset.persis.po.ResOrgAssetPo;
 import com.woting.cm.core.ResOrgAsset.service.ResOrgAssetService;
@@ -57,11 +61,7 @@ public abstract class DataTransform {
 			for (int i = 1; i < station.getFestivals().size(); i++) {
 				Festival festiva = station.getFestivals().get(i);
 				new Thread(new Runnable() {
-					public void run() {
-						festival2Audio(false, festiva);
-					}
-				}).start();
-				;
+					public void run() {festival2Audio(false, festiva);}}).start();
 			}
 			if (map != null) {
 				return map;
@@ -82,6 +82,13 @@ public abstract class DataTransform {
 	}
 
 	public static Map<String, Object> album2Audio(boolean makeSma, Album album) {
+		JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
+		RedisOperService ros = new RedisOperService(conn);
+		try {
+			
+		} finally {
+			// TODO: handle finally clause
+		}
 		MediaService mediaService = (MediaService) SpringShell.getBean("mediaService");
 		AudioPo au = album.getAudiolist().get(0);
 		Map<String, Object> m = new HashMap<>();
@@ -100,33 +107,33 @@ public abstract class DataTransform {
 			if (chas == null || chas.size() > 0) {
 				return null;
 			}
-			Map<String, Object> retM = new HashMap<String, Object>();
-			retM.put("ContentId", ma.getId());
-			retM.put("ContentName", ma.getMaTitle());
-			retM.put("ContentImg", ma.getMaImg());
-			retM.put("ContentPlay", ma.getMaURL());
-			retM.put("ContentPub", ma.getMaPublisher());
-			retM.put("ContentTime", ma.getTimeLong());
-			retM.put("MediaType", "AUDIO");
-			retM.put("PlayCount", "1234");
+			SearchUtils.addRedisValue("CONTENT_AUDIO_SAVED_"+au.getId(), ma.getId(), ros);
+//			Map<String, Object> retM = new HashMap<String, Object>();
+//			retM.put("ContentId", ma.getId());
+//			retM.put("ContentName", ma.getMaTitle());
+//			retM.put("ContentImg", ma.getMaImg());
+//			retM.put("ContentPlay", ma.getMaURL());
+//			retM.put("ContentPub", ma.getMaPublisher());
+//			retM.put("ContentTime", ma.getTimeLong());
+//			retM.put("MediaType", "AUDIO");
+//			retM.put("PlayCount", "1234");
 			if (makeSma) {
 				List<SeqMediaAssetPo> smas = mediaService.getSmaByMaId(ma.getId(), ma.getMaPublisher());
 				if (smas != null && smas.size() > 0) {
 					SeqMediaAssetPo sma = smas.get(0);
-					Map<String, Object> smam = new HashMap<>();
-					smam.put("ContentName", sma.getSmaTitle());
-					smam.put("ContentId", sma.getId());
-					smam.put("ContentImg", sma.getSmaImg());
-					smam.put("ContentPub", sma.getSmaPublisher());
-					smam.put("MediaType", "SEQU");
-					smam.put("PlayCount", "123");
-					retM.put("SeqInfo", smam);
+//					Map<String, Object> smam = new HashMap<>();
+//					smam.put("ContentName", sma.getSmaTitle());
+//					smam.put("ContentId", sma.getId());
+//					smam.put("ContentImg", sma.getSmaImg());
+//					smam.put("ContentPub", sma.getSmaPublisher());
+//					smam.put("MediaType", "SEQU");
+//					smam.put("PlayCount", "123");
+//					retM.put("SeqInfo", smam);
 				}
 			}
-			return retM;
+//			return retM; TODO
 		} else {
-			List<SeqMediaAssetPo> smas = mediaService.getSmaList(album.getAlbumPo().getAlbumName(),
-					album.getAlbumPo().getAlbumPublisher());
+			List<SeqMediaAssetPo> smas = mediaService.getSmaList(album.getAlbumPo().getAlbumName(),album.getAlbumPo().getAlbumPublisher());
 			if (smas != null && smas.size() > 0) {
 				SeqMediaAssetPo sma = smas.get(0);
 				Map<String, Object> retM = new HashMap<>();
@@ -165,7 +172,7 @@ public abstract class DataTransform {
 					smam.put("PlayCount", "1234");
 					retM.put("SeqInfo", smam);
 				}
-				return retM;
+//				return retM; TODO
 			} else {
 				if (album.getAlbumPo().getAlbumPublisher().equals("蜻蜓")) {
 					ChannelService channelService = (ChannelService) SpringShell.getBean("channelService");
@@ -203,7 +210,7 @@ public abstract class DataTransform {
 							retM.put("SeqInfo", smam);
 						}
 					}
-					return retM;
+//					return retM;TODO
 				}
 			}
 		}
@@ -412,24 +419,6 @@ public abstract class DataTransform {
 			}
 		}
 		return null;
-		// map.put("ContentId", festival.getAudioId());
-		// map.put("ContentName", festival.getAudioName());
-		// map.put("ContentURI",
-		// "content/getContentInfo.do?MediaType=AUDIO&ContentId=" +
-		// festival.getAudioId());
-		// map.put("ContentImg", festival.getAudioPic());
-		// map.put("ContentPlay", festival.getPlayUrl());
-		// map.put("ContentImg", festival.getAudioPic());
-		// map.put("ContentPersons", festival.getPersonName());
-		// map.put("ContentTimes", festival.getDuration());// 以ms为计量单位
-		// map.put("ContentPubTime", festival.getUpdateTime());
-		// map.put("ContentPub", festival.getContentPub());
-		// map.put("ContentDescn", festival.getAudioDes());
-		// map.put("CTime", festival.getUpdateTime());
-		// map.put("MediaType", festival.getMediaType());
-		// map.put("ContentCatalogs", null);
-		// map.put("ContentKeyWord", null);
-		// map.put("ContentSubjectWord", null);
 	}
 
 	/**
@@ -648,11 +637,13 @@ public abstract class DataTransform {
 			m.put("resTableName", "wt_MediaAsset");
 			m.put("orgName", au.getAudioPublisher());
 			m.put("origSrcId", au.getAudioId());
-			ResOrgAssetPo resOrgAssetPo = resOrgAssetService.getResOrgAssetPo(m);
-			if (resOrgAssetPo != null) {
+			List<ResOrgAssetPo> resList = resOrgAssetService.getResOrgAssetPo(m);
+			if (resList != null && resList.size()>0) {
+				ResOrgAssetPo resOrgAssetPo = resList.get(0);
 				m.clear();
 				m.put("maTitle", au.getAudioName());
 				m.put("maPublisher", au.getAudioPublisher());
+				m.put("id", resOrgAssetPo.getResId());
 				List<MediaAssetPo> mas = mediaService.getMaList(m);
 				if (mas != null && mas.size() > 0) {
 					MediaAssetPo ma = mas.get(0);
@@ -688,16 +679,16 @@ public abstract class DataTransform {
 							retM.put("SeqInfo", smam);
 						}
 					}
-					return retM;
+//					return retM;TODO
 				}
 			} else {
 				m.clear();
 				m.put("resTableName", "wt_SeqMediaAsset");
 				m.put("orgName", albumPo.getAlbumPublisher());
 				m.put("origSrcId", albumPo.getAlbumId());
-				resOrgAssetPo = resOrgAssetService.getResOrgAssetPo(m);
-				if (resOrgAssetPo != null) {
-					SeqMediaAssetPo sma = mediaService.getSeqInfo(resOrgAssetPo.getResId());
+				resList = resOrgAssetService.getResOrgAssetPo(m);
+				if (resList != null && resList.size()>0) {
+					SeqMediaAssetPo sma = mediaService.getSeqInfo(resList.get(0).getResId());
 					if (sma != null) {
 						m.clear();
 						m.put("maPublisher", sma.getSmaPublisher());
@@ -737,7 +728,7 @@ public abstract class DataTransform {
 							smam.put("PlayCount", "1234");
 							retM.put("SeqInfo", smam);
 						}
-						return retM;
+//						return retM;TODO
 					}
 				} else {
 					if (albumPo.getAlbumPublisher().equals("喜马拉雅")) {
@@ -776,7 +767,7 @@ public abstract class DataTransform {
 								retM.put("SeqInfo", smam);
 							}
 						}
-						return retM;
+//						return retM;TODO
 					}
 				}
 			}
@@ -792,11 +783,12 @@ public abstract class DataTransform {
 		m.put("resTableName", "wt_MediaAsset");
 		m.put("orgName", au.getAudioPublisher());
 		m.put("origSrcId", au.getAudioId());
-		ResOrgAssetPo resOrgAssetPo = resOrgAssetService.getResOrgAssetPo(m);
-		if (resOrgAssetPo != null) {
+		List<ResOrgAssetPo> resList = resOrgAssetService.getResOrgAssetPo(m);
+		if (resList != null && resList.size()>0) {
 			m.clear();
 			m.put("maTitle", au.getAudioName());
 			m.put("maPublisher", au.getAudioPublisher());
+			m.put("id", resList.get(0).getResId());
 			List<MediaAssetPo> mas = mediaService.getMaList(m);
 			if (mas != null && mas.size() > 0) {
 				MediaAssetPo ma = mas.get(0);
@@ -832,16 +824,16 @@ public abstract class DataTransform {
 						retM.put("SeqInfo", smam);
 					}
 				}
-				return retM;
+//				return retM; TODO
 			}
 		} else {
 			m.clear();
 			m.put("resTableName", "wt_SeqMediaAsset");
 			m.put("orgName", au.getAudioPublisher());
 			m.put("origSrcId", au.getAlbumId());
-			resOrgAssetPo = resOrgAssetService.getResOrgAssetPo(m);
-			if (resOrgAssetPo != null) {
-				SeqMediaAssetPo sma = mediaService.getSeqInfo(resOrgAssetPo.getResId());
+			resList = resOrgAssetService.getResOrgAssetPo(m);
+			if (resList != null && resList.size()>0) {
+				SeqMediaAssetPo sma = mediaService.getSeqInfo(resList.get(0).getResId());
 				if (sma != null) {
 					Album album = new Album();
 					AlbumPo albumPo = new AlbumPo();
@@ -874,17 +866,15 @@ public abstract class DataTransform {
 							smam.put("PlayCount", "1234");
 							retM.put("SeqInfo", smam);
 						}
-						return retM;
+//						return retM;TODO
 					}
 				}
 			} else {
 				if (au.getAudioPublisher().equals("喜马拉雅")) {
 					ChannelService channelService = (ChannelService) SpringShell.getBean("channelService");
 					List<ChannelPo> chlist = channelService.getChannelList();
-					AlbumPo albumPo = new XiMaLaYaSearch()
-							.albumS(au.getVisitUrl().substring(0, au.getVisitUrl().indexOf("/sound/")) + "/album/" + au.getAlbumId());
-					List<AudioPo> aus = new XiMaLaYaSearch()
-							.albumAudioS(albumPo.getVisitUrl().replace("http://www.ximalaya.com", ""));
+					AlbumPo albumPo = new XiMaLaYaSearch().albumS(au.getVisitUrl().substring(0, au.getVisitUrl().indexOf("/sound/")) + "/album/" + au.getAlbumId());
+					List<AudioPo> aus = new XiMaLaYaSearch().albumAudioS(albumPo.getVisitUrl().replace("http://www.ximalaya.com", ""));
 					boolean isok = false;
 					if (aus != null && aus.size() > 0) {
 						for (AudioPo audioPo : aus) {
@@ -904,9 +894,9 @@ public abstract class DataTransform {
 					m.put("resTableName", "wt_SeqMediaAsset");
 					m.put("orgName", au.getAudioPublisher());
 					m.put("origSrcId", au.getAlbumId());
-					resOrgAssetPo = resOrgAssetService.getResOrgAssetPo(m);
-					if (resOrgAssetPo != null) {
-						MediaAssetPo ma = mediaService.getMaInfoById(au.getId());
+					resList = resOrgAssetService.getResOrgAssetPo(m);
+					if (resList != null && resList.size()>0) {
+						MediaAssetPo ma = mediaService.getMaInfoById(resList.get(0).getResId());
 						if (ma != null) {
 							Map<String, Object> retM = new HashMap<>();
 							retM.put("ContentName", au.getAudioName());
@@ -916,7 +906,7 @@ public abstract class DataTransform {
 							retM.put("ContentImg", ma.getMaImg());
 							retM.put("PlayCount", "1234");
 							if (makeSma) {
-								SeqMediaAssetPo sma = mediaService.getSeqInfo(resOrgAssetPo.getResId());
+								SeqMediaAssetPo sma = mediaService.getSeqInfo(resList.get(0).getResId());
 								if (sma != null) {
 									Map<String, Object> smam = new HashMap<>();
 									smam.put("ContentName", sma.getSmaTitle());
@@ -926,10 +916,10 @@ public abstract class DataTransform {
 									smam.put("MediaType", "SEQU");
 									smam.put("PlayCount", "1234");
 									retM.put("SeqInfo", smam);
-									return retM;
+//									return retM;TODO
 								}
 							}
-							return retM;
+//							return retM;TODO
 						}
 					}
 				} else {
@@ -958,8 +948,8 @@ public abstract class DataTransform {
 						m.put("resTableName", "wt_SeqMediaAsset");
 						m.put("orgName", au.getAudioPublisher());
 						m.put("origSrcId", au.getAlbumId());
-						resOrgAssetPo = resOrgAssetService.getResOrgAssetPo(m);
-						if (resOrgAssetPo != null) {
+						resList = resOrgAssetService.getResOrgAssetPo(m);
+						if (resList != null && resList.size()>0) {
 							MediaAssetPo ma = mediaService.getMaInfoById(au.getId());
 							if (ma != null) {
 								Map<String, Object> retM = new HashMap<>();
@@ -970,7 +960,7 @@ public abstract class DataTransform {
 								retM.put("ContentImg", ma.getMaImg());
 								retM.put("PlayCount", "1234");
 								if (makeSma) {
-									SeqMediaAssetPo sma = mediaService.getSeqInfo(resOrgAssetPo.getResId());
+									SeqMediaAssetPo sma = mediaService.getSeqInfo(resList.get(0).getResId());
 									if (sma != null) {
 										Map<String, Object> smam = new HashMap<>();
 										smam.put("ContentName", sma.getSmaTitle());
@@ -980,10 +970,10 @@ public abstract class DataTransform {
 										smam.put("MediaType", "SEQU");
 										smam.put("PlayCount", "1234");
 										retM.put("SeqInfo", smam);
-										return retM;
+//										return retM;TODO
 									}
 								}
-								return retM;
+//								return retM;TODO
 							}
 						}
 					}
@@ -991,5 +981,172 @@ public abstract class DataTransform {
 			}
 		}
 		return null;
+	}
+	
+	public static void AlbumToReturn(String key, Album album) {
+		AlbumPo albumPo = album.getAlbumPo();
+		albumPo.setAudioPos(album.getAudiolist());
+		AlbumPoToReturn(key, albumPo);
+	}
+	
+	public static void AlbumPoToReturn(String key,AlbumPo albumPo) {
+		if (albumPo!=null) {
+			JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
+			RedisOperService ros = new RedisOperService(conn);
+			
+			Map<String, Object> retM = new HashMap<>();
+			Map<String, Object> smamr = new HashMap<>();
+			smamr.put("ContentName", albumPo.getAlbumName());
+			smamr.put("ContentId", albumPo.getId());
+			smamr.put("ContentImg", albumPo.getAlbumImg());
+			smamr.put("ContentPub", albumPo.getAlbumPublisher());
+			smamr.put("MediaType", "SEQU");
+			smamr.put("PlayCount", "1234");
+			retM.put("SeqInfo", smamr);
+			
+			Map<String, Object> smam = new HashMap<>();
+			smam.put("ContentId", albumPo.getId());
+			smam.put("ContentName", albumPo.getAlbumName());
+			smam.put("ContentPubTime", albumPo.getcTime().getTime());
+			smam.put("CTime", albumPo.getcTime().getTime());
+			smam.put("ContentPub", albumPo.getAlbumPublisher());
+			smam.put("ContentDescn", albumPo.getDescn());
+			smam.put("MediaType", "SEQU");
+			smam.put("ContentShareURL", "http://www.wotingfm.com:908/CM");
+			smam.put("ContentImg", albumPo.getAlbumImg());
+			smam.put("ConTentStatus", 1);
+			smam.put("ContentSubCount", albumPo.getAudioPos().size());
+			smam.put("ContentURI", "content/getContentInfo.do?");
+			smam.put("ContentKeyWord", albumPo.getAlbumTags());
+			smam.put("ContentSubjectWord", null);
+			smam.put("ContentPubChannels", null);
+			smam.put("ContentCatalogs", null);
+			List<Map<String, Object>> subList = new ArrayList<>();
+			List<AudioPo> aus = albumPo.getAudioPos();
+			if (aus!=null && aus.size()>0) {
+				boolean isok = true;
+				for (AudioPo audioPo : aus) {
+					try {
+						if (isok) {
+							retM.put("ContentName", audioPo.getAudioName());
+							retM.put("ContentId", audioPo.getId());
+							retM.put("ContentPub", audioPo.getAudioPublisher());
+							retM.put("MediaType", "AUDIO");
+							retM.put("ContentImg", audioPo.getAudioImg());
+							retM.put("PlayCount", "1234");
+						    ros.rPush("Search_" + key + "_Data", JsonUtils.objToJson(retM));
+						    isok = false;
+						}
+						Map<String, Object> mam = new HashMap<>();
+					    mam.put("ContentId", audioPo.getId());
+					    mam.put("ContentName", audioPo.getAudioName());
+					    mam.put("ContentImg", audioPo.getAudioImg());
+					    mam.put("ContentPubTime", audioPo.getcTime().getTime());
+					    mam.put("CTime", audioPo.getcTime().getTime());
+					    mam.put("ContentPub", audioPo.getAudioPublisher());
+					    mam.put("ContentPlay", audioPo.getAudioURL());
+					    mam.put("ContentDescn", audioPo.getDescn());
+					    mam.put("MediaType", "AUDIO");
+					    mam.put("ContentStatus", 1);
+					    mam.put("ContentTimes", audioPo.getDuration());
+					    mam.put("ContentKeyWord", audioPo.getAudioTags());
+					    mam.put("ContentSubjectWord", null);
+					    mam.put("ContentPubChannels", null);
+					    mam.put("ContentCatalogs", null);
+					    String ext = FileNameUtils.getExt(audioPo.getAudioURL());
+			            if (ext.contains("?")) {
+						    ext = ext.replace(ext.substring(ext.indexOf("?"), ext.length()), ""); 
+					    }
+			            if (ext!=null) {
+			        	    mam.put("ContentPlayType", ext.contains("/flv")?"flv":ext.replace(".", ""));
+					    } else {
+						    mam.put("ContentPlayType", null);
+					    }
+			            //内容固定信息
+			            SearchUtils.addRedisValue("CONTENT_AUDIO_INFO_"+audioPo.getId(), JsonUtils.objToJson(mam), ros);
+			            System.out.println("CONTENT_SEQU_INFO_"+albumPo.getId());
+			            String playCount = "";
+			            if (audioPo.getPlayCount()==null) {
+						    playCount = "1234";
+					    } else {
+						    playCount = audioPo.getPlayCount();
+					    }
+			            SearchUtils.addRedisValue("CONTENT_AUDIO_PLAYCOUNT_"+audioPo.getId(), playCount, ros);
+			            SearchUtils.addRedisValue("CONTENT_AUDIO_SAVED_"+audioPo.getId(), "false", ros);
+			            subList.add(mam);
+					} catch (Exception e) {
+						e.printStackTrace();
+						continue;
+					}
+				}
+				if (subList!=null && subList.size()>0) {
+					smam.put("SubList", subList);
+					SearchUtils.addRedisValue("CONTENT_SEQU_INFO_"+albumPo.getId(), JsonUtils.objToJson(smam), ros);
+					String playCount = "";
+					if (albumPo.getPlayCount()==null) {
+						playCount = "1234";
+					} else {
+						playCount = albumPo.getPlayCount();
+					}
+					SearchUtils.addRedisValue("CONTENT_SEQU_PLAYCOUNT_"+albumPo.getId(), playCount, ros);
+					SearchUtils.addRedisValue("CONTENT_SEQU_SAVED_"+albumPo.getId(), "false", ros);
+				}
+			}
+			ros.close();
+	        conn.destroy();
+		}
+	}
+	
+	public static void AudioPoToReturn(String key, AudioPo audioPo) {
+		JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
+		RedisOperService ros = new RedisOperService(conn);
+		
+		Map<String, Object> retM = new HashMap<>();
+		retM.put("ContentName", audioPo.getAudioName());
+		retM.put("ContentId", audioPo.getId());
+		retM.put("ContentPub", audioPo.getAudioPublisher());
+		retM.put("MediaType", "AUDIO");
+		retM.put("ContentImg", audioPo.getAudioImg());
+		retM.put("PlayCount", "1234");
+	    ros.rPush("Search_" + key + "_Data", JsonUtils.objToJson(retM));
+		
+		Map<String, Object> mam = new HashMap<>();
+	    mam.put("ContentId", audioPo.getId());
+	    mam.put("ContentName", audioPo.getAudioName());
+	    mam.put("ContentImg", audioPo.getAudioImg());
+	    mam.put("ContentPubTime", audioPo.getcTime().getTime());
+	    mam.put("CTime", audioPo.getcTime().getTime());
+	    mam.put("ContentPub", audioPo.getAudioPublisher());
+	    mam.put("ContentPlay", audioPo.getAudioURL());
+	    mam.put("ContentDescn", audioPo.getDescn());
+	    mam.put("MediaType", "AUDIO");
+	    mam.put("ContentStatus", 1);
+	    mam.put("ContentTimes", audioPo.getDuration());
+	    mam.put("ContentKeyWord", audioPo.getAudioTags());
+	    mam.put("ContentSubjectWord", null);
+	    mam.put("ContentPubChannels", null);
+	    mam.put("ContentCatalogs", null);
+	    String ext = FileNameUtils.getExt(audioPo.getAudioURL());
+        if (ext.contains("?")) {
+		    ext = ext.replace(ext.substring(ext.indexOf("?"), ext.length()), ""); 
+	    }
+        if (ext!=null) {
+    	    mam.put("ContentPlayType", ext.contains("/flv")?"flv":ext.replace(".", ""));
+	    } else {
+		    mam.put("ContentPlayType", null);
+	    }
+        //内容固定信息
+        SearchUtils.addRedisValue("CONTENT_AUDIO_INFO_"+audioPo.getId(), JsonUtils.objToJson(mam), ros);
+        System.out.println("CONTENT_AUDIO_INFO_"+audioPo.getId());
+        String playCount = "";
+        if (audioPo.getPlayCount()==null) {
+		    playCount = "1234";
+	    } else {
+		    playCount = audioPo.getPlayCount();
+	    }
+        SearchUtils.addRedisValue("CONTENT_AUDIO_PLAYCOUNT_"+audioPo.getId(), playCount, ros);
+        SearchUtils.addRedisValue("CONTENT_AUDIO_SAVED_"+audioPo.getId(), "false", ros);
+        ros.close();
+        conn.destroy();
 	}
 }

@@ -40,7 +40,6 @@ public class AddInfoThread<T> extends Thread {
         if (!StringUtils.isNullOrEmptyOrSpace(value)&&!value.toLowerCase().equals("null")) {
         	ros.rPush("Search_" + key + "_Data", value);
         }
-        
 	}
 	
 	@Override

@@ -14,7 +14,7 @@ import com.woting.cm.core.broadcast.persis.po.BCProgrammePo;
 @Service
 public class BcProgrammeService {
 
-	@Resource(name="defaultDAO_CM")
+	@Resource(name="defaultDAO")
 	private MybatisDAO<BCProgrammePo> bcProDao;
 	
 	@PostConstruct

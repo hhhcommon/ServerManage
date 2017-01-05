@@ -9,6 +9,8 @@ import com.spiritdata.framework.util.SpiritRandom;
 import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.scheme.crawlersrc.DT.crawler.DTParseUtils;
 import com.woting.crawler.scheme.crawlersrc.KL.crawler.KLParseUtils;
+import com.woting.crawler.scheme.crawlersrc.QT.crawler.QTParseUtils;
+import com.woting.crawler.scheme.crawlersrc.XMLY.crawler.XMLYParseUtils;
 
 import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
@@ -62,12 +64,12 @@ public class Crawler extends WebCrawler {
     	case 0: break;
     	case 1: KLParseUtils.parseAlbum(true, htmlByteArray, parseData);break;
     	case 2: KLParseUtils.parseSond(true, htmlByteArray, parseData);break;
-//    	case 3: QTParseUtils.parseQTResourceIdAndCategoryId(htmlByteArray, parseData);break;
-//    	case 4: QTParseUtils.parseAlbum(true, htmlByteArray, parseData);break;
-//    	case 5: XMLYParseUtils.parseAlbum(true, htmlByteArray, parseData);break;
-//    	case 6: XMLYParseUtils.parseSond(true, htmlByteArray, parseData);break;
+    	case 3: QTParseUtils.parseQTResourceIdAndCategoryId(htmlByteArray, parseData);break;
+    	case 4: QTParseUtils.parseAlbum(true, htmlByteArray, parseData);break;
+    	case 5: XMLYParseUtils.parseAlbum(true, htmlByteArray, parseData);break;
+    	case 6: XMLYParseUtils.parseSond(true, htmlByteArray, parseData);break;
     	case 7: DTParseUtils.parseContent(true, htmlByteArray, parseData);break;
-    	case 8: DTParseUtils.parseAlbum(true, htmlByteArray, parseData);
+    	case 8: DTParseUtils.parseAlbum(true, htmlByteArray, parseData);break;
     	}
 	}
 }

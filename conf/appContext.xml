@@ -120,6 +120,7 @@
     <property name="CronExpression" value="${timer.CronExpression}"/>
     <property name="PlayCountCronExpression" value="${timer.PlayCountCronExpression}"/>
     <property name="CategoryCronExpression" value="${timer.CategoryCronExpression}"/>
+    <property name="BCPlayIsValidateCronExpression" value="${timer.BCPlayIsValidateCronExpression}"/>
   </bean>
   
   <!-- 抓取计划加载功能 -->

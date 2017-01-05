@@ -1,6 +1,5 @@
 package com.woting.cm.core.broadcast.service;
 
-
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -13,7 +12,7 @@ import com.woting.cm.core.broadcast.persis.po.BroadcastPo;
 @Service
 public class BroadcastService {
 
-	@Resource(name="defaultDAO_CM")
+	@Resource(name="defaultDAO")
 	private MybatisDAO<BroadcastPo> bcDao;
 	
 	@PostConstruct

@@ -17,13 +17,14 @@ import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.crawlersrc.XMLY.crawler.XMLYParseUtils;
+import com.woting.crawler.scheme.searchcrawler.utils.DataTransform;
 import com.woting.crawler.scheme.searchcrawler.utils.SearchUtils;
 import com.woting.crawler.scheme.utils.HttpUtils;
 
 public class XiMaLaYaSearch extends Thread {
 
 	private static int S_S_NUM = 5; // 搜索频道的数目
-	private static int S_F_NUM = 5; // 搜索频道内节目的数目
+	private static int S_F_NUM = 10; // 搜索频道内节目的数目
 	private static int F_NUM = 5; // 搜索节目的数目 以上排列顺序按照搜索到的排列顺序
 	private static int T = 5000;
 	private String constr;
@@ -231,9 +232,8 @@ public class XiMaLaYaSearch extends Thread {
 		System.out.println("喜马拉雅搜索开始");
 		try {
 			ximalayaService(constr);
-			Thread.sleep(200);
 			while (true) {
-				Thread.sleep(20);
+				Thread.sleep(10);
 				if (okNum == 2) {
 					Map<String, Object> albummap = new HashMap<>();
 					Map<String, Object> audiomap = new HashMap<>();
@@ -256,6 +256,30 @@ public class XiMaLaYaSearch extends Thread {
 					RedisOperService roService = new RedisOperService(conn);
 					for (String key : albummap.keySet()) {
 						try {
+							new Thread(new Runnable() {
+								public void run() {
+									DataTransform.AlbumPoToReturn(constr, (AlbumPo)albummap.get(key));
+								}
+							}).start();
+						} catch (Exception e) {
+							e.printStackTrace();
+							continue;
+						}
+					}
+					for (String key : audiomap.keySet()) {
+						try {
+							new Thread(new Runnable() {
+								public void run() {
+									DataTransform.AudioPoToReturn(constr,(AudioPo)audiomap.get(key));
+								}
+							}).start();
+						} catch (Exception e) {
+							e.printStackTrace();
+							continue;
+						}
+					}
+					for (String key : albummap.keySet()) {
+						try {
 							if (albummap.get(key)!=null) {
 							    SearchUtils.addListInfo(constr, (AlbumPo)albummap.get(key), roService);
 						    }
@@ -263,7 +287,6 @@ public class XiMaLaYaSearch extends Thread {
 							e.printStackTrace();
 							continue;
 						}
-						
 					}
 					for (String key : audiomap.keySet()) {
 						try {
@@ -277,8 +300,6 @@ public class XiMaLaYaSearch extends Thread {
 					}
 					roService.close();
 					conn.destroy();
-//					System.out.println(JsonUtils.objToJson(albummap));
-//					System.out.println(JsonUtils.objToJson(audiomap));
 					break;
 				}
 			}

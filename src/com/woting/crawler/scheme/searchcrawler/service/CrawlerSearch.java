@@ -15,7 +15,6 @@ public class CrawlerSearch extends Thread {
 		    if (sws!=null && sws.size()>0) {
 			    for (SearchWordPo searchWordPo : sws) {
 				    new XiMaLaYaSearch(searchWordPo.getWord()).start();
-//				    new QingTingSearch(searchWordPo.getWord()).start();
 			    	new QTSearch(searchWordPo.getWord()).start();
 				    System.out.println(searchWordPo.getWord());
 				    searchWordService.deleteSearchWord(searchWordPo.getId());
@@ -24,7 +23,6 @@ public class CrawlerSearch extends Thread {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
 	}
 	
 	@Override

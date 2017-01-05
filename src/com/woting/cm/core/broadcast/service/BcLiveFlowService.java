@@ -12,7 +12,7 @@ import com.woting.cm.core.broadcast.persis.po.BCLiveFlowPo;
 @Service
 public class BcLiveFlowService {
 	
-	@Resource(name="defaultDAO_CM")
+	@Resource(name="defaultDAO")
 	private MybatisDAO<BCLiveFlowPo> bclfDao;
 	
 	@PostConstruct
