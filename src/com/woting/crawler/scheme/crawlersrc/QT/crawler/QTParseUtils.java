@@ -63,7 +63,7 @@ public class QTParseUtils {
 			CPersonPo po = QTPersonUtils.parsePerson(parseData.get("albumId")+"");
 			saveCPerson(po, "hotspot_Album", parseData.get("albumId")+"");
 		} catch (Exception e) {e.printStackTrace();}
-		int num = 0;
+//		int num = 0;
 		
 		RedisOperService rs = null;
 		if (isToRedis) {
@@ -93,7 +93,7 @@ public class QTParseUtils {
 					Map<String, Object> au = (Map<String, Object>) JsonUtils.jsonToObj(jsonstr, Map.class);
 					pDate.put("audioName", au.get("name"));
 					pDate.put("audioId", au.get("id"));
-					pDate.put("duration", au.get("duration"));
+					pDate.put("duration", au.get("duration")+"000");
 					pDate.put("audioImg", parseData.get("albumImg"));
 					pDate.put("albumId",parseData.get("albumId"));
 					pDate.put("albumName", parseData.get("albumName"));
@@ -129,11 +129,11 @@ public class QTParseUtils {
 					} else {
 						aus.add(pDate);
 					}
-					num++;
-					if(num==2){
-						num=0;
-						break;
-					}
+//					num++;
+//					if(num==2){
+//						num=0;
+//						break;
+//					}
 				}
 			}
 		} catch (Exception e) {e.printStackTrace();}

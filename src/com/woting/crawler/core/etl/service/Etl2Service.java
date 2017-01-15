@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.stereotype.Service;
 import com.spiritdata.framework.core.cache.SystemCache;
+import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.spiritdata.framework.util.SequenceUUID;
 import com.spiritdata.framework.util.StringUtils;
 import com.woting.cm.core.ResOrgAsset.persis.po.ResOrgAssetPo;
@@ -40,6 +42,7 @@ import com.woting.crawler.core.cperson.persis.po.CPersonPo;
 import com.woting.crawler.core.cperson.service.CPersonService;
 import com.woting.crawler.core.etl.model.Etl2Process;
 import com.woting.crawler.ext.SpringShell;
+import com.woting.crawler.scheme.searchcrawler.utils.SearchUtils;
 import com.woting.crawler.scheme.utils.ConvertUtils;
 import com.woting.crawler.scheme.utils.FileUtils;
 import com.woting.crawler.scheme.utils.ShareHtml;
@@ -129,48 +132,73 @@ public class Etl2Service {
 		List<MediaPlayCountPo> mecounts = new ArrayList<MediaPlayCountPo>();
 		List<PersonRefPo> pfs = new ArrayList<>();
 		if (allist != null && allist.size() > 0) {
-			for (Album al : allist) {
-				try {
-					List<AudioPo> aulist = al.getAudiolist();
-				    if (aulist.size() > 0) {
-					    Map<String, Object> m = new HashMap<>();
-					    m.put("resTableName", "wt_SeqMediaAsset");
-					    m.put("orgName", al.getAlbumPo().getAlbumPublisher());
-					    m.put("origSrcId", al.getAlbumPo().getAlbumId());
-					    List<ResOrgAssetPo> resList = resAssService.getResOrgAssetPo(m);
-					    if (resList != null && resList.size()>0) {
-						    SeqMediaAssetPo seq = mediaService.getSeqInfo(resList.get(0).getResId());
-						    if (seq != null) {
-							    Map<String, Object> mall = ConvertUtils.convert2MediaAsset(aulist, seq, cate2dictdlist, chlist);
-							    if (mall != null) {
-								    if (mall.containsKey("malist")) {
-									    malist = (List<MediaAssetPo>) mall.get("malist");
-									    resAss = (List<ResOrgAssetPo>) mall.get("resAss");
-									    maslist = (List<MaSourcePo>) mall.get("maslist");
-									    dictreflist = (List<DictRefResPo>) mall.get("dictreflist");
-									    chalist = (List<ChannelAssetPo>) mall.get("chalist");
-									    seqreflist = (List<SeqMaRefPo>) mall.get("seqmareflist");
-									    if (mall.containsKey("mediaplaycount")) {
-										    mecounts = (List<MediaPlayCountPo>) mall.get("mediaplaycount");
+			JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
+			RedisOperService ros = new RedisOperService(conn);
+			try {
+				for (Album al : allist) {
+					try {
+						List<AudioPo> aulist = al.getAudiolist();
+					    if (aulist.size() > 0) {
+						    Map<String, Object> m = new HashMap<>();
+						    m.put("resTableName", "wt_SeqMediaAsset");
+						    m.put("orgName", al.getAlbumPo().getAlbumPublisher());
+						    m.put("origSrcId", al.getAlbumPo().getAlbumId());
+						    List<ResOrgAssetPo> resList = resAssService.getResOrgAssetPo(m);
+						    if (resList != null && resList.size()>0) {
+							    SeqMediaAssetPo seq = mediaService.getSeqInfo(resList.get(0).getResId());
+							    if (seq != null) {
+							    	if (SearchUtils.isOrNoExist("CONTENT_SEQU_SAVED_"+al.getAlbumPo().getId(), ros)) {
+										SearchUtils.addRedisValue("CONTENT_SEQU_SAVED_"+al.getAlbumPo().getId(), seq.getId(), ros);
+									}
+							    	List<DictRefResPo> dicts = dictService.getDictRefs(seq.getId(), "wt_SeqMediaAsset");
+							    	m.clear();
+							    	m.put("assetId", seq.getId());
+							    	m.put("assetType", "wt_SeqMediaAsset");
+							    	m.put("isValidate", 1);
+							    	List<ChannelAssetPo> chas = channelService.getChannelAssetListBy(m);
+								    Map<String, Object> mall = ConvertUtils.convert2MediaAsset(aulist, seq, dicts, chas);
+								    if (mall != null) {
+									    if (mall.containsKey("malist")) {
+										    malist = (List<MediaAssetPo>) mall.get("malist");
+										    resAss = (List<ResOrgAssetPo>) mall.get("resAss");
+										    maslist = (List<MaSourcePo>) mall.get("maslist");
+										    dictreflist = (List<DictRefResPo>) mall.get("dictreflist");
+										    chalist = (List<ChannelAssetPo>) mall.get("chalist");
+										    seqreflist = (List<SeqMaRefPo>) mall.get("seqmareflist");
+										    if (mall.containsKey("mediaplaycount")) {
+											    mecounts = (List<MediaPlayCountPo>) mall.get("mediaplaycount");
+										    }
+										    pfs = (List<PersonRefPo>) mall.get("personRef");
 									    }
-									    pfs = (List<PersonRefPo>) mall.get("personRef");
+									    logger.info("增添资源库已存在的专辑新下级声音");
+									    logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}],专辑声音关系数量[{}]", malist.size(), maslist.size(), dictreflist.size(), chalist.size(), seqreflist.size());
+									    if (malist.size() > 0) {
+										    saveContents(malist, resAss, maslist, seqreflist, mecounts, dictreflist, chalist, pfs);
+										    for (AudioPo au : aulist) {
+												for (MediaAssetPo ma : malist) {
+													if (au.getAudioName().equals(ma.getMaTitle())) {
+														if (SearchUtils.isOrNoExist("CONTENT_AUDIO_SAVED_"+au.getId(), ros)) {
+															SearchUtils.addRedisValue("CONTENT_AUDIO_SAVED_"+au.getId(), ma.getId(), ros);
+														}
+													}
+												}
+											}
+									    } else {
+										    logger.info("已存在的专辑无最新下级声音资源");
+									    }
+									    new ShareHtml(seq.getId(), "SEQU").start();
 								    }
-								    logger.info("增添资源库已存在的专辑新下级声音");
-								    logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}],专辑声音关系数量[{}]", malist.size(), maslist.size(), dictreflist.size(), chalist.size(), seqreflist.size());
-								    if (malist.size() > 0) {
-									saveContents(malist, resAss, maslist, seqreflist, mecounts, dictreflist, chalist, pfs);
-								    } else {
-									    logger.info("已存在的专辑无最新下级声音资源");
-								    }
-								    new ShareHtml(seq.getId(), "SEQU").start();
 							    }
 						    }
 					    }
-				    }
-				} catch (Exception e) {
-					e.printStackTrace();
-					continue;
-				}
+					} catch (Exception e) {
+						e.printStackTrace();
+						continue;
+					}
+				}	
+			} finally {
+				ros.close();
+				conn.destroy();
 			}
 		}
 	}
@@ -178,140 +206,158 @@ public class Etl2Service {
 	@SuppressWarnings("unchecked")
 	public void makeNewAlbums(List<AlbumPo> allist, List<AudioPo> aulist, List<ChannelPo> chlist) {
 		if (allist != null && allist.size() > 0) {
-			for (AlbumPo al : allist) {
-				try {
-					Map<String, Object> map = ConvertUtils.convert2SeqMediaAsset(al, cate2dictdlist, chlist);
-					if (map == null) {
-						continue;
-					}
-					audioService = (AudioService) SpringShell.getBean("audioService");
-					mediaService = (MediaService) SpringShell.getBean("mediaService");
-					resAssService = (ResOrgAssetService) SpringShell.getBean("resOrgAssetService");
-					channelService = (ChannelService) SpringShell.getBean("channelService");
-					dictService = (DictService) SpringShell.getBean("dictService");
-					personService = (PersonService) SpringShell.getBean("personService");
-					cPersonService = (CPersonService) SpringShell.getBean("CPersonService");
-	
-					List<SeqMediaAssetPo> seqlist = new ArrayList<SeqMediaAssetPo>();
-					List<MediaAssetPo> malist = new ArrayList<MediaAssetPo>();
-					List<ResOrgAssetPo> resAss = new ArrayList<ResOrgAssetPo>();
-					List<MaSourcePo> maslist = new ArrayList<MaSourcePo>();
-					List<DictRefResPo> dictreflist = new ArrayList<DictRefResPo>();
-					List<ChannelAssetPo> chalist = new ArrayList<ChannelAssetPo>();
-					List<SeqMaRefPo> seqreflist = new ArrayList<SeqMaRefPo>();
-					List<MediaPlayCountPo> mecounts = new ArrayList<MediaPlayCountPo>();
-					List<PersonRefPo> pfs = new ArrayList<>();
-	
-					SeqMediaAssetPo se = (SeqMediaAssetPo) map.get("seq");
-					seqlist.add(se);
-					mediaService.insertSeqList(seqlist);
-					// 保存主播信息
-					CPersonPo cps = cPersonService.getCPerson(se.getSmaPublisher(), al.getAlbumId(), "hotspot_Album");
-					if (cps != null) {
-						PersonPo po = ConvertUtils.convert2Person(cps);
-						personService.insertPerson(po);
-						PersonRefPo pf = new PersonRefPo();
-						pf.setId(SequenceUUID.getPureUUID());
-						pf.setPersonId(po.getId());
-						pf.setRefName("主播");
-						pf.setResId(se.getId());
-						pf.setResTableName("wt_SeqMediaAsset");
-						pf.setcTime(new Timestamp(System.currentTimeMillis()));
-						personService.insertPersonRef(pf);
-						DictRefResPo dictRefResPo = new DictRefResPo();
-						dictRefResPo.setId(SequenceUUID.getPureUUID());
-						dictRefResPo.setRefName("主播-性别");
-						dictRefResPo.setDictMid("8");
-						if (cps.getSex() == 0) {
-							dictRefResPo.setDictDid("xb003");
-						} else if (cps.getSex() == 1) {
-							dictRefResPo.setDictDid("xb001");
-						} else if (cps.getSex() == 2) {
-							dictRefResPo.setDictDid("xb002");
+			JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
+			RedisOperService ros = new RedisOperService(conn);
+			try {
+				for (AlbumPo al : allist) {
+					try {
+						Map<String, Object> map = ConvertUtils.convert2SeqMediaAsset(al, cate2dictdlist, chlist);
+						if (map == null) {
+							continue;
 						}
-						dictRefResPo.setResTableName("wt_Person");
-						dictRefResPo.setResId(po.getId());
-						dictRefResPo.setCTime(new Timestamp(System.currentTimeMillis()));
-						dictService.insertDictRef(dictRefResPo);
-						if (!StringUtils.isNullOrEmptyOrSpace(cps.getLocation())) {
-							String[] lco = cps.getLocation().split("_");
-							DictDetailPo ddpo = dictService.getDictDetail("2", "0", lco[0]);
-							if (ddpo != null) {
-								if (lco.length >= 2) {
-									DictDetailPo ddpo2 = dictService.getDictDetail("2", ddpo.getId(), lco[1]);
-									if (ddpo2 != null) {
+						audioService = (AudioService) SpringShell.getBean("audioService");
+						mediaService = (MediaService) SpringShell.getBean("mediaService");
+						resAssService = (ResOrgAssetService) SpringShell.getBean("resOrgAssetService");
+						channelService = (ChannelService) SpringShell.getBean("channelService");
+						dictService = (DictService) SpringShell.getBean("dictService");
+						personService = (PersonService) SpringShell.getBean("personService");
+						cPersonService = (CPersonService) SpringShell.getBean("CPersonService");
+
+						List<SeqMediaAssetPo> seqlist = new ArrayList<SeqMediaAssetPo>();
+						List<MediaAssetPo> malist = new ArrayList<MediaAssetPo>();
+						List<ResOrgAssetPo> resAss = new ArrayList<ResOrgAssetPo>();
+						List<MaSourcePo> maslist = new ArrayList<MaSourcePo>();
+						List<DictRefResPo> dictreflist = new ArrayList<DictRefResPo>();
+						List<ChannelAssetPo> chalist = new ArrayList<ChannelAssetPo>();
+						List<SeqMaRefPo> seqreflist = new ArrayList<SeqMaRefPo>();
+						List<MediaPlayCountPo> mecounts = new ArrayList<MediaPlayCountPo>();
+						List<PersonRefPo> pfs = new ArrayList<>();
+						
+						SeqMediaAssetPo se = (SeqMediaAssetPo) map.get("seq");
+						seqlist.add(se);
+						mediaService.insertSeqList(seqlist);
+						// 保存主播信息
+						CPersonPo cps = cPersonService.getCPerson(se.getSmaPublisher(), al.getAlbumId(), "hotspot_Album");
+						if (cps != null) {
+							PersonPo po = ConvertUtils.convert2Person(cps);
+							personService.insertPerson(po);
+							PersonRefPo pf = new PersonRefPo();
+							pf.setId(SequenceUUID.getPureUUID());
+							pf.setPersonId(po.getId());
+							pf.setRefName("主播");
+							pf.setResId(se.getId());
+							pf.setResTableName("wt_SeqMediaAsset");
+							pf.setcTime(new Timestamp(System.currentTimeMillis()));
+							personService.insertPersonRef(pf);
+							DictRefResPo dictRefResPo = new DictRefResPo();
+							dictRefResPo.setId(SequenceUUID.getPureUUID());
+							dictRefResPo.setRefName("主播-性别");
+							dictRefResPo.setDictMid("8");
+							if (cps.getSex() == 0) {
+								dictRefResPo.setDictDid("xb003");
+							} else if (cps.getSex() == 1) {
+								dictRefResPo.setDictDid("xb001");
+							} else if (cps.getSex() == 2) {
+								dictRefResPo.setDictDid("xb002");
+							}
+							dictRefResPo.setResTableName("wt_Person");
+							dictRefResPo.setResId(po.getId());
+							dictRefResPo.setCTime(new Timestamp(System.currentTimeMillis()));
+							dictService.insertDictRef(dictRefResPo);
+							if (!StringUtils.isNullOrEmptyOrSpace(cps.getLocation())) {
+								String[] lco = cps.getLocation().split("_");
+								DictDetailPo ddpo = dictService.getDictDetail("2", "0", lco[0]);
+								if (ddpo != null) {
+									if (lco.length >= 2) {
+										DictDetailPo ddpo2 = dictService.getDictDetail("2", ddpo.getId(), lco[1]);
+										if (ddpo2 != null) {
+											dictRefResPo.setId(SequenceUUID.getPureUUID());
+											dictRefResPo.setRefName("主播-地区");
+											dictRefResPo.setDictMid("2");
+											dictRefResPo.setDictDid(ddpo2.getId());
+											dictRefResPo.setResTableName("wt_Person");
+											dictRefResPo.setResId(po.getId());
+											dictRefResPo.setCTime(new Timestamp(System.currentTimeMillis()));
+											dictService.insertDictRef(dictRefResPo);
+										}
+									} else {
 										dictRefResPo.setId(SequenceUUID.getPureUUID());
 										dictRefResPo.setRefName("主播-地区");
 										dictRefResPo.setDictMid("2");
-										dictRefResPo.setDictDid(ddpo2.getId());
+										dictRefResPo.setDictDid(ddpo.getId());
 										dictRefResPo.setResTableName("wt_Person");
 										dictRefResPo.setResId(po.getId());
 										dictRefResPo.setCTime(new Timestamp(System.currentTimeMillis()));
 										dictService.insertDictRef(dictRefResPo);
 									}
-								} else {
-									dictRefResPo.setId(SequenceUUID.getPureUUID());
-									dictRefResPo.setRefName("主播-地区");
-									dictRefResPo.setDictMid("2");
-									dictRefResPo.setDictDid(ddpo.getId());
-									dictRefResPo.setResTableName("wt_Person");
-									dictRefResPo.setResId(po.getId());
-									dictRefResPo.setCTime(new Timestamp(System.currentTimeMillis()));
-									dictService.insertDictRef(dictRefResPo);
 								}
 							}
 						}
-					}
-					dictreflist.addAll((List<DictRefResPo>) map.get("dictref"));
-					chalist.addAll((List<ChannelAssetPo>) map.get("cha"));
-					if (map.containsKey("playnum")) {
-						mecounts.add((MediaPlayCountPo) map.get("playnum"));
-					}
-					ResOrgAssetPo resass = new ResOrgAssetPo();
-					resass.setId(SequenceUUID.getPureUUID());
-					resass.setResId(se.getId());
-					resass.setResTableName("wt_SeqMediaAsset");
-					resass.setOrgName(se.getSmaPublisher());
-					resass.setOrigId(al.getId());
-					resass.setOrigTableName("hotspot_Album");
-					resass.setOrigSrcId(al.getAlbumId());
-					resass.setcTime(new Timestamp(System.currentTimeMillis()));
-					resAss.add(resass);
-					saveContents(malist, resAss, maslist, seqreflist, mecounts, dictreflist, chalist, pfs);
-	
-					// 获取抓取到的专辑下级节目信息
-					if (aulist == null) {
-						aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
-					}
-					if (aulist.size() > 0) {
-						Map<String, Object> mall = ConvertUtils.convert2MediaAsset(aulist, se, cate2dictdlist, chlist);
-						if (mall != null && mall.containsKey("malist")) {
-							malist = (List<MediaAssetPo>) mall.get("malist");
-							resAss = (List<ResOrgAssetPo>) mall.get("resAss");
-							maslist = (List<MaSourcePo>) mall.get("maslist");
-							dictreflist = (List<DictRefResPo>) mall.get("dictreflist");
-							chalist = (List<ChannelAssetPo>) mall.get("chalist");
-							seqreflist = (List<SeqMaRefPo>) mall.get("seqmareflist");
-							if (mall.containsKey("mediaplaycount")) {
-								mecounts = (List<MediaPlayCountPo>) mall.get("mediaplaycount");
+						dictreflist.addAll((List<DictRefResPo>) map.get("dictref"));
+						chalist.addAll((List<ChannelAssetPo>) map.get("cha"));
+						if (map.containsKey("playnum")) {
+							mecounts.add((MediaPlayCountPo) map.get("playnum"));
+						}
+						ResOrgAssetPo resass = new ResOrgAssetPo();
+						resass.setId(SequenceUUID.getPureUUID());
+						resass.setResId(se.getId());
+						resass.setResTableName("wt_SeqMediaAsset");
+						resass.setOrgName(se.getSmaPublisher());
+						resass.setOrigId(al.getId());
+						resass.setOrigTableName("hotspot_Album");
+						resass.setOrigSrcId(al.getAlbumId());
+						resass.setcTime(new Timestamp(System.currentTimeMillis()));
+						resAss.add(resass);
+						saveContents(malist, resAss, maslist, seqreflist, mecounts, dictreflist, chalist, pfs);
+						if (SearchUtils.isOrNoExist("CONTENT_SEQU_SAVED_"+al.getId(), ros)) {
+							SearchUtils.addRedisValue("CONTENT_SEQU_SAVED_"+al.getId(), se.getId(), ros);
+						}
+						// 获取抓取到的专辑下级节目信息
+						if (aulist == null) {
+							aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
+						}
+						if (aulist.size() > 0) {
+							Map<String, Object> mall = ConvertUtils.convert2MediaAsset(aulist, se, (List<DictRefResPo>) map.get("dictref"), (List<ChannelAssetPo>) map.get("cha"));
+							if (mall != null && mall.containsKey("malist")) {
+								malist = (List<MediaAssetPo>) mall.get("malist");
+								resAss = (List<ResOrgAssetPo>) mall.get("resAss");
+								maslist = (List<MaSourcePo>) mall.get("maslist");
+								dictreflist = (List<DictRefResPo>) mall.get("dictreflist");
+								chalist = (List<ChannelAssetPo>) mall.get("chalist");
+								seqreflist = (List<SeqMaRefPo>) mall.get("seqmareflist");
+								if (mall.containsKey("mediaplaycount")) {
+									mecounts = (List<MediaPlayCountPo>) mall.get("mediaplaycount");
+								}
+								pfs = (List<PersonRefPo>) mall.get("personRef");
 							}
-							pfs = (List<PersonRefPo>) mall.get("personRef");
+							logger.info("新增资源库");
+							logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}],专辑声音关系数量[{}]", malist.size(), maslist.size(), dictreflist.size(), chalist.size(), seqreflist.size());
+							if (malist.size() > 0) {
+								saveContents(malist, resAss, maslist, seqreflist, mecounts, dictreflist, chalist, pfs);
+								for (AudioPo au : aulist) {
+									for (MediaAssetPo ma : malist) {
+										if (au.getAudioName().equals(ma.getMaTitle())) {
+											if (SearchUtils.isOrNoExist("CONTENT_AUDIO_SAVED_"+au.getId(), ros)) {
+												SearchUtils.addRedisValue("CONTENT_AUDIO_SAVED_"+au.getId(), ma.getId(), ros);
+											}
+										}
+									}
+								}
+							} else {
+								logger.info("新专辑无下级声音资源");
+							}
+							new ShareHtml(se.getId(), "SEQU").start();
 						}
-						logger.info("新增资源库");
-						logger.info("转换声音的数据[{}],转换播放资源表的数据[{}],转换分类数据[{}],转换栏目发布表数据[{}],专辑声音关系数量[{}]", malist.size(), maslist.size(), dictreflist.size(), chalist.size(), seqreflist.size());
-						if (malist.size() > 0) {
-							saveContents(malist, resAss, maslist, seqreflist, mecounts, dictreflist, chalist, pfs);
-						} else {
-							logger.info("新专辑无下级声音资源");
-						}
-						new ShareHtml(se.getId(), "SEQU").start();
+						aulist = null;
+					} catch (Exception e) {
+						e.printStackTrace();
+						aulist = null;
+						continue;
 					}
-					aulist = null;
-				} catch (Exception e) {
-					e.printStackTrace();
-					aulist = null;
-					continue;
 				}
+			} finally {
+				ros.close();
+				conn.destroy();
 			}
 		}
 	}
@@ -335,7 +381,13 @@ public class Etl2Service {
 				    List<AudioPo> newaus = (List<AudioPo>) m.get("newaudiolist"); // 相似专辑里不相似的节目
 				    if (newaus != null && newaus.size() > 0) {
 					    SeqMediaAssetPo sma = (SeqMediaAssetPo) m.get("Sma");
-					    Map<String, Object> mall = ConvertUtils.convert2MediaAsset(newaus, sma, cate2dictdlist, chlist);
+					    List<DictRefResPo> dicts = dictService.getDictRefs(sma.getId(), "wt_SeqMediaAsset");
+				    	m.clear();
+				    	m.put("assetId", sma.getId());
+				    	m.put("assetType", "wt_SeqMediaAsset");
+				    	m.put("isValidate", 1);
+				    	List<ChannelAssetPo> chas = channelService.getChannelAssetListBy(m);
+					    Map<String, Object> mall = ConvertUtils.convert2MediaAsset(newaus, sma, dicts, chas);
 					    if (mall != null && mall.containsKey("malist")) {
 						    malist = (List<MediaAssetPo>) mall.get("malist");
 						    resAss = (List<ResOrgAssetPo>) mall.get("resAss");

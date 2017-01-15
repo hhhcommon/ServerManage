@@ -55,10 +55,10 @@ public class NewsSearch extends Thread {
 			String contenturi = getContentInfo(url);
 			if(!StringUtils.isNullOrEmptyOrSpace(contenturi) && contenturi.length()>30){ // contenturi为抓取到的新闻内容
 				map.remove("ContentURL");
-				JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
-				RedisOperService roService=new RedisOperService(conn);
-	            SearchUtils.addListInfo(constr, map, roService);
-	            SearchUtils.createNewsInfo(map.get("ContentId")+"", contenturi, roService);
+//				JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
+//				RedisOperService roService=new RedisOperService(conn);
+//	            SearchUtils.addListInfo(constr, map, roService);
+//	            SearchUtils.createNewsInfo(map.get("ContentId")+"", contenturi, roService);
 			}
 		}
 	}

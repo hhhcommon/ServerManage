@@ -7,7 +7,6 @@ import com.spiritdata.framework.core.cache.SystemCache;
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.core.scheme.model.Scheme;
-import com.woting.crawler.scheme.crawlersrc.DT.crawler.DTSnapShoot;
 import com.woting.crawler.scheme.crawlersrc.KL.crawler.KLSnapShoot;
 import com.woting.crawler.scheme.crawlersrc.XMLY.crawler.XMLYCrawlerRedis;
 import com.woting.crawler.scheme.crawlersrc.crawler.Crawler;
@@ -36,7 +35,7 @@ public class SchemeMoniter extends Thread {
 		new XMLYCrawlerRedis(scheme).start();
 		logger.info("开启Crawler4j抓取");
 		new KLSnapShoot().beginSearch();
-		new DTSnapShoot().beginSearch();
+//		new DTSnapShoot().beginSearch();
 		new Thread(){public void run() {startCrawler4j(); }}.start(); //开启Crawler4j抓取
 	}
 	
@@ -72,7 +71,7 @@ public class SchemeMoniter extends Thread {
 			controller.addSeed("http://www.ximalaya.com/explore/");
 			controller.addSeed("http://www.qingting.fm/s/home");
 			controller.addSeed("http://www.kan8kan.com/");
-			controller.addSeed("http://www.duotin.com/webfm");
+//			controller.addSeed("http://www.duotin.com/webfm");
 			controller.start(Crawler.class, numberOfCrawlers);
 			controller.waitUntilFinish();
 			//写入抓取完成信息

@@ -1,7 +1,9 @@
 package com.woting.crawler.scheme.searchcrawler.service;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +14,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
+import com.spiritdata.framework.util.DateUtils;
 import com.spiritdata.framework.util.SequenceUUID;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
@@ -35,9 +38,7 @@ public class XiMaLaYaSearch extends Thread {
 		this.constr = constr;
 	}
 	
-	public XiMaLaYaSearch() {
-		
-	}
+	public XiMaLaYaSearch() {}
 
 	private void ximalayaService(String content) {
 		new Thread(new Runnable() {
@@ -74,8 +75,13 @@ public class XiMaLaYaSearch extends Thread {
 				if (eles != null && !eles.isEmpty()) {
 					albumPo.setDescn(StringEscapeUtils.unescapeHtml4(eles.select("div.rich_intro").select("article").get(0).html().trim()));
 				}
+				if (albumPo.getDescn()==null || albumPo.getDescn().equals("null") || albumPo.getDescn().length()<2) {
+					albumPo.setDescn("欢迎大家收听"+albumPo.getAlbumName());
+				}
 				List<AudioPo> aus = albumAudioS(hrefstation);
-				albumPo.setcTime(new Timestamp(System.currentTimeMillis()));
+				if (albumPo!=null && albumPo.getcTime()==null) {
+					albumPo.setcTime(new Timestamp(System.currentTimeMillis()));
+				}
 				if (aus != null && aus.size() > 0) {
 					albumPo.setAudioPos(aus);
 					result.put(albumPo.getAlbumName() + "::" + albumPo.getAlbumId(), albumPo);
@@ -104,6 +110,14 @@ public class XiMaLaYaSearch extends Thread {
 			albumPo.setAlbumTags(parseData.get("tags")+"");
 			albumPo.setDescn(parseData.get("descript")+"");
 			albumPo.setVisitUrl(parseData.get("visitUrl")+"");
+			String timestr = parseData.get("cTime")+"";
+			try {
+				Date date = DateUtils.getDateTime("yyyy-MM-dd", timestr);
+				albumPo.setcTime(new Timestamp(date.getTime()));
+			} catch (ParseException e) {
+				e.printStackTrace();
+				return albumPo;
+			}
 			return albumPo;
 		}
 		return null;
@@ -150,12 +164,22 @@ public class XiMaLaYaSearch extends Thread {
 			audioPo.setAudioName(parseData.get("audioName") + "");
 			audioPo.setAudioImg(parseData.get("audioImg") + "");
 			audioPo.setAudioURL(parseData.get("playUrl") + ""); //
+			if (audioPo.getAudioURL() == null || audioPo.getAudioURL().equals("null") || audioPo.getAudioURL().length()<5) {
+				return null;
+			}
 			audioPo.setDuration(parseData.get("duration") + "");
 			audioPo.setcTime(new Timestamp(Long.valueOf((parseData.get("cTime") + "").equals("null")?System.currentTimeMillis()+"":(parseData.get("cTime") + ""))));
 			audioPo.setCategoryName(parseData.get("categoryName") + "");
 			audioPo.setAudioTags(parseData.get("tags") + "");
 			audioPo.setPlayCount(parseData.get("playCount") + "");
-			audioPo.setDescn(parseData.containsKey("descript") ? parseData.get("descript") + "" : null);
+			if (parseData.containsKey("descript")) {
+				if (parseData.get("descript")!=null && !parseData.get("descript").equals("null") && parseData.get("descript").toString().length()>=2) {
+					audioPo.setDescn(parseData.get("descript")+"");
+				}
+			}
+			if (audioPo.getDescn()==null) {
+				audioPo.setDescn("欢迎大家收听"+audioPo.getAudioName());
+			}
 			audioPo.setAlbumId(parseData.containsKey("albumId") ? parseData.get("albumId") + "" : null);
 			audioPo.setAlbumName(parseData.containsKey("albumName") ? parseData.get("albumName") + "" : null);
 			audioPo.setVisitUrl(parseData.get("visitUrl")+"");
@@ -198,16 +222,30 @@ public class XiMaLaYaSearch extends Thread {
 							AudioPo audioPo = new AudioPo();
 							audioPo.setId(SequenceUUID.getPureUUID());
 							audioPo.setAudioPublisher("喜马拉雅");
+							if (parseData.get("audioId")==null || parseData.get("audioName")==null || parseData.get("audioImg")==null
+									|| parseData.get("playUrl")==null || parseData.get("duration")==null || parseData.get("categoryName")==null) {
+								continue;
+							}
 							audioPo.setAudioId(parseData.get("audioId")==null?null:parseData.get("audioId").toString());
 							audioPo.setAudioName(parseData.get("audioName")==null?null:parseData.get("audioName").toString());
 							audioPo.setAudioImg(parseData.get("audioImg")==null?null:parseData.get("audioImg").toString());
 							audioPo.setAudioURL(parseData.get("playUrl")==null?null:parseData.get("playUrl").toString()); //
+							if (audioPo.getAudioURL()==null || audioPo.getAudioURL().equals("null") || audioPo.getAudioURL().length()<5) {
+								continue;
+							}
 							audioPo.setDuration(parseData.get("duration")==null?null:parseData.get("duration").toString());
 							audioPo.setcTime(new Timestamp(Long.valueOf(parseData.get("cTime") + "")));
 							audioPo.setCategoryName(parseData.get("categoryName")==null?null:parseData.get("categoryName").toString());
 							audioPo.setAudioTags(parseData.get("tags")==null?null:parseData.get("tags").toString());
 							audioPo.setPlayCount(parseData.get("playCount")==null?null:parseData.get("playCount").toString());
-							audioPo.setDescn(parseData.containsKey("descript") ? parseData.get("descript") + "" : null);
+							if (parseData.containsKey("descript")) {
+								if (parseData.get("descript")!=null && !parseData.get("descript").equals("null") && parseData.get("descript").toString().length()>=2) {
+									audioPo.setDescn(parseData.get("descript")+"");
+								}
+							}
+							if (audioPo.getDescn()==null) {
+								audioPo.setDescn("欢迎大家收听"+audioPo.getAudioName());
+							}
 							audioPo.setAlbumId(parseData.containsKey("albumId") ? parseData.get("albumId") + "" : null);
 							audioPo.setAlbumName(parseData.containsKey("albumName") ? parseData.get("albumName") + "" : null);
 							audioPo.setVisitUrl(parseData.get("visitUrl")+"");
@@ -242,64 +280,44 @@ public class XiMaLaYaSearch extends Thread {
 							try {
 								AlbumPo albumPo = (AlbumPo) result.get(key);
 								albummap.put(albumPo.getAlbumId(), albumPo);
+								new Thread(new Runnable() {
+									public void run() {
+										DataTransform.AlbumPoToReturn(true, constr, albumPo);
+									}
+								}).start();
 							} catch (Exception e) {
 								AudioPo audioPo = (AudioPo) result.get(key);
-								audiomap.put(audioPo.getAudioId(), audioPo);
-								if (!albummap.containsKey(audioPo.getAlbumId())) {
-									albummap.put(audioPo.getAlbumId(), null);
+								if (audioPo!=null) {
+									if (!albummap.containsKey(audioPo.getAlbumId())) {
+										String visit = audioPo.getVisitUrl();
+										visit = visit.replace("http://www.ximalaya.com/", "");
+										String[] ids = visit.split("/");
+										if (ids!=null && ids.length>0) {
+											visit = "http://www.ximalaya.com/"+ids[0]+"/album/"+audioPo.getAlbumId();
+											AlbumPo albumPo = albumS(visit);
+										    List<AudioPo> aus = albumAudioS("/"+ids[0]+"/album/"+audioPo.getAlbumId());
+										    albumPo.setAudioPos(aus);
+										    albummap.put(audioPo.getAlbumId(), albumPo);
+										    new Thread(new Runnable() {
+												public void run() {
+													DataTransform.AlbumPoToReturn(false, constr, albumPo);
+												}
+											}).start();
+										}
+									}
+									if (!audiomap.containsKey(audioPo.getAudioId())) {
+										audiomap.put(audioPo.getAudioId(), audioPo);
+										new Thread(new Runnable() {
+											public void run() {
+												DataTransform.AudioPoToReturn(constr,audioPo);
+											}
+										}).start();
+									}
 								}
 								continue;
 							}
 						}
 					}
-					JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
-					RedisOperService roService = new RedisOperService(conn);
-					for (String key : albummap.keySet()) {
-						try {
-							new Thread(new Runnable() {
-								public void run() {
-									DataTransform.AlbumPoToReturn(constr, (AlbumPo)albummap.get(key));
-								}
-							}).start();
-						} catch (Exception e) {
-							e.printStackTrace();
-							continue;
-						}
-					}
-					for (String key : audiomap.keySet()) {
-						try {
-							new Thread(new Runnable() {
-								public void run() {
-									DataTransform.AudioPoToReturn(constr,(AudioPo)audiomap.get(key));
-								}
-							}).start();
-						} catch (Exception e) {
-							e.printStackTrace();
-							continue;
-						}
-					}
-					for (String key : albummap.keySet()) {
-						try {
-							if (albummap.get(key)!=null) {
-							    SearchUtils.addListInfo(constr, (AlbumPo)albummap.get(key), roService);
-						    }
-						} catch (Exception e) {
-							e.printStackTrace();
-							continue;
-						}
-					}
-					for (String key : audiomap.keySet()) {
-						try {
-							if (audiomap.get(key)!=null) {
-							    SearchUtils.addListInfo(constr, (AudioPo)audiomap.get(key), roService);
-						    }
-						} catch (Exception e) {
-							e.printStackTrace();
-							continue;
-						}
-					}
-					roService.close();
-					conn.destroy();
 					break;
 				}
 			}

@@ -45,12 +45,35 @@ public class RemoveCrawlerSameRecord {
 									m.put("crawlerNum", k);
 									List<AlbumPo> albs = albumService.getAlbumListBy(m);
 									if (albs != null) {
+										String oldalstr = "";
+										if (oldal.getAlbumImg()!=null) {
+											oldalstr += oldal.getAlbumImg();
+										}
+										if (oldal.getAlbumTags()!=null) {
+											oldalstr += oldal.getAlbumTags();
+										}
+										if (oldal.getDescn()!=null) {
+											oldalstr += oldal.getDescn();
+										}
+										if (oldal.getCategoryName()!=null) {
+											oldalstr += oldal.getCategoryName();
+										}
 										for (AlbumPo albumPo : albs) {
 											try {
-												if (oldal.getAlbumImg().equals(albumPo.getAlbumImg())
-														&& oldal.getAlbumTags().equals(albumPo.getAlbumTags())
-														&& oldal.getDescn().equals(albumPo.getDescn())
-														&& oldal.getCategoryName().equals(albumPo.getCategoryName())) {
+												String alstr = "";
+												if (albumPo.getAlbumImg()!=null) {
+													alstr += albumPo.getAlbumImg();
+												}
+												if (albumPo.getAlbumTags()!=null) {
+													alstr += albumPo.getAlbumTags();
+												}
+												if (albumPo.getDescn()!=null) {
+													alstr += albumPo.getDescn();
+												}
+												if (albumPo.getCategoryName()!=null) {
+													alstr += albumPo.getCategoryName();
+												}
+												if (oldalstr.equals(alstr)) {
 													albumService.removeAlbumById(albumPo.getId());
 												}
 											} catch (Exception e) {

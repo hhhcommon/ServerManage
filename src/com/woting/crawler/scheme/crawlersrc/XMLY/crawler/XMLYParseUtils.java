@@ -118,6 +118,18 @@ public abstract class XMLYParseUtils {
 			parseData=null;
 			ex.printStackTrace();
 		}
+		//更新时间
+		try {
+			eles = doc.select("span[class=mgr-5]");
+			if (eles != null && !eles.isEmpty()) {
+				String timestr = eles.get(0).html().trim();
+				timestr = timestr.replace("最后更新: ", "");
+				parseData.put("cTime", timestr);
+			}
+		} catch (Exception ex) {
+			parseData=null;
+			ex.printStackTrace();
+		}
 		//主播
 		try {
 			eles = doc.select("div[class=picture]");
@@ -173,7 +185,7 @@ public abstract class XMLYParseUtils {
 			if (m != null) {
 				if ((parseData.get("audioName") + "").equals(m.get("title") + "")) {
 					parseData.put("playUrl", m.get("play_path"));
-					parseData.put("duration", m.get("duration"));
+					parseData.put("duration", m.get("duration")+"000");
 					String created_at = m.get("formatted_created_at")+"";
 					String time_utils_now = m.get("time_until_now")+"";
 					if (time_utils_now.contains("年")) {

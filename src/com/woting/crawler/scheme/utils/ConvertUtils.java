@@ -128,7 +128,7 @@ public abstract class ConvertUtils {
 		return dictdlist;
 	}
 
-	public static Map<String, Object> convert2MediaAsset(List<AudioPo> aulist, SeqMediaAssetPo seq, List<Map<String, Object>> dicts, List<ChannelPo> chlist) {
+	public static Map<String, Object> convert2MediaAsset(List<AudioPo> aulist, SeqMediaAssetPo seq, List<DictRefResPo> dicts, List<ChannelAssetPo> chlist) {
 		List<MediaAssetPo> malist = new ArrayList<MediaAssetPo>();
 		List<ResOrgAssetPo> resAsslist = new ArrayList<ResOrgAssetPo>();
 		List<MaSourcePo> maslist = new ArrayList<MaSourcePo>();
@@ -166,10 +166,12 @@ public abstract class ConvertUtils {
 					} else {
 						ma.setDescn("欢迎大家收听"+au.getAudioName());
 					}
-					ma.setKeyWords(au.getAudioTags());
+					if (au.getAudioTags()!=null && !au.getAudioTags().equals("null") && au.getAudioTags().length()>1) {
+						ma.setKeyWords(au.getAudioTags());
+					}
 					ma.setPubCount(1);
 					if (au.getDuration()==null || au.getDuration().equals("null")) {
-						ma.setTimeLong(100);
+						ma.setTimeLong(10000);
 					} else {
 						if (au.getDuration().contains(".")) {
 							long d1 = (long) (Double.valueOf(au.getDuration())/1);
@@ -227,34 +229,23 @@ public abstract class ConvertUtils {
 					}
 					
 					List<DictRefResPo> dictres = new ArrayList<>();
-					String catas = au.getCategoryName();
-					String[] cats = catas.split(",");
-					if (cats!=null && cats.length>0) {
-						String filtercata = "";
-						for (String str : cats) {
-							DictRefResPo dictRefRes = new DictRefResPo();
-					        dictRefRes.setId(SequenceUUID.getPureUUID());
-					        dictRefRes.setRefName("单体-内容分类");
-					        dictRefRes.setResTableName("wt_MediaAsset");
-					        dictRefRes.setResId(au.getId());
-					        for (Map<String, Object> ms : dicts) {
-						        if (au.getAudioPublisher().equals(ms.get("publisher")) && str.equals(ms.get("crawlerDictdName"))) {
-						        	if (!filtercata.contains(ms.get("dictdId") + "")) {
-										dictRefRes.setDictMid(ms.get("dictmId") + "");
-							            dictRefRes.setDictDid(ms.get("dictdId") + "");
-							            dictRefRes.setCTime(new Timestamp(System.currentTimeMillis()));
-							            dictres.add(dictRefRes);
-							            filtercata += ms.get("dictdId") + "";
-							            break;
-									}
-						        }
-					        }
+					if (dicts!=null && dicts.size()>0) {
+						for (DictRefResPo dictRefRes : dicts) {
+							DictRefResPo dictRef = new DictRefResPo();
+							dictRef.setId(SequenceUUID.getPureUUID());
+					        dictRef.setRefName("单体-内容分类");
+					        dictRef.setResTableName("wt_MediaAsset");
+					        dictRef.setResId(au.getId());
+					        dictRef.setDictMid(dictRefRes.getDictMid());
+					        dictRef.setDictDid(dictRefRes.getDictDid());
+					        dictRef.setCTime(new Timestamp(System.currentTimeMillis()));
+					        dictres.add(dictRef);
 						}
 					}
 					
 					List<ChannelAssetPo> chas = new ArrayList<>();
-					if (dictres!=null && dictres.size()>0) {
-						for (DictRefResPo dictRefRes : dictres) {
+					if (chlist!=null && chlist.size()>0) {
+						for (ChannelAssetPo chaPo : chlist) {
 							ChannelAssetPo cha = new ChannelAssetPo();
 						    cha.setId(SequenceUUID.getPureUUID());
 						    cha.setAssetType("wt_MediaAsset");
@@ -270,46 +261,37 @@ public abstract class ConvertUtils {
 						    cha.setCheckRuleIds("etl");
 						    cha.setCTime(au.getcTime());
 						    cha.setPubTime(cha.getCTime());
-						    if (chlist != null && chlist.size() > 0) {
-							    for (ChannelPo ch : chlist) {
-								    if (dictRefRes.getDictDid().equals(ch.getId())) {
-									    cha.setChannelId(ch.getId());
-									    chas.add(cha);
-									    if (!StringUtils.isNullOrEmptyOrSpace(au.getAudioTags())) {
-											KeyWordService keyWordService = (KeyWordService) SpringShell.getBean("keyWordService");
-											keyWordService.saveKwAndKeRef(au.getAudioTags(), "wt_Channel", cha.getChannelId());
-										}
-									    break;
-								    }
-							    }
-						    }
+						    cha.setChannelId(chaPo.getChannelId());
+						    chas.add(cha);
+						    if (!StringUtils.isNullOrEmptyOrSpace(au.getAudioTags())) {
+								KeyWordService keyWordService = (KeyWordService) SpringShell.getBean("keyWordService");
+								keyWordService.saveKwAndKeRef(au.getAudioTags(), "wt_Channel", cha.getChannelId());
+							}
 						}
-						
-						if (chas == null || chas.size()==0)
-							continue;
-						//存储标签关系
-						if (!StringUtils.isNullOrEmptyOrSpace(au.getAudioTags())) {
-							KeyWordService keyWordService = (KeyWordService) SpringShell.getBean("keyWordService");
-							keyWordService.saveKwAndKeRef(au.getAudioTags(), "wt_MediaAsset", ma.getId());
-						}
-						chalist.addAll(chas);
-						malist.add(ma);
-						resAsslist.add(roa);
-						maslist.add(maS);
-						dictreflist.addAll(dictres);
-						seqreflist.add(seqMaRef);
-						if (!StringUtils.isNullOrEmptyOrSpace(au.getPlayCount()) && !au.getPlayCount().equals("null")) {
-							MediaPlayCountPo mecount = new MediaPlayCountPo();
-						    mecount.setId(SequenceUUID.getPureUUID());
-						    mecount.setResTableName("wt_MediaAsset");
-						    mecount.setResId(ma.getId());
-						    mecount.setPlayCount(au.getPlayCount()!=null?convertPlayNum2Long(au.getPlayCount()):null);
-						    mecount.setPublisher(au.getAudioPublisher());
-						    mecount.setcTime(new Timestamp(System.currentTimeMillis()));
-						    mecounts.add(mecount);
-						}
-					} else {
+					}
+
+					if (chas == null || chas.size()==0)
 						continue;
+					//存储标签关系
+					if (!StringUtils.isNullOrEmptyOrSpace(au.getAudioTags())) {
+						KeyWordService keyWordService = (KeyWordService) SpringShell.getBean("keyWordService");
+						keyWordService.saveKwAndKeRef(au.getAudioTags(), "wt_MediaAsset", ma.getId());
+					}
+					chalist.addAll(chas);
+					malist.add(ma);
+					resAsslist.add(roa);
+					maslist.add(maS);
+					dictreflist.addAll(dictres);
+					seqreflist.add(seqMaRef);
+					if (!StringUtils.isNullOrEmptyOrSpace(au.getPlayCount()) && !au.getPlayCount().equals("null")) {
+						MediaPlayCountPo mecount = new MediaPlayCountPo();
+						mecount.setId(SequenceUUID.getPureUUID());
+						mecount.setResTableName("wt_MediaAsset");
+						mecount.setResId(ma.getId());
+						mecount.setPlayCount(au.getPlayCount()!=null?convertPlayNum2Long(au.getPlayCount()):null);
+						mecount.setPublisher(au.getAudioPublisher());
+						mecount.setcTime(new Timestamp(System.currentTimeMillis()));
+						mecounts.add(mecount);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -412,6 +394,18 @@ public abstract class ConvertUtils {
 		            }
 				}
 			}
+		}
+		
+		if (dictres==null || dictres.size()==0) {
+			DictRefResPo dictref = new DictRefResPo();
+			dictref.setId(SequenceUUID.getPureUUID());
+			dictref.setRefName("专辑-内容分类");
+			dictref.setResTableName("wt_SeqMediaAsset");
+			dictref.setResId(seq.getId());
+            dictref.setDictMid("3");
+            dictref.setDictDid("cn36");
+            dictref.setCTime(new Timestamp(System.currentTimeMillis()));
+            dictres.add(dictref);
 		}
 		
 		if (dictres!=null && dictres.size()>0) {

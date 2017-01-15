@@ -10,7 +10,6 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.spiritdata.framework.util.SequenceUUID;
 import com.spiritdata.framework.util.StringUtils;
-import com.woting.crawler.core.album.model.Album;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.ext.SpringShell;
@@ -74,7 +73,6 @@ public class QTSearch extends Thread {
 							List<Map<String, Object>> auls = (List<Map<String, Object>>) aums.get("data");
 							if (auls != null && auls.size() > 0) {
 								List<AudioPo> audioPos = new ArrayList<>();
-								Album album = new Album();
 								for (Map<String, Object> am : auls) {
 									AudioPo aPo = new AudioPo();
 									aPo.setId(SequenceUUID.getPureUUID());
@@ -86,7 +84,7 @@ public class QTSearch extends Thread {
 									aPo.setAlbumId(albumPo.getAlbumId());
 									aPo.setAlbumName(albumPo.getAlbumName());
 									aPo.setAudioPublisher("蜻蜓");
-									aPo.setDuration(am.get("duration")==null?null:am.get("duration")+"");
+									aPo.setDuration(am.get("duration")==null?null:am.get("duration")+"000");
 									aPo.setcTime(new Timestamp(ConvertUtils.makeLongTime(am.get("update_time") + "")));
 									Map<String, Object> ms = (Map<String, Object>) am.get("mediainfo");
 									if (ms!=null && ms.size()>0) {
@@ -98,9 +96,8 @@ public class QTSearch extends Thread {
 									}
 								}
 								if (audioPos!=null && audioPos.size()>0) {
-									album.setAlbumPo(albumPo);
-								    album.setAudiolist(audioPos);
-								    resultmap.put(albumPo.getAlbumId(), album);
+								    albumPo.setAudioPos(audioPos);
+								    resultmap.put(albumPo.getAlbumId(), albumPo);
 								}
 							}
 						}
@@ -114,7 +111,8 @@ public class QTSearch extends Thread {
 		}
 	}
 	
-	public Album albumS(String albumId) {
+	@SuppressWarnings("unchecked")
+	public AlbumPo albumS(String albumId) {
 		String url = "http://i.qingting.fm/wapi/channels/"+albumId;
 		Map<String, Object> m = HttpUtils.getJsonMapFromURL(url);
 		if (m!=null && m.size()>0) {
@@ -134,7 +132,6 @@ public class QTSearch extends Thread {
 			List<Map<String, Object>> auls = (List<Map<String, Object>>) aums.get("data");
 			if (auls != null && auls.size() > 0) {
 				List<AudioPo> audioPos = new ArrayList<>();
-				Album album = new Album();
 				for (Map<String, Object> am : auls) {
 					AudioPo aPo = new AudioPo();
 					aPo.setId(SequenceUUID.getPureUUID());
@@ -146,7 +143,7 @@ public class QTSearch extends Thread {
 					aPo.setAlbumId(albumPo.getAlbumId());
 					aPo.setAlbumName(albumPo.getAlbumName());
 					aPo.setAudioPublisher("蜻蜓");
-					aPo.setDuration(am.get("duration")==null?null:am.get("duration")+"");
+					aPo.setDuration(am.get("duration")==null?null:am.get("duration")+"000");
 					aPo.setcTime(new Timestamp(ConvertUtils.makeLongTime(am.get("update_time") + "")));
 					Map<String, Object> ms = (Map<String, Object>) am.get("mediainfo");
 					if (ms!=null && ms.size()>0) {
@@ -158,9 +155,8 @@ public class QTSearch extends Thread {
 					}
 				}
 				if (audioPos!=null && audioPos.size()>0) {
-					album.setAlbumPo(albumPo);
-				    album.setAudiolist(audioPos);
-				    return album;
+				    albumPo.setAudioPos(audioPos);
+				    return albumPo;
 				}
 			}
 		}
@@ -207,7 +203,7 @@ public class QTSearch extends Thread {
 									continue;
 								}
 								audioPo.setAudioURL("http://od.qingting.fm/"+map.get("file_path")+"");
-								String durstr = map.get("duration")+"";
+								String durstr = map.get("duration")+"000";
 								if (durstr.equals("null")) {
 									audioPo.setDuration("1000");
 								} else {
@@ -253,64 +249,62 @@ public class QTSearch extends Thread {
 					for (String key : resultmap.keySet()) {
 						if (resultmap.get(key)!=null) {
 							try {
-								Album album = (Album) resultmap.get(key);
-								albummap.put(album.getAlbumPo().getAlbumId(), album);
+								AlbumPo albumPo = (AlbumPo) resultmap.get(key);
+								albummap.put(albumPo.getAlbumId(), albumPo);
+								new Thread(new Runnable() {
+									public void run() {
+										DataTransform.AlbumPoToReturn(true, content, albumPo);
+									}
+								}).start();
 							} catch (Exception e) {
 								AudioPo audioPo = (AudioPo) resultmap.get(key);
-								audiomap.put(audioPo.getAudioId(), audioPo);
-								if (!albummap.containsKey(audioPo.getAlbumId())) {
-									albummap.put(audioPo.getAlbumId(), null);
+								if (audioPo!=null) {
+									if (!albummap.containsKey(audioPo.getAlbumId())) {
+										AlbumPo albumPo = albumS(audioPo.getAlbumId());
+										albummap.put(audioPo.getAlbumId(), albumPo);
+										new Thread(new Runnable() {
+											public void run() {
+												DataTransform.AlbumPoToReturn(false, content, albumPo);
+											}
+										}).start();
+									}
+									if (!audiomap.containsKey(audioPo.getAudioId())) {
+										audiomap.put(audioPo.getAudioId(), audioPo);
+										new Thread(new Runnable() {
+											public void run() {
+												DataTransform.AudioPoToReturn(content, audioPo);
+											}
+										}).start();
+									}
 								}
 								continue;
 							}
 						}
 					}
-					JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
-					RedisOperService roService = new RedisOperService(conn);
-					for (String key : albummap.keySet()) {
-						try {
-							new Thread(new Runnable() {
-								public void run() {
-									DataTransform.AlbumToReturn(content, (Album)albummap.get(key));
-								}
-							}).start();
-						} catch (Exception e) {
-							e.printStackTrace();
-							continue;
-						}
-					}
-					for (String key : audiomap.keySet()) {
-						try {
-							new Thread(new Runnable() {
-								public void run() {
-									DataTransform.AudioPoToReturn(content,(AudioPo)audiomap.get(key));
-								}
-							}).start();
-						} catch (Exception e) {
-							e.printStackTrace();
-							continue;
-						}
-					}
-					for (String key : albummap.keySet()) {
-						try {
-							if (albummap.get(key)!=null) {
-							    SearchUtils.addListInfo(content, (Album)albummap.get(key), roService);
-						    }
-						} catch (Exception e) {
-							e.printStackTrace();
-							continue;
-						}
-					}
-					for (String key : audiomap.keySet()) {
-						try {
-							if (audiomap.get(key)!=null) {
-							    SearchUtils.addListInfo(content, (AudioPo)audiomap.get(key), roService);
-						    }
-						} catch (Exception e) {
-							e.printStackTrace();
-							continue;
-						}
-					}
+//					for (String key : albummap.keySet()) {
+//						try {
+//							new Thread(new Runnable() {
+//								public void run() {
+//									DataTransform.AlbumPoToReturn(content, (AlbumPo)albummap.get(key));
+//								}
+//							}).start();
+//						} catch (Exception e) {
+//							e.printStackTrace();
+//							continue;
+//						}
+//					}
+//					for (String key : audiomap.keySet()) {
+//						try {
+//							new Thread(new Runnable() {
+//								public void run() {
+//									DataTransform.AudioPoToReturn(content,(AudioPo)audiomap.get(key));
+//								}
+//							}).start();
+//						} catch (Exception e) {
+//							e.printStackTrace();
+//							continue;
+//						}
+//					}
 					break;
 				}
 			}

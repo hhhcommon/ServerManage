@@ -154,87 +154,6 @@ public abstract class SearchUtils {
 			return 0;
 		}
 	}
-
-	/**
-	 * 得到list分页
-	 * 
-	 * @param key
-	 * @param page
-	 * @param pageSize
-	 * @return
-	 */
-//	public static List<Map<String, Object>> getListPage(String key, int page, int pageSize, RedisOperService ros) {
-//		List<Map<String, Object>> list = null;
-//		String finishstr = "Search_" + key + "_Finish";
-//		String datastr = "Search_" + key + "_Data";
-//        if (ros.exist(finishstr)) { // 判断是否redis里有存储的数据
-//            long num = ros.lLen(datastr); // 得到已存储数据的个数
-//            num = num - (page - 1) * pageSize;
-//            if (num <= 0) {
-//                if (isOrNoSearchFinish(key, ros)) {
-//                    return null;
-//                } else {
-//                    long time = System.currentTimeMillis();
-//                    while ((System.currentTimeMillis()-time)<5000) {
-//                        num = ros.lLen(datastr)-(page-1)*pageSize;
-//                        if (num>=pageSize) {
-//                            list = convertJsonList(ros.lRange(datastr,(page-1)*pageSize,page*pageSize-1));
-//                            return list;
-//                        } else {
-//                            if(isOrNoSearchFinish(key, ros)) {
-//                                list = convertJsonList(ros.lRange(datastr,(page-1)*pageSize,(page-1)*pageSize+num-1));
-//                                return list;
-//                            } else try {Thread.sleep(50);} catch(Exception e) {}
-//                        }
-//                    }
-//                    //num<=0时未完成等待5s超时处理
-//                    if (num>=pageSize) {
-//                        list = convertJsonList(ros.lRange(datastr,(page-1)*pageSize,page*pageSize-1));
-//                        return list;
-//                    } else {
-//                        if ((num>0)&&(num<pageSize)) {
-//                            list = convertJsonList(ros.lRange(datastr,(page-1)*pageSize,(page-1)*pageSize+num-1));
-//                            return list;
-//                        } else {
-//                            return null;
-//                        }
-//                    }
-//                }
-//            } else if (num>=pageSize) {
-//                list = convertJsonList(ros.lRange(datastr,(page-1)*pageSize,page*pageSize-1));
-//                return list;
-//            } else if (num<pageSize) {
-//                if (isOrNoSearchFinish(key, ros)) {
-//                    list = convertJsonList(ros.lRange(datastr,(page-1)*pageSize,(page-1)*pageSize+num-1));
-//                    return list;
-//                } else {
-//                    long time = System.currentTimeMillis();
-//                    while ((System.currentTimeMillis()-time)<5000) {
-//                        num = ros.lLen(datastr)-(page-1)*pageSize;
-//                        if (num>=pageSize) {
-//                            list = convertJsonList(ros.lRange(datastr,(page-1)*pageSize,page*pageSize-1));
-//                            return list;
-//                        } else {
-//                            if(isOrNoSearchFinish(key, ros)) {
-//                                list = convertJsonList(ros.lRange(datastr,(page-1)*pageSize,(page-1)*pageSize+num-1));
-//                                return list;
-//                            } else try {Thread.sleep(50);} catch(Exception e) {}
-//                        }
-//                    }
-//                    // 0<num<pagesize时未完成等待5s超时处理
-//                    num = ros.lLen(datastr)-(page-1)*pageSize;
-//                    if(num>=pageSize){
-//                        list = convertJsonList(ros.lRange(datastr,(page-1)*pageSize,page*pageSize-1));
-//                        return list;
-//                    } else {
-//                        list = convertJsonList(ros.lRange(datastr,(page-1)*pageSize,(page-1)*pageSize+num-1));
-//                        return list;
-//                    }
-//                }
-//            }
-//        }
-//        return list;
-//	}
 	
 	public static void createNewsInfo(String contentid, String contenturi, RedisOperService ros){
         ros.set("Search_"+contentid+"_NewsInfo", contenturi, "", -1);
@@ -275,6 +194,10 @@ public abstract class SearchUtils {
 		}
 		return null;
 	}
+	
+	public static boolean isOrNoExist(String key, RedisOperService ros) {
+		return ros.exist(key);
+	}
 
 	/**
 	 * 添加list里节目数据
@@ -283,12 +206,17 @@ public abstract class SearchUtils {
 	 * @param T
 	 * @return
 	 */
-	public static <T> void addListInfo(String key, T T, RedisOperService ros) {
-		new AddInfoThread<>(key, T, ros).start();
+	public static <T> void addListInfo(T T) {
+//		new AddInfoThread<>(key, T, ros).start();
+		new AddInfoThread<>(T).addInfo();
 	}
 
-	public static void addRedisValue(String key,String value, RedisOperService ros) {
-	    ros.set(key, value);
+	public static void addRedisValue(String key, String value, RedisOperService ros) {
+	    ros.set(key, value,6*60*60*1000);
+	}
+	
+	public static void addSearchContents(String key, String value, RedisOperService ros) {
+		ros.set("CONTENT_SEARCH_"+key, value);
 	}
 
 	/**

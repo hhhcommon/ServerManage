@@ -12,6 +12,7 @@ import com.woting.crawler.core.timer.BCPlayIsValidateTimerJob;
 import com.woting.crawler.core.timer.CrawlerCategoryJob;
 import com.woting.crawler.core.timer.CrawlerSrcTimerJob;
 import com.woting.crawler.core.timer.PlayNumTimerJob;
+import com.woting.crawler.core.timer.ShareTimerJob;
 import com.woting.crawler.core.timer.persis.po.TimerPo;
 import com.woting.crawler.ext.SpringShell;
 
@@ -21,6 +22,7 @@ public class Timer {
 	private String PlayCountCronExpression;
 	private String CategoryCronExpression;
 	private String BCPlayIsValidateCronExpression;
+	private String ShareCronExpression;
 	private Scheduler scheduler;
 	private JobDetailImpl jobdetail1; //抓取专辑声音进程执行的任务
 	private CronTriggerImpl cronTrigger1; //抓取专辑声音进程触发器
@@ -30,27 +32,27 @@ public class Timer {
 	private CronTriggerImpl cronTrigger3; //抓取分类进程触发器
 	private JobDetailImpl jobdetail4; //电台播放地址是否有效检测任务
 	private CronTriggerImpl cronTrigger4; //电台播放地址是否有效检测进程触发器
+	private JobDetailImpl jobdetail5; //更新分享临时票据触发器
+	private CronTriggerImpl cronTrigger5; //更新分享临时票据进程触发器
 	
 	public Timer(String str) {
 		TimerPo timerPo = (TimerPo) SpringShell.getBean("timer");
 		this.SrcCronExpression = timerPo.getCronExpression();
-		this.PlayCountCronExpression =timerPo.getPlayCountCronExpression();
-		this.CategoryCronExpression =timerPo.getCategoryCronExpression();
-		this.BCPlayIsValidateCronExpression=timerPo.getBCPlayIsValidateCronExpression();
+		this.PlayCountCronExpression = timerPo.getPlayCountCronExpression();
+		this.CategoryCronExpression = timerPo.getCategoryCronExpression();
+		this.BCPlayIsValidateCronExpression = timerPo.getBCPlayIsValidateCronExpression();
+		this.ShareCronExpression = timerPo.getShareCronExpression();
 	}
 	
 	public String getPlayCountCronExpression() {
 		return PlayCountCronExpression;
 	}
-
 	public void setPlayCountCronExpression(String playCountCronExpression) {
 		PlayCountCronExpression = playCountCronExpression;
 	}
-	
 	public String getCategoryCronExpression() {
 		return CategoryCronExpression;
 	}
-
 	public void setCategoryCronExpression(String categoryCronExpression) {
 		CategoryCronExpression = categoryCronExpression;
 	}
@@ -59,6 +61,12 @@ public class Timer {
 	}
 	public void setBCPlayIsValidateCronExpression(String bCPlayIsValidateCronExpression) {
 		BCPlayIsValidateCronExpression = bCPlayIsValidateCronExpression;
+	}
+	public String getShareCronExpression() {
+		return ShareCronExpression;
+	}
+	public void setShareCronExpression(String shareCronExpression) {
+		ShareCronExpression = shareCronExpression;
 	}
 	public JobDetailImpl getJobdetail2() {
 		return jobdetail2;
@@ -114,6 +122,18 @@ public class Timer {
 	public void setCronTrigger4(CronTriggerImpl cronTrigger4) {
 		this.cronTrigger4 = cronTrigger4;
 	}
+	public JobDetailImpl getJobdetail5() {
+		return jobdetail5;
+	}
+	public void setJobdetail5(JobDetailImpl jobdetail5) {
+		this.jobdetail5 = jobdetail5;
+	}
+	public CronTriggerImpl getCronTrigger5() {
+		return cronTrigger5;
+	}
+	public void setCronTrigger5(CronTriggerImpl cronTrigger5) {
+		this.cronTrigger5 = cronTrigger5;
+	}
 
 	@SuppressWarnings("deprecation")
 	public Scheduler getScheduler() {
@@ -132,10 +152,14 @@ public class Timer {
 			this.jobdetail4 = new JobDetailImpl("BCPlayIsValidate", "JobGroup4", BCPlayIsValidateTimerJob.class);
 			this.cronTrigger4 = new CronTriggerImpl("CronTrigger4", "TriggerGroup4");
 			cronTrigger4.setCronExpression(BCPlayIsValidateCronExpression);
+			this.jobdetail5 = new JobDetailImpl("Share", "JobGroup5", ShareTimerJob.class);
+			this.cronTrigger5 = new CronTriggerImpl("CronTrigger5", "TriggerGroup5");
+			cronTrigger5.setCronExpression(ShareCronExpression);
 			scheduler.scheduleJob(jobdetail1, cronTrigger1);
 			scheduler.scheduleJob(jobdetail2, cronTrigger2);
 			scheduler.scheduleJob(jobdetail3, cronTrigger3);
 			scheduler.scheduleJob(jobdetail4, cronTrigger4);
+			scheduler.scheduleJob(jobdetail5, cronTrigger5);
 		} catch (Exception e) {
 			logge.info("启动时间加载时报错");
 			return null;

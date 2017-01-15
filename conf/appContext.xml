@@ -22,7 +22,7 @@
     <property name="username" value="${local.mysql.username}"/>
     <property name="password" value="${local.mysql.password}"/>
     <property name="initialSize" value="30"/>
-    <property name="maxActive" value="50"/>
+    <property name="maxActive" value="500"/>
     <property name="maxWait" value="600000"/>
     <property name="poolPreparedStatements" value="true"/>
     <property name="maxOpenPreparedStatements" value="30"/>
@@ -121,6 +121,7 @@
     <property name="PlayCountCronExpression" value="${timer.PlayCountCronExpression}"/>
     <property name="CategoryCronExpression" value="${timer.CategoryCronExpression}"/>
     <property name="BCPlayIsValidateCronExpression" value="${timer.BCPlayIsValidateCronExpression}"/>
+    <property name="ShareCronExpression" value="${timer.ShareCronExpression}"/>
   </bean>
   
   <!-- 抓取计划加载功能 -->
@@ -130,6 +131,18 @@
     <property name="NumberOfCrawlers" value="${scheme.NumberOfCrawlers}"/>
     <property name="RedisDB" value="${scheme.RedisDB}"/>
     <property name="RedisSnapShootDB" value="${scheme.RedisSnapShootDB}"/>
+  </bean>
+  
+  <!-- 搜索计划加载功能 -->
+  <bean id="search" class="com.woting.crawler.core.search.persis.po.SearchPo" scope="prototype">
+    <property name="RedisSearchContents" value="${search.RedisSearchContents}"/>
+  </bean>
+  
+  <!-- 搜索计划加载功能 -->
+  <bean id="share" class="com.woting.crawler.core.share.persis.po.SharePo" scope="prototype">
+    <property name="wxAppId" value="${share.wxAppId}"/>
+    <property name="wxAppSecret" value="${share.wxAppSecret}"/>
+    <property name="RedisDB" value="${share.RedisDB}"/>
   </bean>
 
   <!-- 扫描类包，将标注Spring注解的类自动转化Bean，同时完成Bean的注入 -->
