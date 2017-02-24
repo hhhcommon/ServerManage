@@ -10,7 +10,7 @@ public class MediaPlayCountPo extends BaseObject {
 	private String id;
 	private String resTableName;
 	private String resId;
-	private String playCount;
+	private long playCount;
 	private String publisher;
 	private Timestamp cTime;
 	
@@ -32,10 +32,10 @@ public class MediaPlayCountPo extends BaseObject {
 	public void setResId(String resId) {
 		this.resId = resId;
 	}
-	public String getPlayCount() {
+	public long getPlayCount() {
 		return playCount;
 	}
-	public void setPlayCount(String playCount) {
+	public void setPlayCount(long playCount) {
 		this.playCount = playCount;
 	}
 	public String getPublisher() {

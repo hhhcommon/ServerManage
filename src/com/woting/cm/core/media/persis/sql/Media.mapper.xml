@@ -261,7 +261,7 @@
 		<id     column="id"            property="id"            jdbcType="VARCHAR" />
 		<result column="resTableName"  property="resTableName"  jdbcType="VARCHAR" />
 		<result column="resId"         property="resId"         jdbcType="VARCHAR" />
-		<result column="playCount"     property="playCount"     jdbcType="VARCHAR" />
+		<result column="playCount"     property="playCount"     jdbcType="BIGINT" />
 		<result column="publisher"     property="publisher"     jdbcType="VARCHAR" />
 		<result column="cTime"         property="cTime"         jdbcType="TIMESTAMP" />
 	</resultMap>
@@ -279,7 +279,7 @@
       <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
       <if test="resId!=null">#{resId,jdbcType=VARCHAR},</if>
       <if test="resTableName!=null">#{resTableName,jdbcType=VARCHAR},</if>
-      <if test="playCount!=null">#{playCount,jdbcType=VARCHAR},</if>
+      <if test="playCount!=null">#{playCount,jdbcType=BIGINT},</if>
       <if test="publisher!=null">#{publisher,jdbcType=VARCHAR},</if>
     </trim>
   </insert>
@@ -287,6 +287,19 @@
 	<sql id="Base_MediaPlayCount_List">
 		id, resTableName, resId, playCount, publisher, cTime
 	</sql>
+	
+	<!-- 修改 根据主键-->
+  <update id="updateMediaPlayCount" parameterType="java.util.Map">
+    update wt_MediaPlayCount
+    <set>
+      <if test="resTableName!=null">resTableName=#{resTableName,jdbcType=VARCHAR},</if>
+      <if test="resId!=null">resId=#{resId,jdbcType=VARCHAR},</if>
+      <if test="playCount!=null">playCount=#{playCount,jdbcType=BIGINT},</if>
+      <if test="publisher!=null">publisher=#{publisher,jdbcType=VARCHAR},</if>
+      <if test="cTime!=null">cTime=#{cTime,jdbcType=TIMESTAMP},</if>
+    </set>
+    where id=#{id,jdbcType=VARCHAR}
+  </update>
 	
 	<select id="getMaList" parameterType="java.util.Map" resultMap="mediaAssetMap">
        select <include refid="Base_Media_List"/> from wt_MediaAsset

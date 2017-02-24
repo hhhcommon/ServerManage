@@ -288,7 +288,7 @@ public abstract class ConvertUtils {
 						mecount.setId(SequenceUUID.getPureUUID());
 						mecount.setResTableName("wt_MediaAsset");
 						mecount.setResId(ma.getId());
-						mecount.setPlayCount(au.getPlayCount()!=null?convertPlayNum2Long(au.getPlayCount()):null);
+						mecount.setPlayCount(au.getPlayCount()!=null?Long.valueOf(convertPlayNum2Long(au.getPlayCount())):0);
 						mecount.setPublisher(au.getAudioPublisher());
 						mecount.setcTime(new Timestamp(System.currentTimeMillis()));
 						mecounts.add(mecount);
@@ -363,7 +363,7 @@ public abstract class ConvertUtils {
 		    mecount.setId(SequenceUUID.getPureUUID());
 		    mecount.setResTableName("wt_SeqMediaAsset");
 		    mecount.setResId(seq.getId());
-		    mecount.setPlayCount(convertPlayNum2Long(al.getPlayCount()));
+		    mecount.setPlayCount(Long.valueOf(convertPlayNum2Long(al.getPlayCount())));
 		    mecount.setPublisher(al.getAlbumPublisher());
 		    mecount.setcTime(new Timestamp(System.currentTimeMillis()));
 		    map.put("playnum", mecount);

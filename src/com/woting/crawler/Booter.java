@@ -7,6 +7,7 @@ import com.spiritdata.framework.core.cache.CacheEle;
 import com.spiritdata.framework.core.cache.SystemCache;
 import com.woting.crawler.core.timer.model.Timer;
 import com.woting.crawler.ext.SpringShell;
+import com.woting.crawler.scheme.crawlersrc.XMLY.XMLYCrawler;
 import com.woting.crawler.scheme.searchcrawler.service.CrawlerSearch;
 
 import ch.qos.logback.classic.LoggerContext;
@@ -65,25 +66,27 @@ public class Booter {
         logger.info("加载Spring配置，用时[{}]毫秒", System.currentTimeMillis()-_begin);
         
         //定时器加载
-        Timer timer = new Timer(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent()+"conf/timer.txt");
-        Scheduler scheduler = timer.getScheduler();
-        if(scheduler==null) {
-        	logger.info("定时加载出错，结束抓取服务");
-        	return;
-        }
-        try {
-			scheduler.start();
-			logger.info("首页资源抓取定时功能已加载[{}]", timer.getSrcCronExpression());
-			logger.info("点击量抓取定时功能已加载[{}]", timer.getPlayCountCronExpression());
-			logger.info("分类抓取定时功能已加载[{}]", timer.getCategoryCronExpression());
-			logger.info("电台播放地址检测[{}]", timer.getBCPlayIsValidateCronExpression());
-			logger.info("更新分享临时票据已加载[{}]", timer.getShareCronExpression());
-			new CrawlerSearch().start();
-			while(true) {
-				Thread.sleep(60*60*1000);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//        Timer timer = new Timer(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent()+"conf/timer.txt");
+//        Scheduler scheduler = timer.getScheduler();
+//        if(scheduler==null) {
+//        	logger.info("定时加载出错，结束抓取服务");
+//        	return;
+//        }
+//        try {
+//			scheduler.start();
+//			logger.info("首页资源抓取定时功能已加载[{}]", timer.getSrcCronExpression());
+//			logger.info("点击量抓取定时功能已加载[{}]", timer.getPlayCountCronExpression());
+//			logger.info("分类抓取定时功能已加载[{}]", timer.getCategoryCronExpression());
+//			logger.info("电台播放地址检测[{}]", timer.getBCPlayIsValidateCronExpression());
+//			logger.info("更新分享临时票据已加载[{}]", timer.getShareCronExpression());
+//			new CrawlerSearch().start();
+//			while(true) {
+//				Thread.sleep(60*60*1000);
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+        XMLYCrawler xmlyCrawler = new XMLYCrawler();
+        xmlyCrawler.beginCrawler();
 	}
 }

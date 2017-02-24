@@ -1,5 +1,8 @@
 package com.woting.crawler.core.scheme.control;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,6 +10,7 @@ import com.spiritdata.framework.core.cache.SystemCache;
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.core.scheme.model.Scheme;
+import com.woting.crawler.scheme.crawlersrc.DT.crawler.DTSnapShoot;
 import com.woting.crawler.scheme.crawlersrc.KL.crawler.KLSnapShoot;
 import com.woting.crawler.scheme.crawlersrc.XMLY.crawler.XMLYCrawlerRedis;
 import com.woting.crawler.scheme.crawlersrc.crawler.Crawler;
@@ -34,8 +38,26 @@ public class SchemeMoniter extends Thread {
 		logger.info("开始辅助信息抓取");
 		new XMLYCrawlerRedis(scheme).start();
 		logger.info("开启Crawler4j抓取");
-		new KLSnapShoot().beginSearch();
-//		new DTSnapShoot().beginSearch();
+		ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(2);
+		scheduledThreadPool.execute(new Runnable() {
+			public void run() {
+				new KLSnapShoot().beginSearch();
+			}
+		});
+		scheduledThreadPool.execute(new Runnable() {
+			public void run() {
+				new DTSnapShoot().beginSearch();
+			}
+		});
+		scheduledThreadPool.shutdown();
+		while (true) {
+			try {
+				Thread.sleep(10000);
+			} catch (Exception e) {}
+			if (scheduledThreadPool.isTerminated()) {
+				break;
+			}
+		}
 		new Thread(){public void run() {startCrawler4j(); }}.start(); //开启Crawler4j抓取
 	}
 	

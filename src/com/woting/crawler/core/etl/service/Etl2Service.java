@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
@@ -175,6 +178,11 @@ public class Etl2Service {
 									    if (malist.size() > 0) {
 										    saveContents(malist, resAss, maslist, seqreflist, mecounts, dictreflist, chalist, pfs);
 										    for (AudioPo au : aulist) {
+										    	new Thread(new Runnable() {
+													public void run() {
+														makeSubscribe(au.getId());
+													}
+												}).start();
 												for (MediaAssetPo ma : malist) {
 													if (au.getAudioName().equals(ma.getMaTitle())) {
 														if (SearchUtils.isOrNoExist("CONTENT_AUDIO_SAVED_"+au.getId(), ros)) {
@@ -477,6 +485,16 @@ public class Etl2Service {
 		// 插入主播关联信息.
 		if (pfs != null && pfs.size() > 0) {
 			personService.insertPersonRef(pfs);
+		}
+	}
+	
+	public void makeSubscribe(String smaId) {
+		try {
+			Document doc = Jsoup.connect("http://www.wotingfm.com:908/CM/common/subscribe.do").data("ContentId",smaId).ignoreContentType(true).post();
+			String m = doc.body().html();
+			System.out.println(smaId+"##"+m);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 }

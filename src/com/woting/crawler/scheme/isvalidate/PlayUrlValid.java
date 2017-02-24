@@ -77,7 +77,8 @@ public class PlayUrlValid {
 					return 0;
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				System.out.println("package com.woting.crawler.scheme.isvalidate");
+				System.out.println(e.toString());
 				return 0;
 			}
 		}

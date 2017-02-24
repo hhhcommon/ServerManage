@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- Etl与资源对应关系 -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="A_CPLAYCOUNT">
+  <!-- 对应关系 -->
+  <resultMap id="BaseResultMap" type="cplaycount">
+    <id      column="id"             property="id"             jdbcType="VARCHAR"/>
+    <result  column="resId"          property="resId"          jdbcType="VARCHAR"/>
+    <result  column="publisher"      property="publisher"      jdbcType="VARCHAR"/>
+    <result  column="resTableName"   property="resTableName"   jdbcType="VARCHAR"/>
+    <result  column="playCount"      property="playCount"      jdbcType="BIGINT"/>
+  </resultMap>
+
+  <!-- 所有列 -->
+  <sql id="Base_Column_List">
+    id, resId, resTableName, publisher, playCount
+  </sql>
+  
+  <!-- 条件子句 -->
+  <sql id="WhereClauseByEntiey">
+    <where>
+      <trim prefix="(" suffix=")" prefixOverrides="and">
+        <if test="id!=null">and id=#{id,jdbcType=VARCHAR}</if>
+        <if test="resId!=null">and resId=#{resId,jdbcType=VARCHAR}</if>
+        <if test="resTableName!=null">and resTableName=#{resTableName,jdbcType=VARCHAR}</if>
+        <if test="publisher!=null">and publisher=#{publisher,jdbcType=VARCHAR}</if>
+        <if test="playCount!=null">and playCount=#{playCount,jdbcType=BIGINT}</if>
+      </trim>
+    </where>
+  </sql>
+  
+  <!-- 新增数据 -->
+  <insert id="insert" parameterType="java.util.Map">
+    insert into c_PlayCount
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id!=null">id,</if>
+      <if test="resId!=null">resId,</if>
+      <if test="resTableName!=null">resTableName,</if>
+      <if test="publisher!=null">publisher,</if>
+      <if test="playCount!=null and playCount!=0">playCount,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
+      <if test="resId!=null">#{resId,jdbcType=VARCHAR},</if>
+      <if test="resTableName!=null">#{resTableName,jdbcType=VARCHAR},</if>
+      <if test="publisher!=null">#{publisher,jdbcType=INTEGER},</if>
+      <if test="playCount!=null and playCount!=0">#{playCount,jdbcType=BIGINT},</if>
+    </trim>
+  </insert>
+  
+  <select id="getList" resultMap="BaseResultMap" parameterType="java.lang.String">
+    select <include refid="Base_Column_List"/>  from c_PlayCount
+    <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if> 
+    <if test="orderSql!=null"> order by ${orderSql}</if>
+  </select>
+  
+</mapper>

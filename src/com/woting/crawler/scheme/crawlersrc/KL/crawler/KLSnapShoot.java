@@ -3,6 +3,8 @@ package com.woting.crawler.scheme.crawlersrc.KL.crawler;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -15,7 +17,6 @@ import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.scheme.utils.RedisUtils;
 
 public class KLSnapShoot {
-	private int num = 0;
 
 	@SuppressWarnings("unchecked")
 	public void beginSearch() {
@@ -25,22 +26,20 @@ public class KLSnapShoot {
 			cataall = (Map<String, Object>) cataall.get("result");
 			List<Map<String, Object>> dataall = (List<Map<String, Object>>) cataall.get("dataList");
 			if (dataall != null && dataall.size() > 0) {
+				ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(dataall.size());
 				for (Map<String, Object> ms : dataall) {
-					new Thread(new Runnable() {
+					scheduledThreadPool.execute(new Runnable() {
 						public void run() {
 							getCate(ms.get("categoryId") + "", ms.get("categoryName") + "");
 						}
-					}).start();
+					});
 				}
-			}
-			int numm = 0;
-			while (true) {
-				Thread.sleep(10000);
-				System.out.println("查询的专辑数目" + num);
-				if (num == numm) {
-					break;
-				} else {
-					numm = num;
+				scheduledThreadPool.shutdown();
+				while (true) {
+					Thread.sleep(10000);
+					if (scheduledThreadPool.isTerminated()) {
+						break;
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -82,7 +81,6 @@ public class KLSnapShoot {
 									} else {
 										RedisUtils.addSnapShootInfo(rs, "KL::"+albumId, id + "::" + name);
 									}
-									num++;
 								} catch (Exception e) {
 									e.printStackTrace();
 									continue;

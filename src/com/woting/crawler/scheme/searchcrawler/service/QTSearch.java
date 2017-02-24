@@ -68,7 +68,7 @@ public class QTSearch extends Thread {
 							albumPo.setcTime(new Timestamp(Long.valueOf(m.get("updatetime") + "000")));
 							albumPo.setDescn(m.get("description") + "");
 							albumPo.setPlayCount(ConvertUtils.convertPlayNum2Long(m.get("playcount") + ""));
-							url = "http://api2.qingting.fm/v6/media/channelondemands/" + albumPo.getAlbumId() + "/programs/order/0/curpage/1/pagesize/5";
+							url = "http://api2.qingting.fm/v6/media/channelondemands/" + albumPo.getAlbumId() + "/programs/order/0/curpage/1/pagesize/100";
 							Map<String, Object> aums = HttpUtils.getJsonMapFromURL(url);
 							List<Map<String, Object>> auls = (List<Map<String, Object>>) aums.get("data");
 							if (auls != null && auls.size() > 0) {

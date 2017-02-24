@@ -1,7 +1,6 @@
 package com.woting.crawler.scheme.crawlerplaynum.QT;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +8,6 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import com.spiritdata.framework.util.JsonUtils;
-import com.spiritdata.framework.util.SequenceUUID;
 import com.woting.cm.core.ResOrgAsset.persis.po.ResOrgAssetPo;
 import com.woting.cm.core.media.persis.po.MediaPlayCountPo;
 import com.woting.cm.core.media.service.MediaService;
@@ -51,20 +49,16 @@ public class QTPlayNumCrawler {
 							Map<String, Object> dm = data.get(0);
 							String playnum = dm.get("playcount") + "";
 							playnum = ConvertUtils.convertPlayNum2Long(playnum);
+							long playnums = Long.valueOf(playnum);
 							Map<String, Object> mp = new HashMap<>();
 							mp.put("resId", resass.getResId());
 							mp.put("resTableName", resass.getResTableName());
 							MediaPlayCountPo mplay = mediaService.getMediaPlayCount(mp);
-							if (mplay != null && mplay.getPlayCount().equals(playnum))
+							if (mplay != null && mplay.getPlayCount()==playnums)
 								return;
-							MediaPlayCountPo mpc = new MediaPlayCountPo();
-							mpc.setId(SequenceUUID.getPureUUID());
-							mpc.setPublisher(resass.getOrgName());
-							mpc.setResId(resass.getResId());
-							mpc.setResTableName("wt_SeqMediaAsset");
-							mpc.setPlayCount(playnum);
-							mpc.setcTime(new Timestamp(System.currentTimeMillis()));
-							mediaService.insertMediaPlayCount(mpc);
+							mplay.setPlayCount(playnums);
+							mplay.setcTime(new Timestamp(System.currentTimeMillis()));
+							mediaService.updateMediaPlayCount(mplay);
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -84,7 +78,6 @@ public class QTPlayNumCrawler {
 							Map<String, Object> m = (Map<String, Object>) JsonUtils.jsonToObj(austr, Map.class);
 							List<Map<String, Object>> data = (List<Map<String, Object>>) m.get("data");
 							if (data != null && data.size() > 0) {
-								List<MediaPlayCountPo> mps = new ArrayList<>();
 								for (Map<String, Object> m0 : data) {
 									String playnum = m0.get("playcount") + "";
 									String id = m0.get("id") + "";
@@ -92,24 +85,19 @@ public class QTPlayNumCrawler {
 									for (AudioPo audioPo : aus) {
 										if (audioPo.getAudioId().equals(id)) {
 											playnum = ConvertUtils.convertPlayNum2Long(playnum);
+											long playnums = Long.valueOf(playnum);
 											Map<String, Object> mp = new HashMap<>();
 											mp.put("resId", audioPo.getId());
 											mp.put("resTableName", "wt_MediaAsset");
 											MediaPlayCountPo mplay = mediaService.getMediaPlayCount(mp);
-											if (mplay != null && mplay.getPlayCount().equals(playnum))
+											if (mplay != null && mplay.getPlayCount()==playnums)
 												continue;
-											MediaPlayCountPo mpc = new MediaPlayCountPo();
-											mpc.setId(SequenceUUID.getPureUUID());
-											mpc.setPublisher(audioPo.getAudioPublisher());
-											mpc.setResId(audioPo.getId());
-											mpc.setResTableName("wt_MediaAsset");
-											mpc.setPlayCount(playnum);
-											mpc.setcTime(new Timestamp(System.currentTimeMillis()));
-											mps.add(mpc);
+											mplay.setPlayCount(playnums);
+											mplay.setcTime(new Timestamp(System.currentTimeMillis()));
+											mediaService.updateMediaPlayCount(mplay);
 										}
 									}
 								}
-								mediaService.insertMediaPlayCountList(mps);
 							}
 						}
 					} catch (Exception e) {
@@ -117,48 +105,6 @@ public class QTPlayNumCrawler {
 					}
 				}
 			}
-			// if (resass.getOrigTableName().equals("hotspot_Audio")) {
-			// audioService = (AudioService)
-			// SpringShell.getBean("audioService");
-			// mediaService = (MediaService)
-			// SpringShell.getBean("mediaService");
-			// List<AudioPo> aus =
-			// audioService.getAudioListById(resass.getOrigId());
-			// if (aus != null && aus.size() > 0) {
-			// AudioPo au = aus.get(0);
-			//
-			// Document doc;
-			// try {
-			// doc =
-			// Jsoup.connect(url).ignoreContentType(true).timeout(10000).get();
-			// String austr = doc.body().html();
-			// austr = StringEscapeUtils.unescapeHtml4(austr);
-			// Map<String, Object> m = (Map<String, Object>)
-			// JsonUtils.jsonToObj(austr, Map.class);
-			// List<Map<String, Object>> data = (List<Map<String, Object>>)
-			// m.get("data");
-			// Map<String, Object> m0 = data.get(0);
-			// String playnum = m0.get("playcount") + "";
-			// playnum = ConvertUtils.convertPlayNum2Long(playnum);
-			// Map<String, Object> mp = new HashMap<>();
-			// mp.put("resId", resass.getResId());
-			// mp.put("resTableName", resass.getResTableName());
-			// MediaPlayCountPo mplay = mediaService.getMediaPlayCount(mp);
-			// if (mplay != null && mplay.getPlayCount().equals(playnum))
-			// return;
-			// MediaPlayCountPo mpc = new MediaPlayCountPo();
-			// mpc.setId(SequenceUUID.getPureUUID());
-			// mpc.setPublisher(resass.getOrgName());
-			// mpc.setResId(resass.getResId());
-			// mpc.setResTableName(resass.getResTableName());
-			// mpc.setPlayCount(playnum);
-			// mpc.setcTime(new Timestamp(System.currentTimeMillis()));
-			// mediaService.insertMediaPlayCount(mpc);
-			// } catch (Exception e) {
-			// e.printStackTrace();
-			// }
-			// }
-			// }
 		}
 	}
 }

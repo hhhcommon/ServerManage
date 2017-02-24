@@ -198,6 +198,11 @@ public abstract class XMLYParseUtils {
 						int year = new Date(System.currentTimeMillis()).getYear() + 1900;
 						created_at = year+"年"+created_at;
 						long date = DateUtils.getDateTime("yyyy年MM月dd日 HH:mm", created_at).getTime();
+						if (date>System.currentTimeMillis()) {
+							year = year - 1;
+							created_at = year+"年"+m.get("formatted_created_at");
+							date = DateUtils.getDateTime("yyyy年MM月dd日 HH:mm", created_at).getTime();
+						}
 						parseData.put("cTime", date);
 					}
 				}

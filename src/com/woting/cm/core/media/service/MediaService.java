@@ -45,8 +45,12 @@ public class MediaService {
 		List<MediaAssetPo> mas = new ArrayList<>();
 		int num = 0;
 		for (int i = 0; i < malist.size(); i++) {
-			if(malist.get(i).getMaTitle()!=null)
+			if(malist.get(i).getMaTitle()!=null) {
+				if (malist.get(i).getDescn().length()>=4000) {
+					malist.get(i).setDescn(malist.get(i).getDescn().substring(0, 3990)+"...");
+				}
 				mas.add(malist.get(i));
+			}
 			num++;
 			if(num==1000){
 			    mediaAssetDao.insert("insertMaList", mas);
@@ -297,5 +301,8 @@ public class MediaService {
 			return seqDao.queryForList("getSeqSameListByNames", m);
 		}
 		return null;
+	}
+	public void updateMediaPlayCount(MediaPlayCountPo mply) {
+		mediaplaycountDao.update("updateMediaPlayCount", mply);
 	}
 }

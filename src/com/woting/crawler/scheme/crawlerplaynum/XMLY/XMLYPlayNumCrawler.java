@@ -43,7 +43,14 @@ public class XMLYPlayNumCrawler {
 					String url = xmlyAlbumPlayCountUrl.replace("#albumId#", albumId);
 					Document doc;
 					try {
-						doc = Jsoup.connect(url).ignoreContentType(true).timeout(10000).get();
+						doc = Jsoup.connect(url).ignoreContentType(true).header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36")
+								.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+								.header("Accept-Encoding", "gzip, deflate, sdch")
+								.header("Cookie", "Hm_lvt_4a7d8ec50cfd6af753c4f8aee3425070=1481942163; Hm_lpvt_4a7d8ec50cfd6af753c4f8aee3425070=1481942193; _ga=GA1.2.2074075166.1481942163")
+								.header("Host", "www.ximalaya.com")
+								.header("Connection", "keep-alive")
+								.header("X-Requested-With", "XMLHttpRequest")
+								.header("Referer", "http://www.ximalaya.com/explore/").timeout(10000).get();
 						if (doc != null) {
 							String alstr = doc.body().html();
 							Map<String, Object> m = null;
@@ -57,16 +64,22 @@ public class XMLYPlayNumCrawler {
 							Map<String, Object> mp = new HashMap<>();
 							mp.put("resId", resass.getResId());
 							mp.put("resTableName",resass.getResTableName());
-							mp.put("playCount", album.get("playTimes") + "");
-							if (album != null && mediaService.getMediaPlayCount(mp)!=null) {
-								MediaPlayCountPo mpc = new MediaPlayCountPo();
-								mpc.setId(SequenceUUID.getPureUUID());
-								mpc.setResTableName(resass.getResTableName());
-								mpc.setResId(resass.getResId());
-								mpc.setPublisher(resass.getOrgName());
-								mpc.setPlayCount(album.get("playTimes") + "");
-								mpc.setcTime(new Timestamp(System.currentTimeMillis()));
-								mediaService.insertMediaPlayCount(mpc);
+							MediaPlayCountPo mplay = mediaService.getMediaPlayCount(mp);
+							if (album != null) {
+								if (mplay!=null) {
+									mplay.setPlayCount((long)album.get("playTimes"));
+									mplay.setcTime(new Timestamp(System.currentTimeMillis()));
+									mediaService.updateMediaPlayCount(mplay);
+								} else {
+									MediaPlayCountPo mpc = new MediaPlayCountPo();
+									mpc.setId(SequenceUUID.getPureUUID());
+									mpc.setResTableName(resass.getResTableName());
+									mpc.setResId(resass.getResId());
+									mpc.setPublisher(resass.getOrgName());
+									mpc.setPlayCount((long)album.get("playTimes"));
+									mpc.setcTime(new Timestamp(System.currentTimeMillis()));
+									mediaService.insertMediaPlayCount(mpc);
+								}
 								tracks = album.get("tracks") + "";
 							}
 							url = url.replace("pageSize=1", tracks);
@@ -77,7 +90,7 @@ public class XMLYPlayNumCrawler {
 							}
 						}
 					} catch (Exception e) {
-						e.printStackTrace();
+						e.getMessage();
 					}
 				}
 			}
@@ -90,7 +103,14 @@ public class XMLYPlayNumCrawler {
 					String url = xmlyAudioPlayCountUrl.replace("#trackId#", au.getAudioId()).replace("#trackUid#", au.getAlbumId());
 					Document doc;
 					try {
-						doc = Jsoup.connect(url).ignoreContentType(true).timeout(10000).get();
+						doc = Jsoup.connect(url).ignoreContentType(true).header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36")
+								.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+								.header("Accept-Encoding", "gzip, deflate, sdch")
+								.header("Cookie", "Hm_lvt_4a7d8ec50cfd6af753c4f8aee3425070=1481942163; Hm_lpvt_4a7d8ec50cfd6af753c4f8aee3425070=1481942193; _ga=GA1.2.2074075166.1481942163")
+								.header("Host", "www.ximalaya.com")
+								.header("Connection", "keep-alive")
+								.header("X-Requested-With", "XMLHttpRequest")
+								.header("Referer", "http://www.ximalaya.com/explore/").timeout(10000).get();
 						String austr = doc.body().html();
 						Map<String, Object> m = null;
 						try {
@@ -100,17 +120,27 @@ public class XMLYPlayNumCrawler {
 						}
 						if(m!=null) {
 							String playnum = m.get("playtimes")+"";
-							MediaPlayCountPo mpc = new MediaPlayCountPo();
-							mpc.setId(SequenceUUID.getPureUUID());
-							mpc.setPublisher(resass.getOrgName());
-							mpc.setResId(resass.getResId());
-							mpc.setResTableName(resass.getResTableName());
-							mpc.setPlayCount(playnum);
-							mpc.setcTime(new Timestamp(System.currentTimeMillis()));
-							mediaService.insertMediaPlayCount(mpc);
+							Map<String, Object> mp = new HashMap<>();
+							mp.put("resId", resass.getResId());
+							mp.put("resTableName",resass.getResTableName());
+							MediaPlayCountPo mplay = mediaService.getMediaPlayCount(mp);
+							if (mplay!=null) {
+								mplay.setPlayCount(Long.valueOf(playnum));
+								mplay.setcTime(new Timestamp(System.currentTimeMillis()));
+								mediaService.updateMediaPlayCount(mplay);
+							} else {
+								MediaPlayCountPo mpc = new MediaPlayCountPo();
+								mpc.setId(SequenceUUID.getPureUUID());
+								mpc.setPublisher(resass.getOrgName());
+								mpc.setResId(resass.getResId());
+								mpc.setResTableName(resass.getResTableName());
+								mpc.setPlayCount(Long.valueOf(playnum));
+								mpc.setcTime(new Timestamp(System.currentTimeMillis()));
+								mediaService.insertMediaPlayCount(mpc);
+							}
 						}
 					} catch (Exception e) {
-						e.printStackTrace();
+						e.getMessage();
 					}
 				}
 			}
