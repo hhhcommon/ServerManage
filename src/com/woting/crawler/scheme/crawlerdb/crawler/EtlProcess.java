@@ -97,20 +97,6 @@ public class EtlProcess {
 		
 	}
 	
-	public void makeNewAlbums(Map<String, Object> newmap) {
-		if (newmap!=null && newmap.size()>0) {
-			Set<String> sets = newmap.keySet();
-			for (String albumId : sets) {
-				try {
-					String id = (String) newmap.get(albumId);
-					makeNewAlbum(id);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-	
 	public void makeNewAlbum(String id) {
 		List<AudioPo> aulist = null;
 		AlbumPo al = albumService.getAlbumInfo(id);
@@ -243,6 +229,7 @@ public class EtlProcess {
 		SeqMediaAssetPo sma = mediaService.getSeqInfo(smaId);
 		if (sma!=null && ls!=null && ls.size()>0) {
 			List<OrganizePo> oganlist = organizeService.getOrganizeList();
+			//抓取专辑与相重已入库专辑资源关系
 			ResOrgAssetPo resOrgAssetsma = new ResOrgAssetPo();
 			resOrgAssetsma.setId(SequenceUUID.getPureUUID());
 			resOrgAssetsma.setResTableName("wt_SeqMediaAsset");
@@ -252,6 +239,7 @@ public class EtlProcess {
 			resOrgAssetsma.setOrigTableName("c_Album");
 			resOrgAssetsma.setOrigSrcId(albumPo.getAlbumId());
 			resAssService.insertResOrgAsset(resOrgAssetsma);
+			//重复专辑主播合并
 			CPersonPo cPersonPo = cPersonService.getCPerson(albumPo.getAlbumPublisher(), albumPo.getAlbumId(), "c_Album");
 			PersonPo personPo = null;
 			String orgId = null;
@@ -309,58 +297,61 @@ public class EtlProcess {
 			}
 			
 			List<AudioPo> aus = albumPo.getAudioPos();
-			Iterator<AudioPo> its = aus.iterator();
 			for (OrganizePo organs : oganlist) {
 				if (organs.getOrgName().equals(albumPo.getAlbumPublisher())) {
 					orgId = organs.getId();
 					break;
 				}
 			}
+			//处理相重节目
 			for (Map<String, Object> m : ls) {
 				String maId = m.get("perId").toString();
 				String id = m.get("audioId").toString();
-				while (its.hasNext()) {
-					AudioPo audioPo = (AudioPo) its.next();
-					if (audioPo.getId().equals(id)) {
-						List<MaSourcePo> masls = mediaService.getMaSources(maId);
-						if (masls!=null && masls.size()>0) {
-							MaSourcePo mas = new MaSourcePo();
-							mas.setId(SequenceUUID.getPureUUID());
-							mas.setMaId(maId);
-							mas.setMaSrcType(1);
-							for (OrganizePo organs : oganlist) {
-								if (organs.getOrgName().equals(audioPo.getAudioPublisher())) {
-									mas.setMaSource(organs.getOrgName());
-									mas.setMaSrcId(organs.getId());
-									
-									break;
+				if(aus!=null && aus.size()>0) {
+					Iterator<AudioPo> its = aus.iterator();
+					while (its.hasNext()) {
+						AudioPo audioPo = (AudioPo) its.next();
+						if (audioPo.getId().equals(id)) {
+							List<MaSourcePo> masls = mediaService.getMaSources(maId);
+							if (masls!=null && masls.size()>0) {
+								MaSourcePo mas = new MaSourcePo();
+								mas.setId(SequenceUUID.getPureUUID());
+								mas.setMaId(maId);
+								mas.setMaSrcType(1);
+								for (OrganizePo organs : oganlist) {
+									if (organs.getOrgName().equals(audioPo.getAudioPublisher())) {
+										mas.setMaSource(organs.getOrgName());
+										mas.setMaSrcId(organs.getId());
+										
+										break;
+									}
+								}
+								mas.setIsMain(0);
+								mas.setPlayURI(audioPo.getAudioURL());
+								mas.setMaSrcType(0);
+								mas.setDescn(audioPo.getDescn());
+								mediaService.insertMas(mas);
+								ResOrgAssetPo resOrgAsset = new ResOrgAssetPo();
+								resOrgAsset.setId(SequenceUUID.getPureUUID());
+								resOrgAsset.setOrgName(audioPo.getAudioPublisher());
+								resOrgAsset.setResTableName("wt_MediaAsset");
+								resOrgAsset.setResId(maId);
+								resOrgAsset.setOrigId(audioPo.getId());
+								resOrgAsset.setOrigTableName("c_Audio");
+								resOrgAsset.setOrigSrcId(audioPo.getAudioId());
+								resAssService.insertResOrgAsset(resOrgAsset);
+								if (personPo!=null) {
+									PersonRefPo personRefPo = new PersonRefPo();
+									personRefPo.setId(SequenceUUID.getPureUUID());
+									personRefPo.setPersonId(personPo.getId());
+									personRefPo.setRefName("主播-节目");
+									personRefPo.setResId(maId);
+									personRefPo.setResTableName("wt_MediaAsset");
+									personService.insertPersonRef(personRefPo);
 								}
 							}
-							mas.setIsMain(0);
-							mas.setPlayURI(audioPo.getAudioURL());
-							mas.setMaSrcType(0);
-							mas.setDescn(audioPo.getDescn());
-							mediaService.insertMas(mas);
-							ResOrgAssetPo resOrgAsset = new ResOrgAssetPo();
-							resOrgAsset.setId(SequenceUUID.getPureUUID());
-							resOrgAsset.setOrgName(audioPo.getAudioPublisher());
-							resOrgAsset.setResTableName("wt_MediaAsset");
-							resOrgAsset.setResId(maId);
-							resOrgAsset.setOrigId(audioPo.getId());
-							resOrgAsset.setOrigTableName("c_Audio");
-							resOrgAsset.setOrigSrcId(audioPo.getAudioId());
-							resAssService.insertResOrgAsset(resOrgAsset);
-							if (personPo!=null) {
-								PersonRefPo personRefPo = new PersonRefPo();
-								personRefPo.setId(SequenceUUID.getPureUUID());
-								personRefPo.setPersonId(personPo.getId());
-								personRefPo.setRefName("主播-节目");
-								personRefPo.setResId(maId);
-								personRefPo.setResTableName("wt_MediaAsset");
-								personService.insertPersonRef(personRefPo);
-							}
+							its.remove();
 						}
-						its.remove();
 					}
 				}
 			}
