@@ -46,6 +46,10 @@ public class AudioService {
 		return audioDao.getCount("count", crawlerNum);
 	}
 	
+	public void insertAudio(AudioPo audioPo) {
+		audioDao.insert(audioPo);
+	}
+	
 	public List<AudioPo> getAudioList(int page, int pagesize, String crawlernum){
 		Map<String, Object> m = new HashMap<String,Object>();
 		m.put("page", page);
@@ -87,7 +91,7 @@ public class AudioService {
 	public List<AudioPo> getAudioListByAlbumId(String albumId,String publisher, String num){
 		Map<String, Object> m = new HashMap<String,Object>();
 		m.put("albumId", albumId);
-		m.put("publisher", publisher);
+		m.put("audioPublisher", publisher);
 		m.put("crawlerNum", num);
 		List<AudioPo> list = audioDao.queryForList("getAudioByAlbumIdAndPublisher", m);
 		if (list!=null && list.size()>0) {

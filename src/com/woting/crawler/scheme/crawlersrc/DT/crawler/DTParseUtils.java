@@ -85,17 +85,15 @@ public class DTParseUtils {
 				    cPersonPo.setId(SequenceUUID.getPureUUID());
 				    cPersonPo.setpName(dateList.get("real_name")+"");
 				    cPersonPo.setPortrait(dateList.get("image_url")+"");
-				    cPersonPo.setResTableName("hotspot_Album");
-				    cPersonPo.setResId(parseData.get("albumId")+"");
 				    cPersonPo.setDescn(dateList.get("describe")+"");
 				    cPersonPo.setpSource("多听");
 				    cPersonPo.setpSrcId(dateList.get("id")+"");
 				    cPersonPo.setcTime(new Timestamp(System.currentTimeMillis()));
 				    CPersonService cPersonService = (CPersonService) SpringShell.getBean("CPersonService");
-				    CPersonPo cPo = cPersonService.getCPerson("多听", cPersonPo.getResId(), cPersonPo.getResTableName());
-				    if (cPo==null) {
-					    cPersonService.insertPerson(cPersonPo);
-				    }
+//				    CPersonPo cPo = cPersonService.getCPerson("多听", cPersonPo.getResId(), cPersonPo.getResTableName());
+//				    if (cPo==null) {
+//					    cPersonService.insertPerson(cPersonPo);
+//				    }
 				}
 				
 				//节目信息采集

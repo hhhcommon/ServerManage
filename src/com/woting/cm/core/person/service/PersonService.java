@@ -63,4 +63,18 @@ public class PersonService {
 		personRefDao.insert("insertList", m);
 	}
 	
+	public PersonPo getPersonByPersonId(String personId) {
+		return personDao.getInfoObject("getListById", personId);
+	}
+	
+	public List<PersonPo> getPersonsByResIdAndResTableName(String resId, String resTableName) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("resId", resId);
+		m.put("resTableName", resTableName);
+		List<PersonPo> pers = personDao.queryForList("getListByResIdAndResTableName", m);
+		if (pers!=null && pers.size()>0) {
+			return pers;
+		}
+		return null;
+	}
 }

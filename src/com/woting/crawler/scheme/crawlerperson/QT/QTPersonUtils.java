@@ -51,8 +51,8 @@ public class QTPersonUtils {
 						}
 					}
 				}
-				po.setResTableName("hotspot_Album");
-				po.setResId(albumsId);
+//				po.setResTableName("hotspot_Album");
+//				po.setResId(albumsId);
 				return po;
 			}
 		} catch (Exception e) {

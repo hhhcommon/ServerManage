@@ -178,8 +178,6 @@ public class KLParseUtils {
 	private static void saveCPerson(String albumId, String resTableName) {
 		CPersonPo po = KLPersonUtils.parsePerson(albumId);
 		if (po!=null) {
-			po.setResTableName(resTableName);
-			po.setResId(albumId);
 			po.setcTime(new Timestamp(System.currentTimeMillis()));
 			CPersonService cPersonService = (CPersonService) SpringShell.getBean("CPersonService");
 			cPersonService.insertPerson(po);

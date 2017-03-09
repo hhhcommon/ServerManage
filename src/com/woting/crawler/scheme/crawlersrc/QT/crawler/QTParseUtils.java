@@ -195,8 +195,6 @@ public class QTParseUtils {
 			CPersonService cPersonService = (CPersonService) SpringShell.getBean("CPersonService");
 			CPersonPo cPo = cPersonService.getCPerson(po.getpSource(), resId, resTableName);
 			if (cPo==null) {
-				po.setResTableName(resTableName);
-			    po.setResId(resId);
 			    po.setcTime(new Timestamp(System.currentTimeMillis()));
 			    cPersonService.insertPerson(po);
 			} else {

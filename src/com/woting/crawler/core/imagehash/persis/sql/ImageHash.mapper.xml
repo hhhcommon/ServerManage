@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- Etl与资源对应关系 -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="A_IMAGEHASH">
+  <!-- 对应关系 -->
+  <resultMap id="BaseResultMap" type="imagehash">
+    <id      column="id"             property="id"             jdbcType="VARCHAR"/>
+    <result  column="imageSrcPath"   property="imageSrcPath"   jdbcType="VARCHAR"/>
+    <result  column="imagePath"      property="imagePath"      jdbcType="VARCHAR"/>
+    <result  column="purpose"        property="purpose"        jdbcType="VARCHAR"/>
+    <result  column="cTime"          property="cTime"          jdbcType="TIMESTAMP"/>
+  </resultMap>
+
+  <!-- 所有列 -->
+  <sql id="Base_Column_List">
+    id, imageSrcPath, imagePath, purpose, cTime
+  </sql>
+  
+  <!-- 条件子句 -->
+  <sql id="WhereClauseByEntiey">
+    <where>
+      <trim prefix="(" suffix=")" prefixOverrides="and">
+        <if test="id!=null">and id=#{id,jdbcType=VARCHAR}</if>
+        <if test="imageSrcPath!=null">and imageSrcPath=#{imageSrcPath,jdbcType=VARCHAR}</if>
+        <if test="imagePath!=null">and imagePath=#{imagePath,jdbcType=VARCHAR}</if>
+        <if test="purpose!=null">and purpose=#{purpose,jdbcType=VARCHAR}</if>
+        <if test="cTime!=null">and cTime=#{cTime,jdbcType=TIMESATMP}</if>
+      </trim>
+    </where>
+  </sql>
+  
+  <!-- 新增数据 -->
+  <insert id="insert" parameterType="java.util.Map">
+    insert into c_ImageHashCode
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id!=null">id,</if>
+      <if test="imageSrcPath!=null">imageSrcPath,</if>
+      <if test="imagePath!=null">imagePath,</if>
+      <if test="purpose!=null">purpose,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
+      <if test="imageSrcPath!=null">#{imageSrcPath,jdbcType=VARCHAR},</if>
+      <if test="imagePath!=null">#{imagePath,jdbcType=VARCHAR},</if>
+      <if test="purpose!=null">#{purpose,jdbcType=VARCHAR},</if>
+    </trim>
+  </insert>
+  
+  <select id="getList" resultMap="BaseResultMap" parameterType="java.util.Map">
+    select <include refid="Base_Column_List"/>  from c_ImageHashCode
+    <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if> 
+    <if test="orderSql!=null"> order by ${orderSql}</if>
+  </select>
+  
+  <select id="getInfo" resultMap="BaseResultMap" parameterType="java.lang.String">
+    select <include refid="Base_Column_List"/>  from c_ImageHashCode where id=#{id,jdbcType=VARCHAR}
+  </select>
+  
+</mapper>

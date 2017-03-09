@@ -9,8 +9,6 @@
     <result  column="pName"          property="pName"          jdbcType="VARCHAR"/>
     <result  column="pSource"        property="pSource"        jdbcType="VARCHAR"/>
     <result  column="pSrcId"         property="pSrcId"         jdbcType="VARCHAR"/>
-    <result  column="resTableName"   property="resTableName"   jdbcType="VARCHAR"/>
-    <result  column="resId"          property="resId"          jdbcType="VARCHAR"/>
     <result  column="age"            property="age"            jdbcType="VARCHAR"/>
     <result  column="birthday"       property="birthday"       jdbcType="VARCHAR"/>
     <result  column="sex"            property="sex"            jdbcType="INTEGER"/>
@@ -22,12 +20,15 @@
     <result  column="portrait"       property="portrait"       jdbcType="VARCHAR"/>
     <result  column="isVerified"     property="isVerified"     jdbcType="INTEGER"/>
     <result  column="descn"          property="descn"          jdbcType="VARCHAR"/>
+    <result  column="signature"      property="signature"      jdbcType="VARCHAR"/>
+    <result  column="pTitle"         property="pTitle"         jdbcType="VARCHAR"/>
+    <result  column="descn"          property="descn"          jdbcType="VARCHAR"/>
     <result  column="cTime"          property="cTime"          jdbcType="TIMESTAMP"/>
   </resultMap>
 
   <!-- 所有列 -->
   <sql id="Base_Column_List">
-    id, pName, pSource, pSrcId, resTableName, resId, age, birthday, sex, constellation, location, phoneNum, email, pSrcHomePage, portrait, isVerified, descn, cTime
+    id, pName, pSource, pSrcId, age, birthday, sex, constellation, location, phoneNum, email, pSrcHomePage, portrait, isVerified, signature, pTitle, descn, cTime
   </sql>
   
   <!-- 条件子句 -->
@@ -38,8 +39,6 @@
         <if test="pName!=null">and pName=#{pName,jdbcType=VARCHAR}</if>
         <if test="pSource!=null">and pSource=#{pSource,jdbcType=VARCHAR}</if>
         <if test="pSrcId!=null">and pSrcId=#{pSrcId,jdbcType=VARCHAR}</if>
-        <if test="resTableName!=null">and resTableName=#{resTableName,jdbcType=VARCHAR}</if>
-        <if test="resId!=null">and resId=#{resId,jdbcType=VARCHAR}</if>
         <if test="age!=null">and age=#{age,jdbcType=VARCHAR}</if>
         <if test="birthday!=null">and birthday=#{birthday,jdbcType=VARCHAR}</if>
         <if test="sex!=null">and sex=#{sex,jdbcType=INTEGER}</if>
@@ -50,15 +49,17 @@
         <if test="pSrcHomePage!=null">and pSrcHomePage=#{pSrcHomePage,jdbcType=VARCHAR}</if>
         <if test="portrait!=null">and portrait=#{portrait,jdbcType=VARCHAR}</if>
         <if test="isVerified!=null and isVerified!=0">and isVerified=#{isVerified,jdbcType=INTEGER}</if>
+        <if test="signature!=null">and signature=#{signature,jdbcType=VARCHAR}</if>
+        <if test="pTitle!=null">and pTitle=#{pTitle,jdbcType=VARCHAR}</if>
         <if test="descn!=null">and descn=#{descn,jdbcType=VARCHAR}</if>
       </trim>
     </where>
   </sql>
 
   <insert id="insertList" parameterType="java.util.Map">
-    insert into c_Person(id, pName, pSource, pSrcId, resTableName, resId, age, birthday, sex, constellation, location, phoneNum, email, pSrcHomePage, portrait, isVerified, descn, cTime) values
+    insert into c_Person(id, pName, pSource, pSrcId, age, birthday, sex, constellation, location, phoneNum, email, pSrcHomePage, portrait, isVerified, signature, pTitle, descn) values
     <foreach collection="list" item="list" index="index" separator=",">
-     (#{list.id},#{list.pName},#{list.pSource},#{list.pSrcId},#{list.resTableName},#{list.resId},#{list.age},#{list.birthday},#{list.sex},#{list.constellation},#{list.location},#{list.phoneNum},#{list.email},#{list.pSrcHomePage},#{list.portrait},#{list.isVerified},#{list.descn},#{list.cTime})
+     (#{list.id},#{list.pName},#{list.pSource},#{list.pSrcId},#{list.age},#{list.birthday},#{list.sex},#{list.constellation},#{list.location},#{list.phoneNum},#{list.email},#{list.pSrcHomePage},#{list.portrait},#{list.isVerified},#{list.signature},#{list.pTitle},#{list.descn})
     </foreach>
   </insert>
   
@@ -66,6 +67,14 @@
     select <include refid="Base_Column_List"/>  from c_Person
     <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if> 
     <if test="orderSql!=null"> order by ${orderSql}</if>
+  </select>
+  
+  <select id="getListBy" resultMap="BaseResultMap" parameterType="java.util.Map">
+    SELECT pers.* from c_Person pers
+	LEFT JOIN c_Person_Ref persf
+	ON pers.pSrcId = persf.personId
+	where persf.resId = #{resId,jdbcType=VARCHAR} and persf.resTableName = #{resTableName,jdbcType=VARCHAR}
+	and pers.pSource=#{pSource,jdbcType=VARCHAR}
   </select>
   
   <delete id="delete">

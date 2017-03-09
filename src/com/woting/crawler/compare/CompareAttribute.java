@@ -1,29 +1,38 @@
 package com.woting.crawler.compare;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import com.spiritdata.framework.core.cache.SystemCache;
+import org.apache.solr.client.solrj.SolrQuery.SortClause;
+
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
+import com.spiritdata.framework.util.JsonUtils;
 import com.woting.cm.core.media.persis.po.MediaAssetPo;
 import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
 import com.woting.cm.core.media.service.MediaService;
-import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
-import com.woting.crawler.core.scheme.model.Scheme;
+import com.woting.crawler.core.solr.persis.po.SolrInputPo;
+import com.woting.crawler.core.solr.persis.po.SolrSearchResult;
+import com.woting.crawler.core.solr.service.SolrJService;
 import com.woting.crawler.ext.SpringShell;
+import com.woting.crawler.scheme.crawlerdb.crawler.EtlProcess;
+import com.woting.crawler.scheme.utils.FileUtils;
 import com.woting.crawler.scheme.utils.RedisUtils;
+import com.woting.crawler.scheme.utils.SolrUtils;
 
-class CompareAttribute {
+public class CompareAttribute {
 	private MediaService mediaService;
 	private String crawlernum;
 	private float sameproportion = 0.8f;
 	private RedisOperService rs;
 
 	public CompareAttribute(String crawlernum) {
-		this.crawlernum = crawlernum;
-		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
-		rs = scheme.getRedisOperService();
+//		this.crawlernum = crawlernum;
+//		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
+//		rs = scheme.getRedisOperService();
 	}
 
 	public SeqMediaAssetPo getSameSma(AlbumPo albumPo) {
@@ -139,6 +148,131 @@ class CompareAttribute {
 						}
 					}
 				}
+			}
+		}
+	}
+	
+	public float compareTitle(SolrJService solrJService, String autitle, String solrtitle) {
+		if (solrJService!=null) {
+			List<String> austr = solrJService.getAnalysis(autitle);
+			List<String> solrstr = solrJService.getAnalysis(solrtitle);
+			int num = 0;
+			for (String str1 : austr) {
+				for (String str2 : solrstr) {
+					if(str1.equals(str2)) num++;
+				}
+			}
+			try {
+				return (float) ((num+0.0)*2/(austr.size()+solrstr.size()));
+			} catch (Exception e) {
+				return 0;
+			}
+		}
+		return 0;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void getSolrListToCompare(AlbumPo albumPo) {
+		if (albumPo!=null) {
+			SolrJService solrJService = (SolrJService) SpringShell.getBean("solrJService");
+			try {
+				List<SortClause> solrsorts = SolrUtils.makeSolrSort("score desc","item_meidasize desc");
+				SolrSearchResult sResult = solrJService.solrSearch(albumPo.getAlbumName(), solrsorts, "*,score", 1, 5, "item_type:SEQU");
+				if (sResult!=null) {
+					List<SolrInputPo> solrips = sResult.getSolrInputPos();
+					if (solrips!=null && solrips.size()>0) {
+						for (SolrInputPo solrInputPo : solrips) {
+							int mediasize =new Long(solrInputPo.getItem_mediasize()).intValue();
+							List<AudioPo> aus = albumPo.getAudioPos(); // 获得待入库节目列表
+							if (aus!=null && aus.size()>0) {
+								if (mediasize>1) {
+									long difnum = Math.abs(mediasize-aus.size());
+									if ((difnum+0.0)/solrInputPo.getItem_mediasize()<0.2) {
+										List<SolrInputPo> audios = solrJService.getAudioListByAlbumId(solrInputPo.getItem_id()); //获得已入库节目列表
+										if (audios!=null && audios.size()>0) {
+											List<Map<String, Object>> simls = new ArrayList<>(); //相似节目列表
+											String smaId = solrInputPo.getItem_id();
+											for (AudioPo au : aus) {
+												if (au!=null) {
+													List<SortClause> solrsort2s = SolrUtils.makeSolrSort("score desc","item_meidasize desc");
+													SolrSearchResult sResult2 = solrJService.solrSearch(au.getAudioName(), solrsort2s, "*,score", 1, mediasize, "item_type:AUDIO", "item_pid:"+solrInputPo.getItem_id());
+													List<SolrInputPo> ausolrs = sResult2.getSolrInputPos();
+													long autimelong = Long.valueOf(au.getDuration());
+													if (ausolrs!=null && ausolrs.size()>0) {
+														float maxpernum = 0;
+														String perId = "";
+														String pertitle = "";
+														for (SolrInputPo solrInputPo2 : ausolrs) {
+															long timelong = solrInputPo2.getItem_timelong();
+															long differlong = Math.abs(timelong-autimelong);
+															long permitlong = Math.round(timelong*0.05);
+															if (differlong < permitlong) {
+																if (differlong <= 1000) {
+																	System.out.println(au.getAudioName() + "    " + solrInputPo2.getItem_title());
+																	float pernum = compareTitle(solrJService, au.getAudioName(), solrInputPo2.getItem_title());
+																	if (pernum>0.365 && pernum > maxpernum) {
+																		maxpernum = (float) ((pernum+1)/2);
+																		perId = solrInputPo2.getItem_id();
+																		pertitle = solrInputPo2.getItem_title();
+																	}
+																} else {
+																	System.out.println(au.getAudioName() + "    " + solrInputPo2.getItem_title());
+																	float pernum = compareTitle(solrJService, au.getAudioName(), solrInputPo2.getItem_title());
+																	pernum = (float) ((pernum*1.3+(float)((differlong+0.0)/permitlong)*0.7+0.0)/2);
+																	if (pernum>=0.8 && pernum > maxpernum) {
+																		maxpernum = pernum;
+																		perId = solrInputPo2.getItem_id();
+																		pertitle = solrInputPo2.getItem_title();
+																	}
+																}
+															}
+														}
+														if (maxpernum>=0.8 && perId!=null) {
+															Map<String, Object> m = new HashMap<>();
+															m.put("titles", au.getAudioName() + "    " + pertitle);
+															m.put("zjtitle", au.getAlbumName() + "    " + solrInputPo.getItem_title());
+															m.put("perId", perId);
+															m.put("audioId", au.getId());
+															m.put("pernum", maxpernum);
+															simls.add(m);
+														}
+													}
+												}
+											}
+											int differnum = (int) Math.round((aus.size()*0.5));
+											if (differnum>=1) {
+												if (simls!=null && simls.size()>=differnum) {
+													String oldtitlestr = "";
+													boolean isok = true;
+													for (Map<String, Object> map : simls) {
+														String[] titles = map.get("titles").toString().split("    ");
+														if (!oldtitlestr.contains(titles[1])) oldtitlestr += titles[1];
+														else isok = false;
+													}
+													if (isok) {
+														String lsstr = FileUtils.readFile("/opt/CrawlerCS/sim.txt");
+														List<Object> ls = new ArrayList<>();
+														if (lsstr!=null && lsstr.length()>0) {
+															ls = (List<Object>) JsonUtils.jsonToObj(lsstr, List.class);												
+															ls.add(simls);
+														} else {
+															ls.add(simls);
+														}
+														FileUtils.writeFile(JsonUtils.objToJson(ls), "/opt/CrawlerCS/sim.txt");
+														EtlProcess eProcess = new EtlProcess();
+														eProcess.makeSameAlbum(albumPo, smaId, simls);
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 	}

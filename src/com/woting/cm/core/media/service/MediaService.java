@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+
 import com.spiritdata.framework.core.dao.mybatis.MybatisDAO;
 import com.woting.cm.core.media.model.MaSource;
 import com.woting.cm.core.media.model.MediaAsset;
@@ -124,6 +126,12 @@ public class MediaService {
 		    mediaAssetDao.insert("insertSeqRefList", m);
 		}
 	}
+	
+	public SeqMaRefPo getOneSmarefOrderByColumnNum(String sId) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("sId", sId);
+		return seqrefDao.getInfoObject("getSmafOrderByColumnNum", m);
+	}
 
 	public void insertSeq(SeqMediaAssetPo seq) {
 		seqDao.insert("insertSma", seq.toHashMap());
@@ -143,6 +151,19 @@ public class MediaService {
 			if (mas!=null && mas.size()>0) {
 				return mas;
 			}
+		}
+		return null;
+	}
+	
+	public List<SeqMediaAssetPo> getSeqMediaList(String smaPublisher, int page, int pageSize) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("smaPublisher", smaPublisher);
+		if (page>0 && pageSize>0) {
+			m.put("limitByClause", (page-1)*pageSize+","+pageSize);
+		}
+		List<SeqMediaAssetPo> smas = seqDao.queryForList("getSeqList", m);
+		if (smas!=null && smas.size()>0) {
+			return smas;
 		}
 		return null;
 	}
@@ -222,6 +243,16 @@ public class MediaService {
 		m.put("maPublisher", maPublisher);
 		List<MediaAssetPo> malist = mediaAssetDao.queryForList("getMaSameList", m);
 		return malist;
+	}
+	
+	public List<MaSourcePo> getMaSources(String maId) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("maId", maId);
+		List<MaSourcePo> mas = maSourceDao.queryForList("getMaSources", m);
+		if (mas!=null && mas.size()>0) {
+			return mas;
+		}
+		return null;
 	}
 
 	public int getMaSame(String url) {

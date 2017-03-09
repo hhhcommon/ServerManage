@@ -384,8 +384,6 @@ public abstract class XMLYParseUtils {
 	private static void saveCPerson(String cpersonId, String resTableName, String resId) {
 		CPersonPo po = XMLYPersonUtils.parsePerson(cpersonId);
 		if (po!=null) {
-			po.setResTableName(resTableName);
-			po.setResId(resId);
 			po.setcTime(new Timestamp(System.currentTimeMillis()));
 			CPersonService cPersonService = (CPersonService) SpringShell.getBean("CPersonService");
 			cPersonService.insertPerson(po);

@@ -1,14 +1,31 @@
 package com.woting.crawler;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
 import org.quartz.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.spiritdata.framework.core.cache.CacheEle;
 import com.spiritdata.framework.core.cache.SystemCache;
+import com.spiritdata.framework.util.JsonUtils;
+import com.woting.cm.core.media.persis.po.MediaAssetPo;
+import com.woting.cm.core.media.persis.po.MediaPlayCountPo;
+import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
+import com.woting.cm.core.media.service.MediaService;
+import com.woting.crawler.compare.CompareAttribute;
+import com.woting.crawler.core.solr.service.SolrJService;
 import com.woting.crawler.core.timer.model.Timer;
 import com.woting.crawler.ext.SpringShell;
+import com.woting.crawler.scheme.crawlerdb.crawler.EtlProcess;
+import com.woting.crawler.scheme.crawlerdb.xmly.XMLYEtl1Process;
 import com.woting.crawler.scheme.crawlersrc.XMLY.XMLYCrawler;
 import com.woting.crawler.scheme.searchcrawler.service.CrawlerSearch;
+import com.woting.crawler.scheme.utils.FileUtils;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -86,7 +103,15 @@ public class Booter {
 //		} catch (Exception e) {
 //			e.printStackTrace();
 //		}
-        XMLYCrawler xmlyCrawler = new XMLYCrawler();
-        xmlyCrawler.beginCrawler();
+        
+        long beg = System.currentTimeMillis();
+        EtlProcess etlProcess = new EtlProcess();
+        etlProcess.makeDatas();
+        System.out.println(System.currentTimeMillis()-beg);
+        
+//        SolrJService solrJService = (SolrJService) SpringShell.getBean("solrJService");
+//        CompareAttribute cAttribute = new CompareAttribute("1");
+//        float f = cAttribute.compareTitle(solrJService, "20120204你要出轨_郭德纲,于谦,三里屯专场", "郭德纲 于谦 - 论50年之现状");
+//        System.out.println(f);
 	}
 }

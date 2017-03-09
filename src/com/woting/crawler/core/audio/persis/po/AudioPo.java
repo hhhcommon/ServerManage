@@ -16,6 +16,7 @@ public class AudioPo extends BaseObject {
 	private String audioTags;
 	private String albumId;
 	private String albumName;
+	private int columnNum;
 	private String categoryId;
 	private String categoryName;
 	private String duration;
@@ -68,6 +69,12 @@ public class AudioPo extends BaseObject {
 	}
 	public void setAudioTags(String audioTags) {
 		this.audioTags = audioTags;
+	}
+	public int getColumnNum() {
+		return columnNum;
+	}
+	public void setColumnNum(int columnNum) {
+		this.columnNum = columnNum;
 	}
 	public String getAlbumId() {
 		return albumId;

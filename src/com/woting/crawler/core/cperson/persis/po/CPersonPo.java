@@ -11,13 +11,13 @@ public class CPersonPo extends BaseObject {
 	private String pName;
 	private String pSource;
 	private String pSrcId;
-	private String resTableName;
-	private String resId;
 	private String age;
 	private String birthday;
 	private int sex;
 	private String constellation;
 	private String location;
+	private String signature;
+	private String pTitle;
 	private String descn;
 	private String phoneNum;
 	private String email;
@@ -85,17 +85,17 @@ public class CPersonPo extends BaseObject {
 	public void setDescn(String descn) {
 		this.descn = descn;
 	}
-	public String getResTableName() {
-		return resTableName;
+	public String getSignature() {
+		return signature;
 	}
-	public void setResTableName(String resTableName) {
-		this.resTableName = resTableName;
+	public void setSignature(String signature) {
+		this.signature = signature;
 	}
-	public String getResId() {
-		return resId;
+	public String getpTitle() {
+		return pTitle;
 	}
-	public void setResId(String resId) {
-		this.resId = resId;
+	public void setpTitle(String pTitle) {
+		this.pTitle = pTitle;
 	}
 	public String getPhoneNum() {
 		return phoneNum;

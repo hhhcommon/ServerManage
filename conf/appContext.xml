@@ -22,12 +22,13 @@
     <property name="username" value="${local.mysql.username}"/>
     <property name="password" value="${local.mysql.password}"/>
     <property name="initialSize" value="30"/>
-    <property name="maxActive" value="500"/>
+    <property name="maxActive" value="5000"/>
     <property name="maxWait" value="600000"/>
     <property name="poolPreparedStatements" value="true"/>
-    <property name="maxOpenPreparedStatements" value="30"/>
+    <property name="maxOpenPreparedStatements" value="300"/>
     <property name="testOnBorrow"><value>false</value></property>
     <property name="validationQuery"><value>select 1 from dual</value></property>
+    <property name="timeBetweenEvictionRunsMillis" value="30000"></property>
   </bean>
   <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
     <property name="dataSource" ref="dataSource"/>
@@ -57,7 +58,7 @@
     <property name="username" value="${wtMain.mysql.username}"/>
     <property name="password" value="${wtMain.mysql.password}"/>
     <property name="initialSize" value="30"/>
-    <property name="maxActive" value="50"/>
+    <property name="maxActive" value="5000"/>
     <property name="maxWait" value="60000"/>
     <property name="poolPreparedStatements" value="true"/>
     <property name="maxOpenPreparedStatements" value="30"/>
@@ -144,6 +145,55 @@
     <property name="wxAppSecret" value="${share.wxAppSecret}"/>
     <property name="RedisDB" value="${share.RedisDB}"/>
   </bean>
+  
+    <!--定义连接管理器-->
+    <bean id="connectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
+          destroy-method="close">
+        <!-- 最大连接数 -->
+        <property name="maxTotal" value="${http.maxTotal}"/>
+        <!--设置每个主机最大的并发数-->
+        <property name="defaultMaxPerRoute" value="${http.defaultMaxPerRoute}"/>
+    </bean>
+
+    <!--定义HttpClient构建器-->
+    <bean id="httpClientBuilder" class="org.apache.http.impl.client.HttpClientBuilder" factory-method="create">
+        <property name="connectionManager" ref="connectionManager"/>
+    </bean>
+
+    <!--定义httpClient对象，该bean一定是多例的-->
+    <bean id="httpClient" class="org.apache.http.impl.client.CloseableHttpClient" factory-bean="httpClientBuilder"
+          factory-method="build" scope="prototype"></bean>
+    <!--定义requestConfig构建器-->
+    <bean id="requestConfigBuilder" class="org.apache.http.client.config.RequestConfig.Builder">
+        <!--设置创建连接的最长时间-->
+        <property name="connectTimeout" value="${http.connectTimeout}"/>
+        <!--从连接池中获取到连接的最长时间-->
+        <property name="connectionRequestTimeout" value="${http.connectionRequestTimeout}"/>
+        <!--数据传输的最长时间-->
+        <property name="socketTimeout" value="${http.socketTimeout}"/>
+    </bean>
+    <!--请求参数对象-->
+    <bean class="org.apache.http.client.config.RequestConfig" factory-bean="requestConfigBuilder"
+          factory-method="build"></bean>
+    <!--定期清理无效连接-->
+    <bean class="org.apache.http.impl.client.IdleConnectionEvictor" destroy-method="shutdown">
+        <constructor-arg index="0" ref="connectionManager"/>
+        <constructor-arg index="1" value="${http.maxIdleTime}"/>
+        <constructor-arg index="2" value="MINUTES"/>
+    </bean>
+    
+    <!--定义solr的server-->  
+    <bean id="httpSolrServer" class="org.apache.solr.client.solrj.impl.HttpSolrServer">  
+        <constructor-arg index="0" value="${solr.Url}"/>  
+    <!-- 设置响应解析器 -->    
+        <property name="parser">  
+            <bean class="org.apache.solr.client.solrj.impl.XMLResponseParser"/>  
+        </property>  
+        <!-- 设置重试次数-->  
+        <property name="maxRetries" value="${solr.maxRetries}"/>  
+        <!-- 建立连接的最长时间 -->  
+        <property name="connectionTimeout" value="${solr.connectionTimeout}"/>  
+    </bean>
 
   <!-- 扫描类包，将标注Spring注解的类自动转化Bean，同时完成Bean的注入 -->
   <context:component-scan base-package="com.woting.crawler" use-default-filters="false">

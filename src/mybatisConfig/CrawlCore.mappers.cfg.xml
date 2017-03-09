@@ -9,6 +9,13 @@
     <typeAlias alias="dictm"      type="com.woting.crawler.core.dict.persis.po.DictMPo"/>
     <typeAlias alias="dictd"      type="com.woting.crawler.core.dict.persis.po.DictDPo"/>
     <typeAlias alias="cperson"     type="com.woting.crawler.core.cperson.persis.po.CPersonPo"/>
+    <typeAlias alias="cpersonref"  type="com.woting.crawler.core.cperson.persis.po.CPersonRefPo"/>
+    <typeAlias alias="cplaycount"  type="com.woting.crawler.core.cplaycount.persis.po.CPlayCountPo"/>
+    <typeAlias alias="cfavorite"   type="com.woting.crawler.core.cfavorite.persis.po.CFavoritePo"/>
+    <typeAlias alias="ccomment"    type="com.woting.crawler.core.ccomment.persis.po.CCommentPo"/>
+    <typeAlias alias="csubscribe"  type="com.woting.crawler.core.csubscribe.persis.po.CSubscribePo"/>
+    <typeAlias alias="cforward"    type="com.woting.crawler.core.cforward.persis.po.CForwardPo"/>
+    <typeAlias alias="imagehash"   type="com.woting.crawler.core.imagehash.persis.po.ImageHash"/>
   </typeAliases>
   <!-- SQL文件设置 -->
   <mappers>
@@ -17,5 +24,12 @@
     <mapper resource="com/woting/crawler/core/dict/persis/sql/DictM.mapper.xml"/>
     <mapper resource="com/woting/crawler/core/dict/persis/sql/DictD.mapper.xml"/>
     <mapper resource="com/woting/crawler/core/cperson/persis/sql/CPerson.mapper.xml"/>
+    <mapper resource="com/woting/crawler/core/cperson/persis/sql/CPersonRef.mapper.xml"/>
+    <mapper resource="com/woting/crawler/core/cplaycount/persis/sql/CPlayCount.mapper.xml"/>
+    <mapper resource="com/woting/crawler/core/cfavorite/persis/sql/CFavorite.mapper.xml"/>
+    <mapper resource="com/woting/crawler/core/ccomment/persis/sql/CComment.mapper.xml"/>
+    <mapper resource="com/woting/crawler/core/csubscribe/persis/sql/CSubscribe.mapper.xml"/>
+    <mapper resource="com/woting/crawler/core/cforward/persis/sql/CForward.mapper.xml"/>
+    <mapper resource="com/woting/crawler/core/imagehash/persis/sql/ImageHash.mapper.xml"/>
   </mappers>
 </configuration>

@@ -1,5 +1,10 @@
 package com.woting.crawler.scheme.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang3.StringEscapeUtils;
+
 public class CleanDataUtils {
 
 	public static String cleanString(String str) {
@@ -72,5 +77,37 @@ public class CleanDataUtils {
 			}
 		}
 		return Integer.valueOf(d);
+	}
+	
+	public static String CleanDescnStr(String valuestr, String... tag) {
+		if (tag!=null && tag.length>0) {
+			int[] instrnum = new int[tag.length];
+			List<String> introtag = new ArrayList<>();
+			for (int i = 0; i < tag.length; i++) {
+				introtag.add(tag[i]);
+				instrnum[i] = tag[i].length();
+			}
+			valuestr = StringEscapeUtils.unescapeHtml4(valuestr);
+			String begstr = valuestr.substring(0, valuestr.indexOf(introtag.get(0))+instrnum[0]);
+			String introstr = "";
+			for (int i = 0; i < introtag.size()-1; i++) {
+				for (int j = i+1; j < introtag.size(); j++) {
+					if (valuestr.contains(introtag.get(i))) {
+						if (valuestr.contains(introtag.get(j))) {
+							String instr = valuestr.substring(valuestr.indexOf(introtag.get(i))+instrnum[i], valuestr.indexOf(introtag.get(j)));
+							instr = instr.replace("\"", "'").replace("\\", "");
+							instr += introtag.get(j);
+							introstr += instr;
+							break;
+						}
+					} else {
+						break;
+					}
+				}
+			}
+			String endstr = valuestr.substring(valuestr.indexOf(introtag.get(tag.length-1))+instrnum[tag.length-1], valuestr.length());
+			return begstr+introstr+endstr;
+		}
+		return null;
 	}
 }

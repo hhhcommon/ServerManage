@@ -378,7 +378,9 @@
 	</select>
 	
 	<select id="getSeqList" parameterType="java.lang.String" resultMap="seqMediaAssetMap">
-		select<include refid="Base_SequMedia_List" />from wt_SeqMediaAsset limit 1,500
+		select<include refid="Base_SequMedia_List" />from wt_SeqMediaAsset
+		 <if test="_parameter!=null"><include refid="WhereClauseBySeqMediaEntiey"/></if>
+		<if test="limitByClause!=null"> limit ${limitByClause}</if>
 	</select>
 
 	<select id="getMaSameList" parameterType="java.util.Map" resultMap="mediaAssetMap">

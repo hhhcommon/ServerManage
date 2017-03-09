@@ -13,6 +13,7 @@
     <result  column="audioURL"       property="audioURL"       jdbcType="VARCHAR"/>
     <result  column="audioTags"      property="audioTags"      jdbcType="VARCHAR"/>
     <result  column="albumId"        property="albumId"        jdbcType="VARCHAR"/>
+    <result  column="columnNum"      property="columnNum"      jdbcType="INTEGER"/>
     <result  column="albumName"      property="albumName"      jdbcType="VARCHAR"/>
     <result  column="categoryId"     property="categoryId"     jdbcType="VARCHAR"/>
     <result  column="categoryName"   property="categoryName"   jdbcType="VARCHAR"/>
@@ -34,6 +35,7 @@
         <if test="audioName!=null">and audioName=#{audioName,jdbcType=VARCHAR}</if>
         <if test="audioImg!=null">and audioImg=#{audioImg,jdbcType=VARCHAR}</if>
         <if test="audioURL!=null">and audioURL=#{audioURL,jdbcType=VARCHAR}</if>
+        <if test="columnNum!=null">and columnNum=#{columnNum,jdbcType=INTEGER}</if>
         <if test="audioPublisher!=null">and audioPublisher=#{audioPublisher,jdbcType=VARCHAR}</if>
         <if test="audioTags!=null">and audioTags=#{audioTags,jdbcType=VARCHAR}</if>
         <if test="descn!=null">and descn=#{descn,jdbcType=VARCHAR}</if>
@@ -43,45 +45,94 @@
       </trim>
     </where>
   </sql>
+  
+  <!-- 新增 对应关系 -->
+  <insert id="insert" parameterType="java.util.Map">
+    insert into c_Audio
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id!=null">id,</if>
+      <if test="audioId!=null">audioId,</if>
+      <if test="audioName!=null">audioName,</if>
+      <if test="audioPublisher!=null">audioPublisher,</if>
+      <if test="audioImg!=null">audioImg,</if>
+      <if test="audioURL!=null">audioURL,</if>
+      <if test="audioTags!=null">audioTags,</if>
+      <if test="albumId!=null">albumId,</if>
+      <if test="albumName!=null">albumName,</if>
+      <if test="columnNum!=null">columnNum,</if>
+      <if test="categoryId!=null">categoryId,</if>
+      <if test="categoryName!=null">categoryName,</if>
+      <if test="descn!=null">descn,</if>
+      <if test="duration!=null">duration,</if>
+      <if test="visitUrl!=null">visitUrl,</if>
+      <if test="crawlerNum!=null">crawlerNum,</if>
+      <if test="schemeId!=null">schemeId,</if>
+      <if test="schemeName!=null">schemeName,</if>
+      <if test="playCount!=null">playCount,</if>
+      <if test="cTime!=null">cTime,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
+      <if test="audioId!=null">#{audioId,jdbcType=VARCHAR},</if>
+      <if test="audioName!=null">#{audioName,jdbcType=VARCHAR},</if>
+      <if test="audioPublisher!=null">#{audioPublisher,jdbcType=VARCHAR},</if>
+      <if test="audioImg!=null">#{audioImg,jdbcType=VARCHAR},</if>
+      <if test="audioURL!=null">#{audioURL,jdbcType=VARCHAR},</if>
+      <if test="audioTags!=null">#{audioTags,jdbcType=VARCHAR},</if>
+      <if test="albumId!=null">#{albumId,jdbcType=VARCHAR},</if>
+      <if test="albumName!=null">#{albumName,jdbcType=VARCHAR},</if>
+      <if test="columnNum!=null">#{columnNum,jdbcType=INTEGER},</if>
+      <if test="categoryId!=null">#{categoryId,jdbcType=VARCHAR},</if>
+      <if test="categoryName!=null">#{categoryName,jdbcType=VARCHAR},</if>
+      <if test="descn!=null">#{descn,jdbcType=VARCHAR},</if>
+      <if test="duration!=null">#{duration,jdbcType=VARCHAR},</if>
+      <if test="visitUrl!=null">#{visitUrl,jdbcType=VARCHAR},</if>
+      <if test="crawlerNum!=null">#{crawlerNum,jdbcType=VARCHAR},</if>
+      <if test="schemeId!=null">#{schemeId,jdbcType=VARCHAR},</if>
+      <if test="schemeName!=null">#{schemeName,jdbcType=VARCHAR},</if>
+      <if test="playCount!=null">#{playCount,jdbcType=VARCHAR},</if>
+      <if test="cTime!=null">#{cTime,jdbcType=TIMESTAMP},</if>
+    </trim>
+  </insert>
 
   <!-- 所有列 -->
   <sql id="Base_Column_List">
-    id, audioId, audioName, audioPublisher, audioImg, audioURL, audioTags, albumId, albumName, categoryId, categoryName, descn, duration, visitUrl, crawlerNum, schemeId, schemeName, playCount, cTime
+    id, audioId, audioName, audioPublisher, audioImg, audioURL, audioTags, albumId, albumName, columnNum, categoryId, categoryName, descn, duration, visitUrl, crawlerNum, schemeId, schemeName, playCount, cTime
   </sql>
 
   <insert id="insertList" parameterType="java.util.List">
-    insert into hotspot_Audio(id, audioId, audioName, audioPublisher, audioImg, audioURL, audioTags, albumId, albumName, categoryId, categoryName, descn, duration, visitUrl, playCount, crawlerNum, schemeId, schemeName, cTime) values
+    insert into c_Audio(id, audioId, audioName, audioPublisher, audioImg, audioURL, audioTags, albumId, albumName, columnNum, categoryId, categoryName, descn, duration, visitUrl, playCount, crawlerNum, schemeId, schemeName, cTime) values
     <foreach collection="list" item="list" index="index" separator=",">
-     (#{list.id},#{list.audioId},#{list.audioName},#{list.audioPublisher},#{list.audioImg},#{list.audioURL},#{list.audioTags},#{list.albumId},#{list.albumName},#{list.categoryId},#{list.categoryName},#{list.descn},#{list.duration},#{list.visitUrl},#{list.playCount},#{list.crawlerNum},#{list.schemeId},#{list.schemeName},#{list.cTime})
+     (#{list.id},#{list.audioId},#{list.audioName},#{list.audioPublisher},#{list.audioImg},#{list.audioURL},#{list.audioTags},#{list.albumId},#{list.albumName},#{list.columnNum},#{list.categoryId},#{list.categoryName},#{list.descn},#{list.duration},#{list.visitUrl},#{list.playCount},#{list.crawlerNum},#{list.schemeId},#{list.schemeName},#{list.cTime})
     </foreach>
   </insert>
   
   <select id="count" parameterType="java.lang.String" resultType="java.lang.Integer">
-    select count(*) from hotspot_Audio where crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+    select count(*) from c_Audio where crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
   </select>
   
   <select id="getAudioByAlbumIdAndPublisher" parameterType="java.util.Map" resultMap="BaseResultMap">
-    select * from hotspot_Audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{publisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+    select * from c_Audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{audioPublisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
   </select>
   
   <select id="getAudioNumByAlbumIdAndPublisher" parameterType="java.util.Map" resultType="java.lang.Integer">
-    select count(*) from hotspot_Audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{publisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+    select count(*) from c_Audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{publisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
   </select>
   
   <select id="getAudioList" parameterType="java.util.Map" resultMap="BaseResultMap">
-    select * from hotspot_Audio <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if> limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
+    select * from c_Audio <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if> limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
   </select>
   
    <select id="getList" parameterType="java.util.Map" resultMap="BaseResultMap">
-    select * from hotspot_Audio <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
+    select * from c_Audio <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
   </select>
   
   <select id="getAudioInfo" parameterType="java.lang.String" resultMap="BaseResultMap">
-    select * from hotspot_Audio where id=#{id,jdbcType=VARCHAR}
+    select * from c_Audio where id=#{id,jdbcType=VARCHAR}
   </select>
   
   <update id="removeNull" parameterType="java.util.Map">
-   update hotspot_Audio
+   update c_Audio
    <set>
       <if test="audioTags!=null">audioTags=Null,</if>
       <if test="descn!=null">descn=Null,</if>
@@ -92,7 +143,7 @@
   </update>
   
   <update id="update" parameterType="java.util.Map">
-   update hotspot_Audio
+   update c_Audio
    <set>
       <if test="albumId!=null">albumId=#{albumId,jdbcType=VARCHAR},</if>
       <if test="descn!=null">descn=#{descn,jdbcType=VARCHAR},</if>
@@ -103,15 +154,15 @@
   </update>
   
   <update id="updateAlbumIdInfo" >
-   update hotspot_Audio a,(select * from hotspot_Album) b set a.albumId = b.id where a.albumId = b.albumId and a.audioPublisher = b.albumPublisher and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+   update c_Audio a,(select * from hotspot_Album) b set a.albumId = b.id where a.albumId = b.albumId and a.audioPublisher = b.albumPublisher and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
   </update>
   
   <delete id="deleteAudioById" parameterType="java.lang.String">
-    delete from hotspot_Audio where id=#{id,jdbcType=VARCHAR}
+    delete from c_Audio where id=#{id,jdbcType=VARCHAR}
   </delete>
   
   <delete id="deleteByAlbumIdAndPublisher" parameterType="java.util.Map">
-    delete from hotspot_Audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{audioPublisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+    delete from c_Audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{audioPublisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
   </delete>
   
 </mapper>
