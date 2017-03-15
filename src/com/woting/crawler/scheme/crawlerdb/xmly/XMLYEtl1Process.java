@@ -28,13 +28,14 @@ import com.woting.crawler.core.cplaycount.persis.po.CPlayCountPo;
 import com.woting.crawler.core.cplaycount.service.CPlayCountService;
 import com.woting.crawler.core.csubscribe.persis.po.CSubscribePo;
 import com.woting.crawler.core.csubscribe.service.CSubscribeService;
+import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.utils.HttpUtils;
 
 public class XMLYEtl1Process {
 	
 	@SuppressWarnings("unchecked")
-	public String insertNewAlbum(Map<String, Object> alm, Map<String, Object> map) {
+	public String insertNewAlbum(Map<String, Object> alm, Map<String, Object> map, Scheme scheme) {
 		alm = (Map<String, Object>) alm.get("data");
 		Map<String, Object> albummap = (Map<String, Object>) alm.get("album");
 		Map<String, Object> usermap = (Map<String, Object>) alm.get("user");
@@ -69,7 +70,7 @@ public class XMLYEtl1Process {
 			try {data = Long.valueOf(albummap.get("updatedAt")+"");} catch (Exception e) {}
 			try {data = Long.valueOf(albummap.get("createdAt")+"");} catch (Exception e) {}
 			albumPo.setcTime(new Timestamp(data));
-			albumPo.setCrawlerNum("1");
+			albumPo.setCrawlerNum(scheme.getSchemenum());
 			AlbumService albumService = (AlbumService) SpringShell.getBean("albumService");
 			List<AlbumPo> albumPos = new ArrayList<>();
 			albumPos.add(albumPo);
@@ -146,7 +147,7 @@ public class XMLYEtl1Process {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			List<AudioPo> aus = new ArrayList<>();
+//			List<AudioPo> aus = new ArrayList<>();
 			List<Map<String, Object>> ls = (List<Map<String, Object>>) tracks.get("list");
 			if (ls!=null && ls.size()>0) {
 				for (int i = 0; i < ls.size(); i++) {
@@ -214,9 +215,9 @@ public class XMLYEtl1Process {
 					} catch (Exception e) {}
 					
 					try {audioPo.setcTime(new Timestamp(Long.valueOf(audiomap.get("createdAt")+"")));} catch (Exception e) {}
-//					AudioService audioService = (AudioService) SpringShell.getBean("audioService");
-//					audioService.insertAudio(audioPo);
-					aus.add(audioPo);
+					AudioService audioService = (AudioService) SpringShell.getBean("audioService");
+					audioService.insertAudio(audioPo);
+//					aus.add(audioPo);
 					//节目喜欢数入库
 					try {
 						CFavoritePo cFavoritePo = new CFavoritePo();
@@ -255,10 +256,10 @@ public class XMLYEtl1Process {
 						e.printStackTrace();
 					}
 				}
-				if (aus!=null && aus.size()>0) {
-					AudioService audioService = (AudioService) SpringShell.getBean("audioService");
-					audioService.insertAudioList(aus);
-				}
+//				if (aus!=null && aus.size()>0) {
+//					AudioService audioService = (AudioService) SpringShell.getBean("audioService");
+//					audioService.insertAudioList(aus);
+//				}
 			}
 		}
 		return albumPo.getId();

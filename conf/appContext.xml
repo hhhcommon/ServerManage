@@ -132,6 +132,8 @@
     <property name="NumberOfCrawlers" value="${scheme.NumberOfCrawlers}"/>
     <property name="RedisDB" value="${scheme.RedisDB}"/>
     <property name="RedisSnapShootDB" value="${scheme.RedisSnapShootDB}"/>
+    <property name="XMLYThread_Limit_Size" value="${scheme.XMLYThread_Limit_Size}"/>
+    <property name="QTThread_Limit_Size" value="${scheme.QTThread_Limit_Size}"/>
   </bean>
   
   <!-- 搜索计划加载功能 -->

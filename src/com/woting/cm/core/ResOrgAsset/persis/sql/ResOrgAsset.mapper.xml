@@ -81,4 +81,8 @@
     select count(*) from wt_ResOrgAsset_Ref
   </select>
   
+  <delete id="deleteByEntity" parameterType="java.util.Map">
+    delete from wt_ResOrgAsset_Ref <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
+  </delete>
+  
 </mapper>

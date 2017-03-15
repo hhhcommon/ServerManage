@@ -157,7 +157,9 @@ public class MediaService {
 	
 	public List<SeqMediaAssetPo> getSeqMediaList(String smaPublisher, int page, int pageSize) {
 		Map<String, Object> m = new HashMap<>();
-		m.put("smaPublisher", smaPublisher);
+		if (smaPublisher!=null) {
+			m.put("smaPublisher", smaPublisher);
+		}
 		if (page>0 && pageSize>0) {
 			m.put("limitByClause", (page-1)*pageSize+","+pageSize);
 		}
@@ -335,5 +337,9 @@ public class MediaService {
 	}
 	public void updateMediaPlayCount(MediaPlayCountPo mply) {
 		mediaplaycountDao.update("updateMediaPlayCount", mply);
+	}
+	
+	public void removeSeqMediaAssetAll(String smaId) {
+		mediaAssetDao.delete("multiSmaAllById", smaId);
 	}
 }

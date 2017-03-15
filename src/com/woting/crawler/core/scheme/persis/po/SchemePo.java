@@ -6,6 +6,8 @@ public class SchemePo {
 	private String NumberOfCrawlers;
 	private String RedisSnapShootDB;
 	private String RedisDB;
+	private int XMLYThread_Limit_Size;
+	private int QTThread_Limit_Size;
 	public String getSchemenum() {
 		return Schemenum;
 	}
@@ -35,5 +37,17 @@ public class SchemePo {
 	}
 	public void setRedisSnapShootDB(String redisSnapShootDB) {
 		RedisSnapShootDB = redisSnapShootDB;
+	}
+	public int getXMLYThread_Limit_Size() {
+		return XMLYThread_Limit_Size;
+	}
+	public void setXMLYThread_Limit_Size(int xMLYThread_Limit_Size) {
+		XMLYThread_Limit_Size = xMLYThread_Limit_Size;
+	}
+	public int getQTThread_Limit_Size() {
+		return QTThread_Limit_Size;
+	}
+	public void setQTThread_Limit_Size(int qTThread_Limit_Size) {
+		QTThread_Limit_Size = qTThread_Limit_Size;
 	}
 }

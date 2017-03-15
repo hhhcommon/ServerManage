@@ -130,7 +130,7 @@ public class SolrJService {
 			solrs.add(sPo);
 		}
 		SolrSearchResult result = new SolrSearchResult();
-		//商品列表
+		//列表
 		result.setSolrInputPos(solrs);
 		//总记录数据
 		result.setRecordCount(documentList.getNumFound());

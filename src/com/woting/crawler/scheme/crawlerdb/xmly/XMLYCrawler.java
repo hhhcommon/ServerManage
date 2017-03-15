@@ -1,5 +1,6 @@
 package com.woting.crawler.scheme.crawlerdb.xmly;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import com.spiritdata.framework.util.JsonUtils;
 import com.woting.crawler.core.httpclient.service.HttpClientService;
+import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.crawlerdb.crawler.EtlProcess;
 import com.woting.crawler.scheme.utils.CleanDataUtils;
@@ -24,14 +26,27 @@ public class XMLYCrawler {
 	private HttpClientService httpClientService;
 	int httpclientnums = 0;
 	String path = "/opt/CrawlerCS/XMLYREF.txt";
+	private Scheme scheme;
+	private EtlProcess etlProcess;
+	private File file = null;
+	
 	
 	@SuppressWarnings("unchecked")
-	public XMLYCrawler() {
-		String str = FileUtils.readFile(path);
+	public XMLYCrawler(Scheme scheme) {
+		file = new File(path);
+		String str = FileUtils.readFile(file);
 		if (str!=null && str.length()>0) {
 			map = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
 		}
 		httpClientService = (HttpClientService) SpringShell.getBean("httpClientService");
+		this.scheme = scheme;
+		etlProcess = new EtlProcess();
+		if (map.containsKey("doingDB")) {
+			Map<String, Object> dbmap = (Map<String, Object>) map.get("doingDB");
+			etlProcess.removeDBAll(dbmap);
+			map.remove("doingDB");
+			FileUtils.writeFile(JsonUtils.objToJson(map), file);
+		}
 	}
 	
 	public void beginCrawler() {
@@ -130,34 +145,31 @@ public class XMLYCrawler {
 					break;
 				}
 			}
-			FileUtils.writeFile(JsonUtils.objToJson(map), path);
+//			FileUtils.writeFile(JsonUtils.objToJson(map), path);
 			System.out.println(newls.size());
-			EtlProcess etlProcess = new EtlProcess();
 			int audios = 0;
 			List<Integer> iList = new ArrayList<>();
-			int audiothreads = newls.size()/4000+1;
-			fixedThreadPool = Executors.newFixedThreadPool(audiothreads);
-			for (int i = 1; i <= audiothreads; i++) {
+			fixedThreadPool = Executors.newFixedThreadPool(scheme.getXMLYThread_Limit_Size());
+			for (int i = 0; i < newls.size(); i++) {
 				int fonum = i;
 				fixedThreadPool.execute(new Runnable() {
 					public void run() {
-						List<String> ls2 = newls.subList((fonum-1)*4000, fonum*4000>newls.size()?newls.size():fonum*4000);
-						for (String albumId : ls2) {
-							try {
-								Thread.sleep(50);
-								String numstr = insertNewZJ(albumId,"1",false);
-								System.out.println(albumId+"   "+numstr);
-								if (numstr!=null) {
-									iList.add(Integer.valueOf(numstr));
-									String id = insertNewZJ(albumId, numstr, true);
-									newmap.put(albumId, id);
-									etlProcess.makeNewAlbum(id);
-								}
-							} catch (Exception e) {
-								System.out.println("http://mobile.ximalaya.com/mobile/v1/album?albumId="+albumId+"&device=android&isAsc=true&pageId=1&pageSize=1&pre_page=0&source=5");
-								e.printStackTrace();
-								continue;
+						String albumId = newls.get(fonum);
+						try {
+							FileUtils.doingDB(file, albumId, map, scheme.getSchemenum());
+							Thread.sleep(50);
+							String numstr = insertNewZJ(albumId,"1",false);
+							System.out.println(albumId+"   "+numstr);
+							if (numstr!=null) {
+								iList.add(Integer.valueOf(numstr));
+								String id = insertNewZJ(albumId, numstr, true);
+								newmap.put(albumId, id);
+								etlProcess.makeNewAlbum(id);
+								FileUtils.didDB(file, albumId);
 							}
+						} catch (Exception e) {
+							System.out.println("http://mobile.ximalaya.com/mobile/v1/album?albumId="+albumId+"&device=android&isAsc=true&pageId=1&pageSize=1&pre_page=0&source=5");
+							e.printStackTrace();
 						}
 					}
 				});
@@ -198,19 +210,16 @@ public class XMLYCrawler {
 			    albumstr = CleanDataUtils.CleanDescnStr(albumstr, "\"intro\":\"", "\",\"shortIntro\":\"", "\",\"introRich\":\"", "\",\"shortIntroRich\":\"", "\",\"tags\":\"", "\",\"tracks\":");
 			    alm = (Map<String, Object>) JsonUtils.jsonToObj(albumstr, Map.class);
 			} catch (Exception e) {
-				e.printStackTrace();
 				String albumstr = httpClientService.doGet("http://mobile.ximalaya.com/mobile/v1/album?albumId="+albumId+"&device=android&isAsc=true&pageId=1&pageSize="+pageSize);
-//				String albumstr = HttpUtils.HttpClient("http://mobile.ximalaya.com/mobile/v1/album?albumId="+albumId+"&device=android&isAsc=true&pageId=1&pageSize="+pageSize);
 				albumstr = CleanDataUtils.CleanDescnStr(albumstr, "\"intro\":\"", "\",\"shortIntro\":\"", "\",\"introRich\":\"", "\",\"shortIntroRich\":\"", "\",\"tags\":\"", "\",\"tracks\":");
 				alm = (Map<String, Object>) JsonUtils.jsonToObj(albumstr, Map.class);
-				System.out.println(albumId+"已解决");
 			}
 			if (alm!=null) {
 				Map<String, Object> almm = (Map<String, Object>) alm.get("data");
 				Map<String, Object> tracks = (Map<String, Object>) almm.get("tracks");
 				if (toInsert) {
 					XMLYEtl1Process xmlyEtl1Process = new XMLYEtl1Process();
-				    String id = xmlyEtl1Process.insertNewAlbum(alm,map);
+				    String id = xmlyEtl1Process.insertNewAlbum(alm,map,scheme);
 				    return id;
 				}
 				return tracks.get("totalCount").toString();

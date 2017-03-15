@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import com.spiritdata.framework.util.JsonUtils;
+import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.scheme.crawlerdb.crawler.EtlProcess;
 import com.woting.crawler.scheme.utils.FileUtils;
 
@@ -17,13 +18,15 @@ public class QTCrawler {
 	private Map<String, Object> newmap = new HashMap<>();
 	int httpclientnums = 0;
 	String path = "/opt/CrawlerCS/QTREF.txt";
+	private Scheme scheme;
 	
 	@SuppressWarnings("unchecked")
-	public QTCrawler() {
+	public QTCrawler(Scheme scheme) {
 		String str = FileUtils.readFile(path);
 		if (str!=null && str.length()>0) {
 			map = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
 		}
+		this.scheme = scheme;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -107,29 +110,25 @@ public class QTCrawler {
 			System.out.println(newls.size());
 			EtlProcess etlProcess = new EtlProcess();
 			List<Integer> iList = new ArrayList<>();
-			int audiothreads = newls.size()/3000+1;
-			fixedThreadPool = Executors.newFixedThreadPool(audiothreads);
-			for (int i = 1; i <= audiothreads; i++) {
+			fixedThreadPool = Executors.newFixedThreadPool(scheme.getQTThread_Limit_Size());
+			for (int i = 0; i < newls.size(); i++) {
 				int fonum = i;
 				fixedThreadPool.execute(new Runnable() {
 					public void run() {
-						List<String> ls2 = newls.subList((fonum-1)*3000, fonum*3000>newls.size()?newls.size():fonum*3000);
-						for (String albumId : ls2) {
-							try {
-								Thread.sleep(50);
-								String numstr = insertNewZJ(albumId,"1",false);
-								System.out.println(albumId+"   "+numstr);
-								if (numstr!=null) {
-									iList.add(Integer.valueOf(numstr));
-									String id = insertNewZJ(albumId, numstr, true);
-									newmap.put(albumId, id);
-									etlProcess.makeNewAlbum(id);
-								}
-							} catch (Exception e) {
-								System.out.println("http://mobile.ximalaya.com/mobile/v1/album?albumId="+albumId+"&device=android&isAsc=true&pageId=1&pageSize=1&pre_page=0&source=5");
-								e.printStackTrace();
-								continue;
+						String albumId = newls.get(fonum);
+						try {
+							Thread.sleep(50);
+							String numstr = insertNewZJ(albumId,"1",false);
+							System.out.println(albumId+"   "+numstr);
+							if (numstr!=null) {
+								iList.add(Integer.valueOf(numstr));
+								String id = insertNewZJ(albumId, numstr, true);
+								newmap.put(albumId, id);
+								etlProcess.makeNewAlbum(id);
 							}
+						} catch (Exception e) {
+							System.out.println("http://mobile.ximalaya.com/mobile/v1/album?albumId="+albumId+"&device=android&isAsc=true&pageId=1&pageSize=1&pre_page=0&source=5");
+							e.printStackTrace();
 						}
 					}
 				});

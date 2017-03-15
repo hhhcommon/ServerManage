@@ -21,6 +21,8 @@ public class Scheme {
 	private Etl2Process etl2Process;
 	private RedisOperService redisOperService;
 	private JedisConnectionFactory jedisConnectionFactory;
+	private int XMLYThread_Limit_Size;
+	private int QTThread_Limit_Size;
 	
 	public Scheme() {
 		SchemePo schemePo = (SchemePo) SpringShell.getBean("scheme");
@@ -30,6 +32,8 @@ public class Scheme {
 		this.setNumberOfCrawlers(StringUtils.isNullOrEmptyOrSpace(schemePo.getNumberOfCrawlers())?10:Integer.valueOf(schemePo.getNumberOfCrawlers()));
 		this.setRedisDB(Integer.valueOf(schemePo.getRedisDB()));
 		this.setcTimestamp(new Timestamp(System.currentTimeMillis()));
+		this.setXMLYThread_Limit_Size(schemePo.getXMLYThread_Limit_Size());
+		this.setQTThread_Limit_Size(schemePo.getQTThread_Limit_Size());
 		this.etl1Process = new Etl1Process();
 		this.jedisConnectionFactory = (JedisConnectionFactory) SpringShell.getBean("connectionFactory");
 		this.redisOperService = new RedisOperService(jedisConnectionFactory, this.getRedisDB());
@@ -92,5 +96,17 @@ public class Scheme {
 	}
 	public void setRedisSnapShootDB(int redisSnapShootDB) {
 		RedisSnapShootDB = redisSnapShootDB;
+	}
+	public int getXMLYThread_Limit_Size() {
+		return XMLYThread_Limit_Size;
+	}
+	public void setXMLYThread_Limit_Size(int xMLYThread_Limit_Size) {
+		XMLYThread_Limit_Size = xMLYThread_Limit_Size;
+	}
+	public int getQTThread_Limit_Size() {
+		return QTThread_Limit_Size;
+	}
+	public void setQTThread_Limit_Size(int qTThread_Limit_Size) {
+		QTThread_Limit_Size = qTThread_Limit_Size;
 	}
 }

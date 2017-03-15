@@ -41,6 +41,21 @@ public class FileUtils {
 		else
 			return false;
 	}
+	
+	public static boolean writeFile(String jsonstr, File file) {
+		try {
+			OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+			BufferedWriter writer = new BufferedWriter(write);
+			writer.write(jsonstr);
+			writer.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (file.exists())
+			return true;
+		else
+			return false;
+	}
 
 	@SuppressWarnings("unchecked")
 	public static List<Map<String, Object>> readFileByJson(String path) {
@@ -69,7 +84,26 @@ public class FileUtils {
 			return null;
 		}
 		try {
-			InputStreamReader read = new InputStreamReader(new FileInputStream(file), "gbk");
+			InputStreamReader read = new InputStreamReader(new FileInputStream(file), "utf-8");
+			BufferedReader reader = new BufferedReader(read);
+			String line;
+			while ((line = reader.readLine()) != null) {
+				sb += line;
+			}
+			read.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return sb;
+	}
+	
+	public static String readFile(File file) {
+		String sb = "";
+		if (!file.exists()) {
+			return null;
+		}
+		try {
+			InputStreamReader read = new InputStreamReader(new FileInputStream(file), "UTF-8");
 			BufferedReader reader = new BufferedReader(read);
 			String line;
 			while ((line = reader.readLine()) != null) {
@@ -150,7 +184,8 @@ public class FileUtils {
 						Thumbnails.of(new File(filepath)).size(180, 180).toFile(img180path);
 						Thumbnails.of(new File(filepath)).size(300, 300).toFile(img300path);
 						if (m.containsKey("HashCode")) {
-							ImageHashService imageHashService = (ImageHashService) SpringShell.getBean("imageHashService");
+							ImageHashService imageHashService = (ImageHashService) SpringShell
+									.getBean("imageHashService");
 							ImageHash imageHash = new ImageHash();
 							imageHash.setId(m.get("HashCode").toString());
 							imageHash.setImagePath(filepath.replace(rootpath, "http://www.wotingfm.com:908/CM/"));
@@ -237,5 +272,62 @@ public class FileUtils {
 			return map;
 		}
 		return map;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static void doingDB(File file, String albumId, Map<String, Object> mapall, String crawlerNum) {
+		try {
+			Map<String, Object> map = null;
+			synchronized (file) {
+				String str = readFile(file);
+				if (str != null && str.length() > 0) {
+					map = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
+				} else map = new HashMap<>();
+	
+				Map<String, Object> dbmap = null;
+				if (map.containsKey("doingDB")) {
+					dbmap = (Map<String, Object>) map.get("doingDB");
+				} else {
+					dbmap = new HashMap<>();
+					dbmap.put("CrawlerNum", crawlerNum);
+					map.put("doingDB", dbmap);
+				}
+				dbmap.put(albumId, mapall.get(albumId));
+				FileUtils.writeFile(JsonUtils.objToJson(map), file);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static void didDB(File file, String albumId) {
+		try {
+			Map<String, Object> map = null;
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+			synchronized (file) {
+				String str = readFile(file);
+				if (str != null && str.length() > 0) {
+					map = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
+				} else map = new HashMap<>();
+	
+				Map<String, Object> dbmap = null;
+				if (map.containsKey("doingDB")) {
+					dbmap = (Map<String, Object>) map.get("doingDB");
+				} else {
+					dbmap = new HashMap<>();
+					map.put("doingDB", dbmap);
+				}
+				if (dbmap.containsKey(albumId)) {
+					map.put(albumId, dbmap.get(albumId));
+					dbmap.remove(albumId);
+				}
+				FileUtils.writeFile(JsonUtils.objToJson(map), file);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

@@ -56,4 +56,20 @@ public class ResOrgAssetService{
 		}
 		return null;
     }
+    
+    public ResOrgAssetPo getResOrgAssetPo(String origSrcId, String orgName, String resTableName) {
+    	Map<String, Object> m = new HashMap<>();
+    	m.put("origSrcId", origSrcId);
+    	m.put("orgName", orgName);
+    	m.put("resTableName", resTableName);
+    	return resOrgAssetDao.getInfoObject("getList", m);
+    }
+    
+    public void deleteByOrigSrcId(String origSrcId, String orgName, String resTableName) {
+    	Map<String, Object> m = new HashMap<>();
+    	m.put("origSrcId", origSrcId);
+    	m.put("orgName", orgName);
+    	m.put("resTableName", resTableName);
+    	resOrgAssetDao.delete("deleteByEntity", m);
+    }
 }
