@@ -1,5 +1,6 @@
 package com.woting.crawler;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,10 +13,17 @@ import org.slf4j.LoggerFactory;
 
 import com.spiritdata.framework.core.cache.CacheEle;
 import com.spiritdata.framework.core.cache.SystemCache;
+import com.spiritdata.framework.util.JsonUtils;
+import com.spiritdata.framework.util.SequenceUUID;
+import com.woting.cm.core.dict.persis.po.DictRefResPo;
+import com.woting.cm.core.dict.service.DictService;
 import com.woting.cm.core.media.persis.po.MediaAssetPo;
 import com.woting.cm.core.media.persis.po.MediaPlayCountPo;
 import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
 import com.woting.cm.core.media.service.MediaService;
+import com.woting.cm.core.person.persis.po.PersonPo;
+import com.woting.cm.core.person.service.PersonService;
+import com.woting.crawler.core.redis.AddContentRedisThread;
 import com.woting.crawler.core.solr.service.SolrJService;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.crawlerdb.crawler.EtlProcess;
@@ -101,11 +109,5 @@ public class Booter {
         EtlProcess etlProcess = new EtlProcess();
         etlProcess.makeDatas();
         System.out.println(System.currentTimeMillis()-beg);
-        
-//        SolrJService solrJService = (SolrJService) SpringShell.getBean("solrJService");
-//        CompareAttribute cAttribute = new CompareAttribute("1");
-//        float f = cAttribute.compareTitle(solrJService, "20120204你要出轨_郭德纲,于谦,三里屯专场", "郭德纲 于谦 - 论50年之现状");
-//        System.out.println(f);
-        
 	}
 }

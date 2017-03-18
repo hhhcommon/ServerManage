@@ -83,6 +83,11 @@
   
   <delete id="deleteByEntity" parameterType="java.util.Map">
     delete from wt_ResOrgAsset_Ref <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
+    <if test="whereSql!=null"> and ${whereSql}</if>
   </delete>
+  
+  <select id="getResOrgAssetListBySQL" parameterType="java.util.Map" resultMap="resOrgAssetMap">
+    <if test="Sql!=null">${Sql}</if>
+  </select>
   
 </mapper>

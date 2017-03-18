@@ -59,4 +59,9 @@
     select <include refid="Base_Column_List"/> from wt_Person where id=#{id,jdbcType=VARCHAR}
   </select>
   
+  <select id="getListByResIdAndResTableName" resultMap="BaseResultMap" parameterType="java.util.Map">
+    select DISTINCT <include refid="Base_Column_List"/> from wt_Person where id in 
+    (select personId from wt_Person_Ref ${whereSql})
+  </select>
+  
 </mapper>

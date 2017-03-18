@@ -460,7 +460,6 @@ public abstract class ConvertUtils {
 		seq.setId(al.getId());
 		seq.setSmaTitle(al.getAlbumName());
 		String imgp = al.getAlbumImg();
-//		seq.setSmaImg(imgp);
 		if (!StringUtils.isNullOrEmptyOrSpace(imgp) && imgp.length()>5) {
 			String imgpath = FileUtils.makeImgFile("2", imgp);
 			if (!StringUtils.isNullOrEmptyOrSpace(imgpath)) {

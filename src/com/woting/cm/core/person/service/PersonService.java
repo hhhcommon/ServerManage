@@ -68,9 +68,19 @@ public class PersonService {
 	}
 	
 	public List<PersonPo> getPersonsByResIdAndResTableName(String resId, String resTableName) {
+		String whereSql = "";
+		if (resId!=null) {
+			whereSql += " and resId = '" + resId +"'";
+		}
+		if (resTableName!=null) {
+			whereSql += " and resTableName = '"+ resTableName +"'";
+		}
+		if (whereSql.length()>0) {
+			whereSql = whereSql.substring(4);
+			whereSql = " where " + whereSql;
+		}
 		Map<String, Object> m = new HashMap<>();
-		m.put("resId", resId);
-		m.put("resTableName", resTableName);
+		m.put("whereSql", whereSql);
 		List<PersonPo> pers = personDao.queryForList("getListByResIdAndResTableName", m);
 		if (pers!=null && pers.size()>0) {
 			return pers;

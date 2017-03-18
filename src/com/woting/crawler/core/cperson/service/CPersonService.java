@@ -18,14 +18,14 @@ import com.woting.crawler.core.cperson.persis.po.CPersonRefPo;
 public class CPersonService {
 
 	@Resource(name = "defaultDAO_CM")
-	private MybatisDAO<CPersonPo> personDao;
+	private MybatisDAO<CPersonPo> cpersonDao;
 	@Resource(name = "defaultDAO_CM")
-	private MybatisDAO<CPersonRefPo> personRefDao;
+	private MybatisDAO<CPersonRefPo> cpersonRefDao;
 
 	@PostConstruct
 	public void initParam() {
-		personDao.setNamespace("A_CPERSON");
-		personRefDao.setNamespace("A_CPERSONREF");
+		cpersonDao.setNamespace("A_CPERSON");
+		cpersonRefDao.setNamespace("A_CPERSONREF");
 	}
 	
 	public void insertPerson(CPersonPo personPo) {
@@ -33,12 +33,12 @@ public class CPersonService {
 		ps.add(personPo);
 		Map<String, Object> m = new HashMap<>();
 		m.put("list", ps);
-		personDao.insert("insertList", m);
+		cpersonDao.insert("insertList", m);
 	}
 	
 	public void insertPerson(List<CPersonPo> ps) {
 		if (ps!=null && ps.size()>0) {
-			personDao.insert("insertList", ps);
+			cpersonDao.insert("insertList", ps);
 		}
 	}
 	
@@ -47,14 +47,14 @@ public class CPersonService {
 		ps.add(cPersonRefPo);
 		Map<String, Object> m = new HashMap<>();
 		m.put("list", ps);
-		personRefDao.insert("insertList", m);
+		cpersonRefDao.insert("insertList", m);
 	}
 	
 	public CPersonPo getCPersonByPersonId(String pSource, String personId) {
 		Map<String, Object> m = new HashMap<>();
 		m.put("pSource", pSource);
 		m.put("pSrcId", personId);
-		CPersonPo cPo = personDao.getInfoObject("getList", m);
+		CPersonPo cPo = cpersonDao.getInfoObject("getList", m);
 		return cPo;
 	}
 	
@@ -63,7 +63,7 @@ public class CPersonService {
 		m.put("pSource", pSource);
 		m.put("resTableName", resTableName);
 		m.put("resId", resId);
-		List<CPersonPo> ps = personDao.queryForList("getListBy", m);
+		List<CPersonPo> ps = cpersonDao.queryForList("getListBy", m);
 		if (ps!=null && ps.size()>0) {
 			return ps.get(0);
 		}
@@ -75,12 +75,12 @@ public class CPersonService {
 		m.put("personId", personId);
 		m.put("resTableName", resTableName);
 		m.put("resId", resId);
-		CPersonRefPo cRefPo = personRefDao.getInfoObject("getList", m);
+		CPersonRefPo cRefPo = cpersonRefDao.getInfoObject("getList", m);
 		return cRefPo;
 	}
 	
 	//删除旧的历史数据，保留最新主播信息
 	public void removeSame() {
-		personDao.delete("delete");
+		cpersonDao.delete("delete");
 	}
 }

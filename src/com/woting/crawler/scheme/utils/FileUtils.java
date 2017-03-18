@@ -134,66 +134,31 @@ public class FileUtils {
 
 	public static String makeImgFile(String purpose, String imgpath) {
 		String rootpath = "/opt/"; // SystemCache.getCache(CrawlerConstants.APP_PATH).getContent()+"";
-		if (purpose.equals("1")) { // 用户头像处理
-			String imgName = SequenceUUID.getPureUUID();
-			String path = rootpath + "dataCenter/group06/";
-			String filepath = path + imgName + ".png";
-			try {
-				download(imgpath, imgName + ".png", path);
-				Map<String, Object> m = compareImageHash(filepath);
-				if (m.get("ISOK").equals("true")) {
-					String img150path = path + "/" + imgName + ".150_150.png";
-					String img300path = path + "/" + imgName + ".300_300.png";
-					String img450path = path + "/" + imgName + ".450_450.png";
-					Thumbnails.of(new File(filepath)).size(150, 150).toFile(img150path);
-					Thumbnails.of(new File(filepath)).size(300, 300).toFile(img300path);
-					Thumbnails.of(new File(filepath)).size(450, 450).toFile(img450path);
-					if (m.containsKey("HashCode")) {
-						ImageHashService imageHashService = (ImageHashService) SpringShell.getBean("imageHashService");
-						ImageHash imageHash = new ImageHash();
-						imageHash.setId(m.get("HashCode").toString());
-						imageHash.setImagePath(filepath.replace(rootpath, "http://www.wotingfm.com:908/CM/"));
-						imageHash.setImageSrcPath(imgpath);
-						imageHash.setPurpose(purpose);
-						imageHashService.insertImageHash(imageHash);
-					}
-					return filepath.replace(rootpath, "http://www.wotingfm.com:908/CM/");
-				} else {
-					File file = new File(filepath);
-					if (file.isFile() && file.exists()) {
-						file.delete();
-					}
-					return m.get("Path").toString();
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.err.println("图片出错路径:" + imgpath);
-			}
-
-		} else {
-			if (purpose.equals("2")) { // 内容图片处理
+		synchronized (FileUtils.class) {
+			if (purpose.equals("1")) { // 用户头像处理
 				String imgName = SequenceUUID.getPureUUID();
-				String path = rootpath + "dataCenter/group06/";
+				String path = rootpath + "dataCenter/userimg/";
 				String filepath = path + imgName + ".png";
 				try {
 					download(imgpath, imgName + ".png", path);
 					Map<String, Object> m = compareImageHash(filepath);
 					if (m.get("ISOK").equals("true")) {
-						String img180path = path + "/" + imgName + ".180_180.png";
+						String img150path = path + "/" + imgName + ".150_150.png";
 						String img300path = path + "/" + imgName + ".300_300.png";
-						Thumbnails.of(new File(filepath)).size(180, 180).toFile(img180path);
+						String img450path = path + "/" + imgName + ".450_450.png";
+						Thumbnails.of(new File(filepath)).size(150, 150).toFile(img150path);
 						Thumbnails.of(new File(filepath)).size(300, 300).toFile(img300path);
+						Thumbnails.of(new File(filepath)).size(450, 450).toFile(img450path);
 						if (m.containsKey("HashCode")) {
-							ImageHashService imageHashService = (ImageHashService) SpringShell
-									.getBean("imageHashService");
+							ImageHashService imageHashService = (ImageHashService) SpringShell.getBean("imageHashService");
 							ImageHash imageHash = new ImageHash();
 							imageHash.setId(m.get("HashCode").toString());
-							imageHash.setImagePath(filepath.replace(rootpath, "http://www.wotingfm.com:908/CM/"));
+							imageHash.setImagePath(filepath.replace(rootpath, "http://www.wotingfm.com/"));
 							imageHash.setImageSrcPath(imgpath);
 							imageHash.setPurpose(purpose);
 							imageHashService.insertImageHash(imageHash);
 						}
-						return filepath.replace(rootpath, "http://www.wotingfm.com:908/CM/");
+						return filepath.replace(rootpath, "http://www.wotingfm.com/");
 					} else {
 						File file = new File(filepath);
 						if (file.isFile() && file.exists()) {
@@ -205,19 +170,56 @@ public class FileUtils {
 					e.printStackTrace();
 					System.err.println("图片出错路径:" + imgpath);
 				}
+	
 			} else {
-				if (purpose.equals("3")) { // 轮播图处理
+				if (purpose.equals("2")) { // 内容图片处理
 					String imgName = SequenceUUID.getPureUUID();
-					String path = rootpath + "dataCenter/group04/";
+					String path = rootpath + "dataCenter/contentimg/";
 					String filepath = path + imgName + ".png";
 					try {
 						download(imgpath, imgName + ".png", path);
-						String img1080_450path = path + "/" + imgName + ".1080_450.png";
-						Thumbnails.of(new File(filepath)).size(1080, 450).toFile(img1080_450path);
-						return filepath.replace(rootpath, "http://www.wotingfm.com:908/CM/");
+						Map<String, Object> m = compareImageHash(filepath);
+						if (m.get("ISOK").equals("true")) {
+							String img180path = path + "/" + imgName + ".180_180.png";
+							String img300path = path + "/" + imgName + ".300_300.png";
+							Thumbnails.of(new File(filepath)).size(180, 180).toFile(img180path);
+							Thumbnails.of(new File(filepath)).size(300, 300).toFile(img300path);
+							if (m.containsKey("HashCode")) {
+								ImageHashService imageHashService = (ImageHashService) SpringShell
+										.getBean("imageHashService");
+								ImageHash imageHash = new ImageHash();
+								imageHash.setId(m.get("HashCode").toString());
+								imageHash.setImagePath(filepath.replace(rootpath, "http://www.wotingfm.com/"));
+								imageHash.setImageSrcPath(imgpath);
+								imageHash.setPurpose(purpose);
+								imageHashService.insertImageHash(imageHash);
+							}
+							return filepath.replace(rootpath, "http://www.wotingfm.com/");
+						} else {
+							File file = new File(filepath);
+							if (file.isFile() && file.exists()) {
+								file.delete();
+							}
+							return m.get("Path").toString();
+						}
 					} catch (Exception e) {
 						e.printStackTrace();
 						System.err.println("图片出错路径:" + imgpath);
+					}
+				} else {
+					if (purpose.equals("3")) { // 轮播图处理
+						String imgName = SequenceUUID.getPureUUID();
+						String path = rootpath + "dataCenter/contentimg/";
+						String filepath = path + imgName + ".png";
+						try {
+							download(imgpath, imgName + ".png", path);
+							String img1080_450path = path + "/" + imgName + ".1080_450.png";
+							Thumbnails.of(new File(filepath)).size(1080, 450).toFile(img1080_450path);
+							return filepath.replace(rootpath, "http://www.wotingfm.com/");
+						} catch (Exception e) {
+							e.printStackTrace();
+							System.err.println("图片出错路径:" + imgpath);
+						}
 					}
 				}
 			}

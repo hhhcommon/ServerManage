@@ -129,14 +129,15 @@ public class XMLYEtl1Process {
 				// 0保密 1 男性 2女性
 				try {cPo.setSex(Integer.valueOf(persm.get("gender").toString()));} catch (Exception e) {}
 				CPersonService cPersonService = (CPersonService) SpringShell.getBean("CPersonService");
-				try {
-					CPersonPo exsitcPo = cPersonService.getCPersonByPersonId(cPo.getpSource(), cPo.getpSrcId());
-					if (exsitcPo==null) {
-						cPersonService.insertPerson(cPo);
-						exsitcPo = cPo;
-					}
-				} catch (Exception e) {}
-				
+				synchronized (XMLYEtl1Process.class) {
+					try {
+						CPersonPo exsitcPo = cPersonService.getCPersonByPersonId(cPo.getpSource(), cPo.getpSrcId());
+						if (exsitcPo==null) {
+							cPersonService.insertPerson(cPo);
+							exsitcPo = cPo;
+						}
+					} catch (Exception e) {}
+				}
 				CPersonRefPo cPersonrefPo = new CPersonRefPo();
 				cPersonrefPo.setId(SequenceUUID.getPureUUID());
 				cPersonrefPo.setRefName("主播-专辑");
