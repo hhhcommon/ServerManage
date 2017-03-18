@@ -170,61 +170,62 @@ public class EtlProcess {
 							pf.setResTableName("wt_SeqMediaAsset");
 							pf.setcTime(new Timestamp(System.currentTimeMillis()));
 							personService.insertPersonRef(pf);
-						}
-						DictRefResPo dictRefResPo = new DictRefResPo();
-						dictRefResPo.setId(SequenceUUID.getPureUUID());
-						dictRefResPo.setRefName("主播-性别");
-						dictRefResPo.setDictMid("8");
-						if (cps.getSex() == 0) {
-							dictRefResPo.setDictDid("xb003");
-						} else if (cps.getSex() == 1) {
-							dictRefResPo.setDictDid("xb001");
-						} else if (cps.getSex() == 2) {
-							dictRefResPo.setDictDid("xb002");
-						}
-						dictRefResPo.setResTableName("wt_Person");
-						dictRefResPo.setResId(po.getId());
-						dictRefResPo.setCTime(new Timestamp(System.currentTimeMillis()));
-						dictService.insertDictRef(dictRefResPo);
-						
-						dictRefResPo = new DictRefResPo();
-						dictRefResPo.setId(SequenceUUID.getPureUUID());
-						dictRefResPo.setRefName("主播-状态");
-						dictRefResPo.setDictMid("10");
-						dictRefResPo.setDictDid("zbzt01");
-						dictRefResPo.setResTableName("wt_Person");
-						dictRefResPo.setResId(po.getId());
-						dictRefResPo.setCTime(new Timestamp(System.currentTimeMillis()));
-						dictService.insertDictRef(dictRefResPo);
-						
-						if (!StringUtils.isNullOrEmptyOrSpace(cps.getLocation())) {
-							String[] lco = cps.getLocation().split("_");
-							DictDetailPo ddpo = dictService.getDictDetail("2", "0", lco[0]);
-							if (ddpo != null) {
-								if (lco.length >= 2) {
-									DictDetailPo ddpo2 = dictService.getDictDetail("2", ddpo.getId(), lco[1]);
-									if (ddpo2 != null) {
+							DictRefResPo dictRefResPo = new DictRefResPo();
+							dictRefResPo.setId(SequenceUUID.getPureUUID());
+							dictRefResPo.setRefName("主播-性别");
+							dictRefResPo.setDictMid("8");
+							if (cps.getSex() == 0) {
+								dictRefResPo.setDictDid("xb003");
+							} else if (cps.getSex() == 1) {
+								dictRefResPo.setDictDid("xb001");
+							} else if (cps.getSex() == 2) {
+								dictRefResPo.setDictDid("xb002");
+							}
+							dictRefResPo.setResTableName("wt_Person");
+							dictRefResPo.setResId(po.getId());
+							dictRefResPo.setCTime(new Timestamp(System.currentTimeMillis()));
+							dictService.insertDictRef(dictRefResPo);
+							
+							dictRefResPo = new DictRefResPo();
+							dictRefResPo.setId(SequenceUUID.getPureUUID());
+							dictRefResPo.setRefName("主播-状态");
+							dictRefResPo.setDictMid("10");
+							dictRefResPo.setDictDid("zbzt01");
+							dictRefResPo.setResTableName("wt_Person");
+							dictRefResPo.setResId(po.getId());
+							dictRefResPo.setCTime(new Timestamp(System.currentTimeMillis()));
+							dictService.insertDictRef(dictRefResPo);
+							
+							if (!StringUtils.isNullOrEmptyOrSpace(cps.getLocation())) {
+								String[] lco = cps.getLocation().split("_");
+								DictDetailPo ddpo = dictService.getDictDetail("2", "0", lco[0]);
+								if (ddpo != null) {
+									if (lco.length >= 2) {
+										DictDetailPo ddpo2 = dictService.getDictDetail("2", ddpo.getId(), lco[1]);
+										if (ddpo2 != null) {
+											dictRefResPo.setId(SequenceUUID.getPureUUID());
+											dictRefResPo.setRefName("主播-地区");
+											dictRefResPo.setDictMid("2");
+											dictRefResPo.setDictDid(ddpo2.getId());
+											dictRefResPo.setResTableName("wt_Person");
+											dictRefResPo.setResId(po.getId());
+											dictRefResPo.setCTime(new Timestamp(System.currentTimeMillis()));
+											dictService.insertDictRef(dictRefResPo);
+										}
+									} else {
 										dictRefResPo.setId(SequenceUUID.getPureUUID());
 										dictRefResPo.setRefName("主播-地区");
 										dictRefResPo.setDictMid("2");
-										dictRefResPo.setDictDid(ddpo2.getId());
+										dictRefResPo.setDictDid(ddpo.getId());
 										dictRefResPo.setResTableName("wt_Person");
 										dictRefResPo.setResId(po.getId());
 										dictRefResPo.setCTime(new Timestamp(System.currentTimeMillis()));
 										dictService.insertDictRef(dictRefResPo);
 									}
-								} else {
-									dictRefResPo.setId(SequenceUUID.getPureUUID());
-									dictRefResPo.setRefName("主播-地区");
-									dictRefResPo.setDictMid("2");
-									dictRefResPo.setDictDid(ddpo.getId());
-									dictRefResPo.setResTableName("wt_Person");
-									dictRefResPo.setResId(po.getId());
-									dictRefResPo.setCTime(new Timestamp(System.currentTimeMillis()));
-									dictService.insertDictRef(dictRefResPo);
 								}
 							}
 						}
+						
 					}
 				}
 				
