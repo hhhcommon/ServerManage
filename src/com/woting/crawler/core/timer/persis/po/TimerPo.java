@@ -6,6 +6,8 @@ public class TimerPo {
 	private String CategoryCronExpression;
 	private String BCPlayIsValidateCronExpression;
 	private String ShareCronExpression;
+	private String CacheRefreshExpression;
+	private String RedisRefreshExpression;
 	public String getCronExpression() {
 		return CronExpression;
 	}
@@ -35,5 +37,17 @@ public class TimerPo {
 	}
 	public void setShareCronExpression(String shareCronExpression) {
 		ShareCronExpression = shareCronExpression;
+	}
+	public String getCacheRefreshExpression() {
+		return CacheRefreshExpression;
+	}
+	public void setCacheRefreshExpression(String cacheRefreshExpression) {
+		CacheRefreshExpression = cacheRefreshExpression;
+	}
+	public String getRedisRefreshExpression() {
+		return RedisRefreshExpression;
+	}
+	public void setRedisRefreshExpression(String redisRefreshExpression) {
+		RedisRefreshExpression = redisRefreshExpression;
 	}
 }

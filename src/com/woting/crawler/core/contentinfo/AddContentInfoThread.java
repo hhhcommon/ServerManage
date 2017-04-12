@@ -1,5 +1,6 @@
-package com.woting.crawler.core.redis;
+package com.woting.crawler.core.contentinfo;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,17 +17,15 @@ import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.spiritdata.framework.util.FileNameUtils;
 import com.spiritdata.framework.util.JsonUtils;
 import com.woting.crawler.ext.SpringShell;
+import com.woting.crawler.scheme.utils.FileUtils;
 
-public class AddContentRedisThread extends Thread {
+public class AddContentInfoThread extends Thread {
 
 	private String smaId;
-	private RedisOperService redis;
 	private DataSource DataSource = null;
 	
-	public AddContentRedisThread(String smaId) {
+	public AddContentInfoThread(String smaId) {
 		this.smaId = smaId;
-		JedisConnectionFactory jedisConnectionFactory = (JedisConnectionFactory) SpringShell.getBean("connectionFactoryContent");
-		this.redis = new RedisOperService(jedisConnectionFactory, 11);
 		this.DataSource = (DataSource) SpringShell.getBean("dataSource");
 	}
 	
@@ -37,13 +36,14 @@ public class AddContentRedisThread extends Thread {
 	
 	public void addRedia() {
 		try {
+			File file = null;
 			Map<String, Object> oneDate = makeSeqMediaAssetInfo(smaId); // 获得专辑相关静态信息
 			List<String> maIds = getSeqMARef(smaId); // 获得专辑下级节目id列表
 			if (oneDate!=null && oneDate.size()>0) {
 				if (maIds!=null && maIds.size()>0) {
 					oneDate.put("ContentSubCount", maIds.size());
 				}
-				addRedisInfo("Content::MediaType_CID::[SEQU_"+smaId+"]::INFO", JsonUtils.objToJson(oneDate), 30*24*60*60*1000l);
+				writeContentInfo(file, "Content=MediaType_CID=[SEQU_"+smaId+"]=INFO", JsonUtils.objToJson(oneDate));
 			}
 			
 			List<Map<String, Object>> reply = new ArrayList<>();
@@ -54,9 +54,9 @@ public class AddContentRedisThread extends Thread {
 					m.put("id", str);
 					m.put("type", "wt_MediaAsset");
 					reply.add(m);
-					retMaIds.add("Content::MediaType_CID::[AUDIO_"+str+"]");
+					retMaIds.add("Content=MediaType_CID=[AUDIO_"+str+"]");
 				}
-				addRedisInfo("Content::MediaType_CID::[SEQU_"+smaId+"]::SUBLIST", JsonUtils.objToJson(retMaIds), 30*24*60*60*1000l);
+				writeContentInfo(file, "Content=MediaType_CID=[SEQU_"+smaId+"]=SUBLIST", JsonUtils.objToJson(retMaIds));
 			}
 			List<Map<String, Object>> maLs = getMediaAssetInfos(maIds);
 			if (maLs!=null && maLs.size()>0) {
@@ -64,7 +64,7 @@ public class AddContentRedisThread extends Thread {
 					Map<String, Object> smam = new HashMap<>();
 					smam.put("ContentId", smaId);
 					map.put("SeqInfo", smam);
-					addRedisInfo("Content::MediaType_CID::[AUDIO_"+map.get("ContentId")+"]::INFO", JsonUtils.objToJson(map), 30*24*60*60*1000l);
+					writeContentInfo(file, "Content=MediaType_CID=[AUDIO_"+map.get("ContentId")+"]=INFO", JsonUtils.objToJson(map));
 				}
 			}
 			Map<String, Object> m = new HashMap<>();
@@ -72,9 +72,12 @@ public class AddContentRedisThread extends Thread {
 			m.put("type", "wt_SeqMediaAsset");
 			reply.add(m);
 			List<Map<String, Object>> playLs = getPlayCountInfo(reply);
+			JedisConnectionFactory jedisConnectionFactory = (JedisConnectionFactory) SpringShell.getBean("connectionFactoryContent");
+			RedisOperService redis = new RedisOperService(jedisConnectionFactory, 11);
 			if (playLs!=null && playLs.size()>0) {
 				for (Map<String, Object> map : playLs) {
-					addRedisInfo("Content::MediaType_CID::["+map.get("type")+"_"+map.get("id")+"]::PLAYCOUNT", map.get("playcount")+"", 30*24*60*60*1000l);
+					Thread.sleep(30);
+					writeContentInfo(file, "Content=MediaType_CID=["+map.get("type")+"_"+map.get("id")+"]=PLAYCOUNT", map.get("playcount")+"");
 				}
 			}
 			redis.close();
@@ -106,7 +109,7 @@ public class AddContentRedisThread extends Thread {
 					oneDate.put("ContentPubTime", rs.getTimestamp("cTime").getTime());
 					oneDate.put("ContentSubscribe", 0);
 					oneDate.put("ContentFavorite", 0);
-					oneDate.put("ContentShareURL", "http://www.wotingfm.com/dataCenter/zj/"+oneDate.get("ContentId").toString()+"/content.html");
+					oneDate.put("ContentShareURL", "http://www.wotingfm.com/dataCenter/shareH5/mweb/zj/"+oneDate.get("ContentId").toString()+"/content.html");
 				}
 				if (rs!=null) try {rs.close();rs=null;} catch(Exception e) {rs=null;} finally {rs=null;};
 	            if (ps!=null) try {ps.close();ps=null;} catch(Exception e) {ps=null;} finally {ps=null;};
@@ -252,7 +255,7 @@ public class AddContentRedisThread extends Thread {
 						oneDate.put("ContentKeyWord", rs.getString("keyWords"));
 						oneDate.put("ContentTimes", rs.getLong("timeLong"));
 						oneDate.put("ContentPubTime", rs.getTimestamp("cTime").getTime());
-						oneDate.put("ContentShareURL", "http://www.wotingfm.com/dataCenter/jm/"+oneDate.get("ContentId").toString()+"/content.html");
+						oneDate.put("ContentShareURL", "http://www.wotingfm.com/dataCenter/shareH5/mweb/jm/"+oneDate.get("ContentId").toString()+"/content.html");
 						try {
 							String ext = FileNameUtils.getExt(oneDate.containsKey("ContentPlay")?(oneDate.get("ContentPlay").toString()):null);
 					        
@@ -435,13 +438,8 @@ public class AddContentRedisThread extends Thread {
 		return null;
 	}
 	
-	private void addRedisInfo(String key, String info, long timeout) {
-		if (redis!=null && key!=null) {
-			try {
-				redis.set(key, info, timeout);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+	private void writeContentInfo(File file, String key, String jsonstr) {
+		file = FileUtils.createFile("/mnt/contentinfo/"+key+".json");
+		FileUtils.writeFile(jsonstr, file);
 	}
 }

@@ -115,8 +115,13 @@ public class FileUtils {
 		}
 		return sb;
 	}
+	
+	public static void writeContentInfo(String key, String jsonstr) {
+		File file = FileUtils.createFile("/opt/dataCenter/contentinfo/"+key+".json");
+		FileUtils.writeFile(jsonstr, file);
+	}
 
-	private static File createFile(String path) {
+	public static File createFile(String path) {
 		File file = new File(path);
 		try {
 			if (!file.exists()) {
@@ -282,7 +287,7 @@ public class FileUtils {
 			Map<String, Object> map = null;
 			synchronized (file) {
 				String str = readFile(file);
-				if (str != null && str.length() > 0) {
+				if (str != null && str.length() > 32) {
 					map = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
 				} else map = new HashMap<>();
 	

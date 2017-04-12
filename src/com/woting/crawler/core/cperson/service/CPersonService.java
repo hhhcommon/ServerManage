@@ -83,4 +83,11 @@ public class CPersonService {
 	public void removeSame() {
 		cpersonDao.delete("delete");
 	}
+	
+	public void removePersonRef(String resId, String resTableName) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("resId", resId);
+		m.put("resTableName", resTableName);
+		cpersonRefDao.delete("deleteBy", m);
+	}
 }

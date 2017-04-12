@@ -49,4 +49,8 @@
       where id NOT IN (SELECT * from (SELECT id from c_Person GROUP BY pSrcId ORDER BY cTime DESC) b)
   </delete>
   
+  <delete id="deleteBy" parameterType="java.util.Map">
+    delete from c_Person_Ref <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
+  </delete>
+  
 </mapper>

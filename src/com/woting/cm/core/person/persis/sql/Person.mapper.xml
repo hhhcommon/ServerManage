@@ -55,6 +55,10 @@
     </foreach>
   </insert>
   
+  <select id="getList" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/> from wt_Person
+  </select>
+  
   <select id="getListById" resultMap="BaseResultMap" parameterType="java.lang.String">
     select <include refid="Base_Column_List"/> from wt_Person where id=#{id,jdbcType=VARCHAR}
   </select>

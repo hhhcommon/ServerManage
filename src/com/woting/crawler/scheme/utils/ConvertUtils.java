@@ -99,7 +99,7 @@ public abstract class ConvertUtils {
 		return audios;
 	}
 
-	public static List<DictDPo> convert2DictD(List<Map<String, Object>> list, List<DictDPo> ddlist, String publisher, String dmid ,int isValidate) {
+	public static List<DictDPo> convert2DictD(List<Map<String, Object>> list, List<DictDPo> ddlist, String publisher, String dmid ,int isValidate, int crawlerNum) {
 		List<DictDPo> dictdlist = new ArrayList<DictDPo>();
 		if (list != null && list.size() > 0) {
 			for (Map<String, Object> m : list) {
@@ -121,6 +121,7 @@ public abstract class ConvertUtils {
 					dd.setnPy(m.get("nPy") + "");
 				dd.setVisitUrl(m.get("visitUrl") + "");
 				dd.setIsValidate(isValidate);
+				dd.setCrawlerNum(crawlerNum);
 				dd.setcTime(new Timestamp(System.currentTimeMillis()));
 				dictdlist.add(dd);
 			}
@@ -567,7 +568,7 @@ public abstract class ConvertUtils {
 				cha.setAssetType("wt_SeqMediaAsset");
 				cha.setAssetId(seq.getId());
 				cha.setPublisherId(seq.getSmaPubId());
-				cha.setIsValidate(1);
+				cha.setIsValidate(2);  // 设为无效
 				cha.setCheckerId("1");
 				cha.setPubName(seq.getSmaTitle());
 				cha.setPubImg(seq.getSmaImg());

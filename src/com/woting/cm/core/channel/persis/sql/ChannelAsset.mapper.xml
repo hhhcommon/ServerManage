@@ -194,7 +194,6 @@
   <update id="update" parameterType="java.util.Map">
     update wt_ChannelAsset
     <set>
-      <if test="id!=null">id=#{id,jdbcType=VARCHAR},</if>
       <if test="channelId!=null">channelId=#{channelId,jdbcType=VARCHAR},</if>
       <if test="assetType!=null">assetType=#{assetType,jdbcType=VARCHAR},</if>
       <if test="assetId!=null">assetId=#{assetId,jdbcType=VARCHAR},</if>

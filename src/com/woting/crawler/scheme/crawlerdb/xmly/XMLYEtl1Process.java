@@ -2,6 +2,7 @@ package com.woting.crawler.scheme.crawlerdb.xmly;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +42,16 @@ public class XMLYEtl1Process {
 		Map<String, Object> usermap = (Map<String, Object>) alm.get("user");
 		Map<String, Object> tracks = (Map<String, Object>) alm.get("tracks");
 		String userId = usermap.get("uid").toString();
+		String albumId = albummap.get("albumId")+"";
+		AlbumService albumService = (AlbumService) SpringShell.getBean("albumService");
+		Map<String, Object> param = new HashMap<>();
+		param.put("albumId", albumId);
+		param.put("albumPublisher", "喜马拉雅");
+		List<AlbumPo> als = albumService.getAlbumListBy(param);
+		if (als!=null && als.size()>0) {
+			return null;
+		}
+		
 		AlbumPo albumPo = new AlbumPo();
 		albumPo.setId(SequenceUUID.getPureUUID());
 		albumPo.setAlbumId(albummap.get("albumId")+"");
@@ -71,8 +82,14 @@ public class XMLYEtl1Process {
 			try {data = Long.valueOf(albummap.get("createdAt")+"");} catch (Exception e) {}
 			albumPo.setcTime(new Timestamp(data));
 			albumPo.setCrawlerNum(scheme.getSchemenum());
-			AlbumService albumService = (AlbumService) SpringShell.getBean("albumService");
-			List<AlbumPo> albumPos = new ArrayList<>();
+			Map<String, Object> sqlparam = new HashMap<>();
+			sqlparam.put("albumId", albumPo.getAlbumId());
+			sqlparam.put("albumPublisher", albumPo.getAlbumPublisher());
+			List<AlbumPo> albumPos = albumService.getAlbumListBy(sqlparam);
+			if (albumPos!=null && albumPos.size()>0) {
+				return null;
+			}
+			albumPos = new ArrayList<>();
 			albumPos.add(albumPo);
 			albumService.insertAlbumList(albumPos);
 			CPlayCountService cPlayCountService = (CPlayCountService) SpringShell.getBean("CPlayCountService");

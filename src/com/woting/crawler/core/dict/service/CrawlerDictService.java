@@ -80,10 +80,10 @@ public class CrawlerDictService {
 		return true;
 	}
 	
-	public int getMaxIsValidateNum(String publisher) {
+	public int getMaxCrawlerNum(String publisher) {
 		DictDPo ddp = dictDDao.getInfoObject("getMaxIsValidate" ,publisher);
 		if(ddp!=null) 
-			return ddp.getIsValidate();
+			return ddp.getCrawlerNum();
 	    return 0;
 	}
 }

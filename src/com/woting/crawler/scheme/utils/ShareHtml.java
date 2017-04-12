@@ -22,7 +22,7 @@ public class ShareHtml extends Thread {
 			Map<String, String> data = new HashMap<>();
 			data.put("ContentId", contentId);
 			data.put("MediaType", mediaType);
-			Jsoup.connect("http://www.wotingfm.com:908/CM/content/getShareHtml.do").ignoreContentType(true).data(data).post();
+			Jsoup.connect("http://www.wotingfm.com:908/CM/share/makeContentShareHtml.do").ignoreContentType(true).data(data).post();
 		} catch (Exception e) {}
 	}
 

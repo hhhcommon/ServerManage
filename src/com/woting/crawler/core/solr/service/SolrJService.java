@@ -33,9 +33,23 @@ public class SolrJService {
 	@Resource
 	private HttpSolrServer httpSolrServer;  
 	
-	public void addSolrIndex(Object media , String pid, long playcount) {
+	public void addSolrIndex(Object media , String pid, String persons, String chstr, long playcount) {
 		if (media!=null) {
-			SolrInputPo sPo = SolrUtils.convert2SolrInput(media, pid, playcount);
+			SolrInputPo sPo = SolrUtils.convert2SolrInput(media, pid, persons, chstr, playcount);
+			SolrInputDocument document = SolrUtils.convert2SolrDocument(sPo);
+			try {
+				httpSolrServer.add(document);
+				httpSolrServer.commit();
+			} catch (SolrServerException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void addSolrIndex(SolrInputPo sPo) {
+		if (sPo!=null) {
 			SolrInputDocument document = SolrUtils.convert2SolrDocument(sPo);
 			try {
 				httpSolrServer.add(document);
@@ -93,12 +107,11 @@ public class SolrJService {
 			solrQuery.setQuery("*:*");
 		} else {
 			querystr = SolrUtils.makeQueryStr(querystr, true);
-			solrQuery.setQuery(querystr);
+			solrQuery.setQuery("item_title:"+querystr);
 		}
 		solrQuery.setStart((page -1) * pageSize);
 		solrQuery.setRows(pageSize);
 		//设置默认搜索域
-		solrQuery.set("df", "item_title");
 		if (sorts!=null && sorts.size()>0) {
 			solrQuery.setSorts(sorts);
 		}
@@ -127,6 +140,8 @@ public class SolrJService {
 			if (solrDocument.containsKey("item_timelong")) {
 				sPo.setItem_timelong((long) solrDocument.get("item_timelong"));
 			}
+			sPo.setItem_persons((String) solrDocument.get("item_persons"));
+			sPo.setItem_channel((String) solrDocument.get("item_channel"));
 			solrs.add(sPo);
 		}
 		SolrSearchResult result = new SolrSearchResult();

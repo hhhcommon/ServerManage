@@ -8,6 +8,8 @@ public class SchemePo {
 	private String RedisDB;
 	private int XMLYThread_Limit_Size;
 	private int QTThread_Limit_Size;
+	private String XMLYCachePath;
+	private String QTCachePath;
 	public String getSchemenum() {
 		return Schemenum;
 	}
@@ -49,5 +51,17 @@ public class SchemePo {
 	}
 	public void setQTThread_Limit_Size(int qTThread_Limit_Size) {
 		QTThread_Limit_Size = qTThread_Limit_Size;
+	}
+	public String getXMLYCachePath() {
+		return XMLYCachePath;
+	}
+	public void setXMLYCachePath(String xMLYCachePath) {
+		XMLYCachePath = xMLYCachePath;
+	}
+	public String getQTCachePath() {
+		return QTCachePath;
+	}
+	public void setQTCachePath(String qTCachePath) {
+		QTCachePath = qTCachePath;
 	}
 }

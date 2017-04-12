@@ -23,6 +23,17 @@ public class PersonService {
 	    personDao.setNamespace("A_PERSON");
 	    personRefDao.setNamespace("A_PERSONREF");
 	}
+	
+	public List<PersonPo> getPersons() {
+		List<PersonPo> pers = personDao.queryForList("getList");
+		return pers;
+	}
+	
+	public List<PersonRefPo> getPersonRefs(String personId) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("personId", personId);
+		return personRefDao.queryForList("getListBy", m);
+	}
 
 	public PersonRefPo getPersonRefBy(String resTableName, String resId) {
 		Map<String, Object> m = new HashMap<>();

@@ -17,6 +17,7 @@ public class DictDPo extends BaseObject {
 	private String aliasName; //字典项别名
 	private String anPy; //别名拼音
 	private int isValidate;
+	private int crawlerNum;
 	private String schemeId; //抓取方案Id
 	private String schemeName; //抓取方案名称
 	private String visitUrl;
@@ -108,6 +109,12 @@ public class DictDPo extends BaseObject {
 	}
 	public void setDescn(String descn) {
 		this.descn = descn;
+	}
+	public int getCrawlerNum() {
+		return crawlerNum;
+	}
+	public void setCrawlerNum(int crawlerNum) {
+		this.crawlerNum = crawlerNum;
 	}
 	public Timestamp getcTime() {
 		return cTime;

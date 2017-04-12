@@ -25,6 +25,7 @@ import com.woting.crawler.core.dict.service.CrawlerDictService;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.utils.ConvertUtils;
 import com.woting.crawler.scheme.utils.FileUtils;
+import com.woting.crawler.scheme.utils.HttpUtils;
 
 public class XMLYCrawler extends Thread {
 	private Logger logger = LoggerFactory.getLogger(XMLYCrawler.class);
@@ -38,15 +39,33 @@ public class XMLYCrawler extends Thread {
 		Elements eles = null;
 		Element el = null;
 		Document doc;
-		int isValidate = 0;
+		int isValidate = 2;
+		int crawlerNum = 1;
 		CrawlerDictService crawlerDictService = (CrawlerDictService) SpringShell.getBean("crawlerDictService");
-		KeyWordService kwService = (KeyWordService) SpringShell.getBean("keyWordService");
-		if (crawlerDictService.getDictdValidNum("喜马拉雅") == 0)
+//		KeyWordService kwService = (KeyWordService) SpringShell.getBean("keyWordService");
+		if (crawlerDictService.getDictdValidNum("喜马拉雅") == 0) {
 			isValidate = 1;
-		else
-			isValidate = crawlerDictService.getMaxIsValidateNum("喜马拉雅") + 1;
+			crawlerNum = 1;
+		} else {
+			isValidate = 2;
+			crawlerNum = crawlerDictService.getMaxCrawlerNum("喜马拉雅") + 1;
+		}
 		try {
-			doc = Jsoup.connect(CategoryLink).timeout(10000).ignoreContentType(true).get();
+//			doc = Jsoup.connect(CategoryLink).timeout(10000).ignoreContentType(true).get();
+			DictDPo dd = new DictDPo();
+			dd.setId(SequenceUUID.getPureUUID());
+			dd.setSourceId("ximalaya");
+			dd.setDdName("喜马拉雅");
+			dd.setmId("3");
+			dd.setpId("0");
+			dd.setPublisher("喜马拉雅");
+			dd.setnPy("XiMaLaYa");
+			dd.setVisitUrl(CategoryLink);
+			dd.setIsValidate(isValidate);
+			dd.setCrawlerNum(crawlerNum);
+			dd.setcTime(new Timestamp(System.currentTimeMillis()));
+			listd.add(dd);
+			doc = HttpUtils.getJsonStrForUrl(CategoryLink);
 			// 加载分类信息
 			List<Map<String, Object>> catelist = new ArrayList<Map<String, Object>>();
 			// 加载一级分类信息
@@ -63,10 +82,11 @@ public class XMLYCrawler extends Thread {
 						ele = els.get(0);
 						m.put("visitUrl", "http://www.ximalaya.com" + ele.attr("href"));
 						m.put("name", els.html());
+						m.put("pid", dd.getSourceId());
 						catelist.add(m);
 					}
 				}
-				listd.addAll(ConvertUtils.convert2DictD(catelist, null, "喜马拉雅", "3", isValidate));
+				listd.addAll(ConvertUtils.convert2DictD(catelist, listd, "喜马拉雅", "3", isValidate, crawlerNum));
 				catelist.clear();
 				// 加载二级分类信息
 				eles = doc.select("div[data-cache]");
@@ -84,7 +104,7 @@ public class XMLYCrawler extends Thread {
 						}
 					}
 				}
-				listd.addAll(ConvertUtils.convert2DictD(catelist, listd, "喜马拉雅", "3", isValidate));
+				listd.addAll(ConvertUtils.convert2DictD(catelist, listd, "喜马拉雅", "3", isValidate, crawlerNum));
 				logger.info("喜马拉雅分类抓取数目[{}]", listd.size());
 				System.out.println(JsonUtils.objToJson(listd));
 				if (listd != null && listd.size() > 0) {
@@ -93,54 +113,54 @@ public class XMLYCrawler extends Thread {
 						logger.info("首次喜马拉雅分类抓取，数据全部入库，并生效");
 					} else {
 						if (!crawlerDictService.compareDictIsOrNoNew(listd)) {
-							logger.info("发现喜马拉雅有新的分类产生,入库");
+							logger.info("发现喜马拉雅有新的分类产生,开始和中间库比较");
 							crawlerDictService.insertDictD(listd);
 						} else {
 							logger.info("未发现喜马拉雅新分类,抓取数据作废");
 						}
 					}
-					List<KeyWordPo> kws = new ArrayList<>();
-					List<KwResPo> krs = new ArrayList<>();
-					for (DictDPo m : listd) {
-						if (!m.getpId().equals("0")) {
-							if (kwService.KeyWordIsNull(m.getDdName())) {
-								KeyWordPo kw = new KeyWordPo();
-								kw.setId(SequenceUUID.getPureUUID());
-								kw.setOwnerId("cm");
-								kw.setOwnerType(0);
-								kw.setKwName(m.getDdName());
-								kw.setIsValidate(1);
-								kw.setnPy(ChineseCharactersUtils.getFullSpellFirstUp(m.getDdName()));
-								kw.setSort(0);
-								kw.setDescn("喜马拉雅");
-								kw.setcTime(new Timestamp(System.currentTimeMillis()));
-								kws.add(kw);
-								for (DictDPo mm : listd) {
-									if (m.getpId().equals(mm.getId())) {
-										for (Map<String, Object> cate : cate2dictdlist) {
-											if (cate.get("publisher").equals("喜马拉雅")
-													&& mm.getDdName().equals(cate.get("crawlerDictdName"))) {
-												KwResPo kr = new KwResPo();
-												kr.setId(SequenceUUID.getPureUUID());
-												kr.setRefName("标签-栏目");
-												kr.setKwId(kw.getId());
-												kr.setResTableName("wt_ChannelAsset");
-												if (!cate.get("dictdId").equals("")) {
-													kr.setResId(cate.get("dictdId") + "");
-													kr.setcTime(new Timestamp(System.currentTimeMillis()));
-													krs.add(kr);
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-					if (kws.size() > 0 && krs.size() > 0) {
-						kwService.insertKeyWords(kws);
-						kwService.insertKwRefs(krs);
-					}
+//					List<KeyWordPo> kws = new ArrayList<>();
+//					List<KwResPo> krs = new ArrayList<>();
+//					for (DictDPo m : listd) {
+//						if (!m.getpId().equals("0")) {
+//							if (kwService.KeyWordIsNull(m.getDdName())) {
+//								KeyWordPo kw = new KeyWordPo();
+//								kw.setId(SequenceUUID.getPureUUID());
+//								kw.setOwnerId("cm");
+//								kw.setOwnerType(0);
+//								kw.setKwName(m.getDdName());
+//								kw.setIsValidate(1);
+//								kw.setnPy(ChineseCharactersUtils.getFullSpellFirstUp(m.getDdName()));
+//								kw.setSort(0);
+//								kw.setDescn("喜马拉雅");
+//								kw.setcTime(new Timestamp(System.currentTimeMillis()));
+//								kws.add(kw);
+//								for (DictDPo mm : listd) {
+//									if (m.getpId().equals(mm.getId())) {
+//										for (Map<String, Object> cate : cate2dictdlist) {
+//											if (cate.get("publisher").equals("喜马拉雅")
+//													&& mm.getDdName().equals(cate.get("crawlerDictdName"))) {
+//												KwResPo kr = new KwResPo();
+//												kr.setId(SequenceUUID.getPureUUID());
+//												kr.setRefName("标签-栏目");
+//												kr.setKwId(kw.getId());
+//												kr.setResTableName("wt_ChannelAsset");
+//												if (!cate.get("dictdId").equals("")) {
+//													kr.setResId(cate.get("dictdId") + "");
+//													kr.setcTime(new Timestamp(System.currentTimeMillis()));
+//													krs.add(kr);
+//												}
+//											}
+//										}
+//									}
+//								}
+//							}
+//						}
+//					}
+//					if (kws.size() > 0 && krs.size() > 0) {
+//						kwService.insertKeyWords(kws);
+//						kwService.insertKwRefs(krs);
+//					}
 				}
 			}
 		} catch (Exception e) {

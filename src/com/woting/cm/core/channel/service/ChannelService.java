@@ -60,4 +60,35 @@ public class ChannelService {
 	public void insertChannelAsset(ChannelAssetPo cha) {
 		ChannelAssetDao.insert("insert", cha.toHashMap());
 	}
+	
+	public void updateChannelAsset(List<ChannelAssetPo> cha) {
+		if (cha!=null && cha.size()>0) {
+			for (ChannelAssetPo channelAssetPo : cha) {
+				ChannelAssetDao.update(channelAssetPo);
+			}
+		}
+	}
+	
+	public List<ChannelPo> getChannelListNoRef() {
+		String whereSql = "id not IN (SELECT channelId FROM wt_ChannelAsset) and isValidate = 1";
+		Map<String, Object> m = new HashMap<>();
+		m.put("whereSql", whereSql);
+		List<ChannelPo> chs = channelDao.queryForList("getList", m);
+		if (chs!=null && chs.size()>0) {
+			return chs;
+		}
+		return null;
+	}
+	
+	public void updateChannelList(List<ChannelPo> chs) {
+		if (chs!=null && chs.size()>0) {
+			for (ChannelPo channelPo : chs) {
+				channelDao.update(channelPo);
+			}
+		}
+	}
+	
+	public void updateChannel(ChannelPo ch) {
+		channelDao.update(ch);
+	}
 }

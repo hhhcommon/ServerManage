@@ -1,11 +1,13 @@
 package com.woting.crawler.compare;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
+import org.bouncycastle.jce.provider.BrokenJCEBlockCipher.BrokePBEWithMD5AndDES;
 
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.spiritdata.framework.util.JsonUtils;
@@ -172,12 +174,12 @@ public class CompareAttribute {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void getSolrListToCompare(AlbumPo albumPo) {
+	public boolean getSolrListToCompare(AlbumPo albumPo) {
 		if (albumPo!=null) {
 			SolrJService solrJService = (SolrJService) SpringShell.getBean("solrJService");
 			try {
 				List<SortClause> solrsorts = SolrUtils.makeSolrSort("score desc","item_meidasize desc");
-				SolrSearchResult sResult = solrJService.solrSearch(albumPo.getAlbumName(), solrsorts, "*,score", 1, 5, "item_type:SEQU");
+				SolrSearchResult sResult = solrJService.solrSearch(albumPo.getAlbumName(), solrsorts, "*,score", 1, 5, "item_type:SEQU","-item_publisher:"+albumPo.getAlbumPublisher());
 				if (sResult!=null) {
 					List<SolrInputPo> solrips = sResult.getSolrInputPos();
 					if (solrips!=null && solrips.size()>0) {
@@ -250,7 +252,8 @@ public class CompareAttribute {
 														else isok = false;
 													}
 													if (isok) {
-														String lsstr = FileUtils.readFile("/opt/CrawlerCS/sim.txt");
+														File file = new File("/opt/wtcs/sim.txt");
+														String lsstr = FileUtils.readFile(file);
 														List<Object> ls = new ArrayList<>();
 														if (lsstr!=null && lsstr.length()>0) {
 															ls = (List<Object>) JsonUtils.jsonToObj(lsstr, List.class);												
@@ -258,9 +261,12 @@ public class CompareAttribute {
 														} else {
 															ls.add(simls);
 														}
-														FileUtils.writeFile(JsonUtils.objToJson(ls), "/opt/CrawlerCS/sim.txt");
+														try {
+															FileUtils.writeFile(JsonUtils.objToJson(ls), file);
+														} catch (Exception e) {}
 														EtlProcess eProcess = new EtlProcess();
 														eProcess.makeSameAlbum(albumPo, smaId, simls);
+														return true;
 													}
 												}
 											}
@@ -273,7 +279,9 @@ public class CompareAttribute {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
+				return false;
 			}
 		}
+		return false;
 	}
 }

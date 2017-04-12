@@ -9,9 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.woting.crawler.core.timer.BCPlayIsValidateTimerJob;
+import com.woting.crawler.core.timer.CacheRefreshTimerJob;
 import com.woting.crawler.core.timer.CrawlerCategoryJob;
 import com.woting.crawler.core.timer.CrawlerSrcTimerJob;
 import com.woting.crawler.core.timer.PlayNumTimerJob;
+import com.woting.crawler.core.timer.RedisRefreshTimerJob;
 import com.woting.crawler.core.timer.ShareTimerJob;
 import com.woting.crawler.core.timer.persis.po.TimerPo;
 import com.woting.crawler.ext.SpringShell;
@@ -23,6 +25,8 @@ public class Timer {
 	private String CategoryCronExpression;
 	private String BCPlayIsValidateCronExpression;
 	private String ShareCronExpression;
+	private String CacheRefreshExpression;
+	private String RedisRefreshExpression;
 	private Scheduler scheduler;
 	private JobDetailImpl jobdetail1; //抓取专辑声音进程执行的任务
 	private CronTriggerImpl cronTrigger1; //抓取专辑声音进程触发器
@@ -34,6 +38,10 @@ public class Timer {
 	private CronTriggerImpl cronTrigger4; //电台播放地址是否有效检测进程触发器
 	private JobDetailImpl jobdetail5; //更新分享临时票据触发器
 	private CronTriggerImpl cronTrigger5; //更新分享临时票据进程触发器
+	private JobDetailImpl jobdetail6; //更新栏目状态
+	private CronTriggerImpl cronTrigger6; //更新栏目状态
+	private JobDetailImpl jobdetail7; //Redis和Solr同步
+	private CronTriggerImpl cronTrigger7; //Redis和Solr同步
 	
 	public Timer(String str) {
 		TimerPo timerPo = (TimerPo) SpringShell.getBean("timer");
@@ -42,6 +50,8 @@ public class Timer {
 		this.CategoryCronExpression = timerPo.getCategoryCronExpression();
 		this.BCPlayIsValidateCronExpression = timerPo.getBCPlayIsValidateCronExpression();
 		this.ShareCronExpression = timerPo.getShareCronExpression();
+		this.CacheRefreshExpression = timerPo.getCacheRefreshExpression();
+		this.RedisRefreshExpression = timerPo.getRedisRefreshExpression();
 	}
 	
 	public String getPlayCountCronExpression() {
@@ -134,6 +144,42 @@ public class Timer {
 	public void setCronTrigger5(CronTriggerImpl cronTrigger5) {
 		this.cronTrigger5 = cronTrigger5;
 	}
+	public String getCacheRefreshExpression() {
+		return CacheRefreshExpression;
+	}
+	public void setCacheRefreshExpression(String cacheRefreshExpression) {
+		CacheRefreshExpression = cacheRefreshExpression;
+	}
+	public JobDetailImpl getJobdetail6() {
+		return jobdetail6;
+	}
+	public void setJobdetail6(JobDetailImpl jobdetail6) {
+		this.jobdetail6 = jobdetail6;
+	}
+	public CronTriggerImpl getCronTrigger6() {
+		return cronTrigger6;
+	}
+	public void setCronTrigger6(CronTriggerImpl cronTrigger6) {
+		this.cronTrigger6 = cronTrigger6;
+	}
+	public String getRedisRefreshExpression() {
+		return RedisRefreshExpression;
+	}
+	public void setRedisRefreshExpression(String redisRefreshExpression) {
+		RedisRefreshExpression = redisRefreshExpression;
+	}
+	public JobDetailImpl getJobdetail7() {
+		return jobdetail7;
+	}
+	public void setJobdetail7(JobDetailImpl jobdetail7) {
+		this.jobdetail7 = jobdetail7;
+	}
+	public CronTriggerImpl getCronTrigger7() {
+		return cronTrigger7;
+	}
+	public void setCronTrigger7(CronTriggerImpl cronTrigger7) {
+		this.cronTrigger7 = cronTrigger7;
+	}
 
 	@SuppressWarnings("deprecation")
 	public Scheduler getScheduler() {
@@ -155,11 +201,19 @@ public class Timer {
 			this.jobdetail5 = new JobDetailImpl("Share", "JobGroup5", ShareTimerJob.class);
 			this.cronTrigger5 = new CronTriggerImpl("CronTrigger5", "TriggerGroup5");
 			cronTrigger5.setCronExpression(ShareCronExpression);
-			scheduler.scheduleJob(jobdetail1, cronTrigger1);
-			scheduler.scheduleJob(jobdetail2, cronTrigger2);
-			scheduler.scheduleJob(jobdetail3, cronTrigger3);
-			scheduler.scheduleJob(jobdetail4, cronTrigger4);
+			this.jobdetail6 = new JobDetailImpl("CacheRefresh", "JobGroup6", CacheRefreshTimerJob.class);
+			this.cronTrigger6 = new CronTriggerImpl("CronTrigger6", "TriggerGroup6");
+			cronTrigger6.setCronExpression(CacheRefreshExpression);
+			this.jobdetail7 = new JobDetailImpl("RedisRefresh", "JobGroup7", RedisRefreshTimerJob.class);
+			this.cronTrigger7 = new CronTriggerImpl("CronTrigger7", "TriggerGroup7");
+			cronTrigger7.setCronExpression(RedisRefreshExpression);
+//			scheduler.scheduleJob(jobdetail1, cronTrigger1);
+//			scheduler.scheduleJob(jobdetail2, cronTrigger2);
+//			scheduler.scheduleJob(jobdetail3, cronTrigger3);
+//			scheduler.scheduleJob(jobdetail4, cronTrigger4);
 			scheduler.scheduleJob(jobdetail5, cronTrigger5);
+//			scheduler.scheduleJob(jobdetail6, cronTrigger6);
+//			scheduler.scheduleJob(jobdetail7, cronTrigger7);
 		} catch (Exception e) {
 			logge.info("启动时间加载时报错");
 			return null;

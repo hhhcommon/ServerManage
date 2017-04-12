@@ -1,8 +1,8 @@
 package com.woting.crawler.scheme.crawlerdb.qt;
 
-import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +30,15 @@ public class QTEtl1Process {
 	@SuppressWarnings("unchecked")
 	public String insertNewAlbum(Map<String, Object> map, Map<String, Object> albummap, Map<String, Object> usermap, List<Map<String, Object>> audios) {
 		if (albummap!=null && albummap.size()>0 && audios!=null && audios.size()>0) {
+			String albumId = albummap.get("id").toString();
+			AlbumService albumService = (AlbumService) SpringShell.getBean("albumService");
+			Map<String, Object> param = new HashMap<>();
+			param.put("albumId", albumId);
+			param.put("albumPublisher", "蜻蜓");
+			List<AlbumPo> als = albumService.getAlbumListBy(param);
+			if (als!=null && als.size()>0) {
+				return null;
+			}
 			AlbumPo albumPo = new AlbumPo();
 			albumPo.setId(SequenceUUID.getPureUUID());
 			albumPo.setAlbumId(albummap.get("id").toString());
@@ -60,7 +69,7 @@ public class QTEtl1Process {
 			String descn = albummap.get("description").toString();
 			if (descn.length()>0) albumPo.setDescn(descn);
 			try {albumPo.setcTime(new Timestamp(ConvertUtils.makeLongTime(albummap.get("update_time").toString())));} catch (Exception e) {}
-			AlbumService albumService = (AlbumService) SpringShell.getBean("albumService");
+			
 			List<AlbumPo> albums = new ArrayList<>();
 			albums.add(albumPo);
 			albumService.insertAlbumList(albums);
@@ -143,7 +152,6 @@ public class QTEtl1Process {
 				}
 			}
 			
-			List<AudioPo> aus = new ArrayList<>();
 			for (int i = 0; i < audios.size(); i++) {
 				Map<String, Object> audiomap = audios.get(i);
 				AudioPo audioPo = new AudioPo();
@@ -197,8 +205,9 @@ public class QTEtl1Process {
 						}
 					}
 				} catch (Exception e) {System.out.println("播放次数出错  "+audioPo.getAudioId());}
-				aus.add(audioPo);
-				
+//				aus.add(audioPo);
+				AudioService audioService = (AudioService) SpringShell.getBean("audioService");
+				audioService.insertAudio(audioPo);
 				//播放次数入库
 				try {
 					cPlayCountPo = new CPlayCountPo();
@@ -208,9 +217,7 @@ public class QTEtl1Process {
 					cPlayCountPo.setResId(audioPo.getAudioId());
 					cPlayCountPo.setPlayCount(Long.valueOf(audioPo.getPlayCount()));
 					cPlayCountService.insertCPlayCount(cPlayCountPo);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				} catch (Exception e) {}
 				
 				try {
 					if (userId==null) userId = "4e44a2268f9901d970d49f6206f20f7a";
@@ -231,13 +238,7 @@ public class QTEtl1Process {
 					}
 				} catch (Exception e) {}
 			}
-			if (aus!=null && aus.size()>0) {
-				AudioService audioService = (AudioService) SpringShell.getBean("audioService");
-				audioService.insertAudioList(aus);
-				return albumPo.getId();
-			} else {
-				albumService.removeAlbumById(albumPo.getId());
-			}
+			return albumPo.getId();
 		}
 		return null;
 	}

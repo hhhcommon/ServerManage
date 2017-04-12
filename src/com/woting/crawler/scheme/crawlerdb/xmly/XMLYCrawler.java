@@ -25,7 +25,7 @@ public class XMLYCrawler {
 	private Map<String, Object> newmap = new HashMap<>();
 	private HttpClientService httpClientService;
 	int httpclientnums = 0;
-	String path = "/opt/CrawlerCS/XMLYREF.txt";
+	String path = "/opt/crawler/XMLYREF.txt";
 	private Scheme scheme;
 	private EtlProcess etlProcess;
 	private File file = null;
@@ -43,7 +43,7 @@ public class XMLYCrawler {
 		etlProcess = new EtlProcess();
 		if (map.containsKey("doingDB")) {
 			Map<String, Object> dbmap = (Map<String, Object>) map.get("doingDB");
-			etlProcess.removeDBAll(dbmap);
+			etlProcess.removeDBAll(dbmap, "喜马拉雅");
 			map.remove("doingDB");
 			FileUtils.writeFile(JsonUtils.objToJson(map), file);
 		}
@@ -162,9 +162,11 @@ public class XMLYCrawler {
 							if (numstr!=null) {
 								iList.add(Integer.valueOf(numstr));
 								String id = insertNewZJ(albumId, numstr, true);
-								newmap.put(albumId, id);
-								etlProcess.makeNewAlbum(id);
-								FileUtils.didDB(file, albumId);
+								if (id!=null) {
+									newmap.put(albumId, id);
+								    etlProcess.makeNewAlbum(id);
+								    FileUtils.didDB(file, albumId);
+								}
 							}
 						} catch (Exception e) {
 							System.out.println("http://mobile.ximalaya.com/mobile/v1/album?albumId="+albumId+"&device=android&isAsc=true&pageId=1&pageSize=1&pre_page=0&source=5");
@@ -224,7 +226,7 @@ public class XMLYCrawler {
 				return tracks.get("totalCount").toString();
 			}
 		} catch (Exception e) {
-			e.getMessage();
+			e.printStackTrace();
 			System.out.println("出错专辑Id    "+albumId);
 		}
 		return null;

@@ -1,5 +1,9 @@
 package com.woting.crawler;
 
+import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,13 +12,23 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.sql.DataSource;
+
+import org.jsoup.Jsoup;
+import org.quartz.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 
+import com.hp.hpl.sparta.Document;
 import com.spiritdata.framework.core.cache.CacheEle;
 import com.spiritdata.framework.core.cache.SystemCache;
+import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.spiritdata.framework.util.JsonUtils;
 import com.spiritdata.framework.util.SequenceUUID;
+import com.woting.cm.core.channel.persis.po.ChannelAssetPo;
+import com.woting.cm.core.channel.persis.po.ChannelPo;
+import com.woting.cm.core.channel.service.ChannelService;
 import com.woting.cm.core.dict.persis.po.DictRefResPo;
 import com.woting.cm.core.dict.service.DictService;
 import com.woting.cm.core.media.persis.po.MediaAssetPo;
@@ -22,11 +36,20 @@ import com.woting.cm.core.media.persis.po.MediaPlayCountPo;
 import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
 import com.woting.cm.core.media.service.MediaService;
 import com.woting.cm.core.person.persis.po.PersonPo;
+import com.woting.cm.core.person.persis.po.PersonRefPo;
 import com.woting.cm.core.person.service.PersonService;
-import com.woting.crawler.core.redis.AddContentRedisThread;
+import com.woting.crawler.core.contentinfo.AddContentInfoThread;
+import com.woting.crawler.core.share.model.Share;
+import com.woting.crawler.core.solr.persis.po.SolrInputPo;
+import com.woting.crawler.core.solr.persis.po.SolrSearchResult;
 import com.woting.crawler.core.solr.service.SolrJService;
+import com.woting.crawler.core.timer.model.Timer;
 import com.woting.crawler.ext.SpringShell;
+import com.woting.crawler.scheme.crawlercategory.crawler.Crawler;
 import com.woting.crawler.scheme.crawlerdb.crawler.EtlProcess;
+import com.woting.crawler.scheme.searchcrawler.service.CrawlerSearch;
+import com.woting.crawler.scheme.utils.FileUtils;
+import com.woting.crawler.scheme.utils.ShareHtml;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -97,17 +120,18 @@ public class Booter {
 //			logger.info("分类抓取定时功能已加载[{}]", timer.getCategoryCronExpression());
 //			logger.info("电台播放地址检测[{}]", timer.getBCPlayIsValidateCronExpression());
 //			logger.info("更新分享临时票据已加载[{}]", timer.getShareCronExpression());
+//			logger.info("更新栏目状态[{}]", timer.getCacheRefreshExpression());
+//			logger.info("同步Solr和Redis数据[{}]", timer.getRedisRefreshExpression());
 //			new CrawlerSearch().start();
+			long beg = System.currentTimeMillis();
+            EtlProcess etlProcess = new EtlProcess();
+            etlProcess.makeDatas();
+            System.out.println(System.currentTimeMillis()-beg);
 //			while(true) {
 //				Thread.sleep(60*60*1000);
 //			}
 //		} catch (Exception e) {
 //			e.printStackTrace();
 //		}
-        
-        long beg = System.currentTimeMillis();
-        EtlProcess etlProcess = new EtlProcess();
-        etlProcess.makeDatas();
-        System.out.println(System.currentTimeMillis()-beg);
 	}
 }

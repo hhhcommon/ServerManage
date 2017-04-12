@@ -1,5 +1,6 @@
 package com.woting.crawler.scheme.crawlerdb.qt;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,29 +9,54 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.spiritdata.framework.util.JsonUtils;
+import com.woting.crawler.Booter;
 import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.scheme.crawlerdb.crawler.EtlProcess;
 import com.woting.crawler.scheme.utils.FileUtils;
 
 public class QTCrawler {
+	private Logger logger = LoggerFactory.getLogger(QTCrawler.class);
 	private Map<String, Object> map = new HashMap<>();
 	private Map<String, Object> newmap = new HashMap<>();
 	int httpclientnums = 0;
-	String path = "/opt/CrawlerCS/QTREF.txt";
+	String path = null;
 	private Scheme scheme;
+	private File file;
+	private EtlProcess etlProcess;
+	private boolean isOk = false;
 	
 	@SuppressWarnings("unchecked")
 	public QTCrawler(Scheme scheme) {
-		String str = FileUtils.readFile(path);
-		if (str!=null && str.length()>0) {
-			map = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
-		}
 		this.scheme = scheme;
+		if (scheme.getQTCachePath()==null || scheme.getQTCachePath().length()<1) {
+			return;
+		}
+		path = scheme.getQTCachePath();
+		file = new File(path);
+		String str = FileUtils.readFile(path);
+		if (str!=null && str.length()>32) {
+			map = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
+			etlProcess = new EtlProcess();
+			if (map.containsKey("doingDB")) {
+				Map<String, Object> dbmap = (Map<String, Object>) map.get("doingDB");
+				etlProcess.removeDBAll(dbmap, "蜻蜓");
+				map.remove("doingDB");
+				FileUtils.writeFile(JsonUtils.objToJson(map), file);
+			}
+		}
+		this.isOk = true;
 	}
 	
 	@SuppressWarnings("unchecked")
 	public void beginCrawler() {
+		if (!isOk) {
+			logger.info("蜻蜓抓取启动失败");
+			return ;
+		}
 		List<String> newls = new ArrayList<>();
 		Map<String, Object> catemap = new HashMap<>();
 		try {
@@ -106,8 +132,8 @@ public class QTCrawler {
 					break;
 				}
 			}
-			FileUtils.writeFile(JsonUtils.objToJson(map), path);
-			System.out.println(newls.size());
+//			FileUtils.writeFile(JsonUtils.objToJson(map), path);
+			System.out.println("待新增专辑"+newls.size());
 			EtlProcess etlProcess = new EtlProcess();
 			List<Integer> iList = new ArrayList<>();
 			fixedThreadPool = Executors.newFixedThreadPool(scheme.getQTThread_Limit_Size());
@@ -118,16 +144,19 @@ public class QTCrawler {
 						String albumId = newls.get(fonum);
 						try {
 							Thread.sleep(50);
+							FileUtils.doingDB(file, albumId, map, scheme.getSchemenum());
 							String numstr = insertNewZJ(albumId,"1",false);
 							System.out.println(albumId+"   "+numstr);
 							if (numstr!=null) {
 								iList.add(Integer.valueOf(numstr));
 								String id = insertNewZJ(albumId, numstr, true);
-								newmap.put(albumId, id);
-								etlProcess.makeNewAlbum(id);
+								if (id!=null) {
+									newmap.put(albumId, id);
+									etlProcess.makeNewAlbum(id);
+									FileUtils.didDB(file, albumId);
+								}
 							}
 						} catch (Exception e) {
-							System.out.println("http://mobile.ximalaya.com/mobile/v1/album?albumId="+albumId+"&device=android&isAsc=true&pageId=1&pageSize=1&pre_page=0&source=5");
 							e.printStackTrace();
 						}
 					}

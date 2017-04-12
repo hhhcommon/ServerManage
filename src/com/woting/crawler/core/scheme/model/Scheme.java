@@ -23,6 +23,8 @@ public class Scheme {
 	private JedisConnectionFactory jedisConnectionFactory;
 	private int XMLYThread_Limit_Size;
 	private int QTThread_Limit_Size;
+	private String XMLYCachePath;
+	private String QTCachePath;
 	
 	public Scheme() {
 		SchemePo schemePo = (SchemePo) SpringShell.getBean("scheme");
@@ -34,6 +36,8 @@ public class Scheme {
 		this.setcTimestamp(new Timestamp(System.currentTimeMillis()));
 		this.setXMLYThread_Limit_Size(schemePo.getXMLYThread_Limit_Size());
 		this.setQTThread_Limit_Size(schemePo.getQTThread_Limit_Size());
+		this.setXMLYCachePath(schemePo.getXMLYCachePath());
+		this.setQTCachePath(schemePo.getQTCachePath());
 		this.etl1Process = new Etl1Process();
 		this.jedisConnectionFactory = (JedisConnectionFactory) SpringShell.getBean("connectionFactory");
 		this.redisOperService = new RedisOperService(jedisConnectionFactory, this.getRedisDB());
@@ -108,5 +112,17 @@ public class Scheme {
 	}
 	public void setQTThread_Limit_Size(int qTThread_Limit_Size) {
 		QTThread_Limit_Size = qTThread_Limit_Size;
+	}
+	public String getXMLYCachePath() {
+		return XMLYCachePath;
+	}
+	public void setXMLYCachePath(String xMLYCachePath) {
+		XMLYCachePath = xMLYCachePath;
+	}
+	public String getQTCachePath() {
+		return QTCachePath;
+	}
+	public void setQTCachePath(String qTCachePath) {
+		QTCachePath = qTCachePath;
 	}
 }

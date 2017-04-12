@@ -3,6 +3,7 @@ package com.woting.crawler.scheme.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.pdfbox.encoding.conversion.CJKConverter;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -17,7 +18,7 @@ import com.woting.crawler.core.solr.persis.po.SolrInputPo;
  */
 public abstract class SolrUtils {
 
-	public static SolrInputPo convert2SolrInput(Object obj, String pid, long playcount) {
+	public static SolrInputPo convert2SolrInput(Object obj, String pid, String persons, String chstr, long playcount) {
 		if (obj instanceof SeqMediaAssetPo) {
 			SeqMediaAssetPo sma = (SeqMediaAssetPo) obj;
 			SolrInputPo sPo = new SolrInputPo();
@@ -27,7 +28,13 @@ public abstract class SolrUtils {
 			sPo.setItem_type("SEQU");
 			sPo.setItem_mediasize(sma.getSmaAllCount());
 			sPo.setItem_publisher(sma.getSmaPublisher());
+			if (chstr!=null) {
+				sPo.setItem_channel(chstr);
+			}
 			sPo.setItem_descn(sma.getDescn());
+			if (persons!=null) {
+				sPo.setItem_persons(persons);
+			}
 			sPo.setItem_playcount(playcount);
 			return sPo;
 		} else {
@@ -39,10 +46,16 @@ public abstract class SolrUtils {
 				if (pid!=null) {
 					sPo.setItem_pid(pid);
 				}
+				if (persons!=null) {
+					sPo.setItem_persons(persons);
+				}
 				sPo.setItem_title(ma.getMaTitle());
 				sPo.setItem_publisher(ma.getMaPublisher());
 				sPo.setItem_descn(ma.getDescn());
 				sPo.setItem_timelong(ma.getTimeLong());
+				if (chstr!=null) {
+					sPo.setItem_channel(chstr);
+				}
 				sPo.setItem_playcount(playcount);
 				sPo.setItem_type("AUDIO");
 				return sPo;
@@ -66,6 +79,8 @@ public abstract class SolrUtils {
 			if (solrInputPo.getItem_pid()!=null) document.addField("item_pid", solrInputPo.getItem_pid());
 		    document.addField("item_playcount", solrInputPo.getItem_playcount());
 			if (solrInputPo.getItem_descn()!=null) document.addField("item_descn", solrInputPo.getItem_descn());
+			if (solrInputPo.getItem_persons()!=null) document.addField("item_persons", solrInputPo.getItem_persons());
+			if (solrInputPo.getItem_channel()!=null) document.addField("item_channel", solrInputPo.getItem_channel());
 			return document;
 		}
 		return null;
@@ -97,7 +112,7 @@ public abstract class SolrUtils {
 					str = str.replace(allergicField[i], reallergicField[i]);
 				}
 				if (str.contains("(") && !str.contains(")")) str = str.replace("(", "");
-				if (str.contains(")") && !str.contains("(")) str = str.replace(")", ""); 
+				if (str.contains(")") && !str.contains("(")) str = str.replace(")", "");
 				for (int i = 0; i < analysis.length; i++) {
 					str = str.replace(analysis[i], reanalysis[i]);
 				}
