@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- Etl与资源对应关系 -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="A_DICTREF">
+  <!-- 对应关系 -->
+  <resultMap id="BaseResultMap" type="dictref">
+    <id      column="id"             property="id"             jdbcType="VARCHAR"/>
+    <result  column="resTableName"   property="resTableName"   jdbcType="VARCHAR"/>
+    <result  column="resId"          property="resId"          jdbcType="VARCHAR"/>
+    <result  column="cdictMid"       property="cdictMid"       jdbcType="VARCHAR"/>
+    <result  column="cdictDid"       property="cdictDid"       jdbcType="VARCHAR"/>
+    <result  column="cTime"          property="cTime"          jdbcType="TIMESTAMP"/>
+  </resultMap>
+
+  <!-- 所有列 -->
+  <sql id="Base_Column_List">
+    id, resTableName, resId, cdictMid, cdictDid, cTime
+  </sql>
+  
+  <!-- 条件子句 -->
+  <sql id="WhereClauseByEntiey">
+    <where>
+      <trim prefix="(" suffix=")" prefixOverrides="and">
+        <if test="id!=null">and id=#{id,jdbcType=VARCHAR}</if>
+        <if test="resId!=null">and resId=#{resId,jdbcType=VARCHAR}</if>
+        <if test="resTableName!=null">and resTableName=#{resTableName,jdbcType=VARCHAR}</if>
+        <if test="cdictMid!=null">and cdictMid=#{cdictMid,jdbcType=VARCHAR}</if>
+        <if test="cdictDid!=null">and cdictDid=#{cdictDid,jdbcType=VARCHAR}</if>
+      </trim>
+    </where>
+  </sql>
+  
+  <!-- 新增数据 -->
+  <insert id="insert" parameterType="java.util.Map">
+    insert into c_ResDict_Ref
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id!=null">id,</if>
+      <if test="resId!=null">resId,</if>
+      <if test="resTableName!=null">resTableName,</if>
+      <if test="cdictMid!=null">cdictMid,</if>
+      <if test="cdictDid!=null">cdictDid,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
+      <if test="resId!=null">#{resId,jdbcType=VARCHAR},</if>
+      <if test="resTableName!=null">#{resTableName,jdbcType=VARCHAR},</if>
+      <if test="cdictMid!=null">#{cdictMid,jdbcType=VARCHAR},</if>
+      <if test="cdictDid!=null">#{cdictDid,jdbcType=VARCHAR},</if>
+    </trim>
+  </insert>
+  
+  <select id="getList" resultMap="BaseResultMap" parameterType="java.util.Map">
+    select <include refid="Base_Column_List"/> from c_ResDict_Ref
+    <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if> 
+  </select>
+  
+</mapper>

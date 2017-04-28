@@ -14,18 +14,10 @@ public class AudioPo extends BaseObject {
 	private String audioImg;
 	private String audioURL;
 	private String audioTags;
-	private String albumId;
-	private String albumName;
-	private int columnNum;
-	private String categoryId;
-	private String categoryName;
 	private String duration;
 	private String descn;
 	private String visitUrl;
-	private String playCount;
-	private String crawlerNum;
-	private String schemeId;
-	private String schemeName;
+	private Timestamp pubTime;
 	private Timestamp cTime;
 	
 	public String getId() {
@@ -70,36 +62,6 @@ public class AudioPo extends BaseObject {
 	public void setAudioTags(String audioTags) {
 		this.audioTags = audioTags;
 	}
-	public int getColumnNum() {
-		return columnNum;
-	}
-	public void setColumnNum(int columnNum) {
-		this.columnNum = columnNum;
-	}
-	public String getAlbumId() {
-		return albumId;
-	}
-	public void setAlbumId(String albumId) {
-		this.albumId = albumId;
-	}
-	public String getAlbumName() {
-		return albumName;
-	}
-	public void setAlbumName(String albumName) {
-		this.albumName = albumName;
-	}
-	public String getCategoryId() {
-		return categoryId;
-	}
-	public void setCategoryId(String categoryId) {
-		this.categoryId = categoryId;
-	}
-	public String getCategoryName() {
-		return categoryName;
-	}
-	public void setCategoryName(String categoryName) {
-		this.categoryName = categoryName;
-	}
 	public String getDuration() {
 		return duration;
 	}
@@ -112,35 +74,11 @@ public class AudioPo extends BaseObject {
 	public void setDescn(String descn) {
 		this.descn = descn;
 	}
-	public String getPlayCount() {
-		return playCount;
-	}
-	public void setPlayCount(String playCount) {
-		this.playCount = playCount;
-	}
 	public String getVisitUrl() {
 		return visitUrl;
 	}
 	public void setVisitUrl(String visitUrl) {
 		this.visitUrl = visitUrl;
-	}
-	public String getCrawlerNum() {
-		return crawlerNum;
-	}
-	public void setCrawlerNum(String crawlerNum) {
-		this.crawlerNum = crawlerNum;
-	}
-	public String getSchemeId() {
-		return schemeId;
-	}
-	public void setSchemeId(String schemeId) {
-		this.schemeId = schemeId;
-	}
-	public String getSchemeName() {
-		return schemeName;
-	}
-	public void setSchemeName(String schemeName) {
-		this.schemeName = schemeName;
 	}
 	public Timestamp getcTime() {
 		return cTime;
@@ -148,6 +86,10 @@ public class AudioPo extends BaseObject {
 	public void setcTime(Timestamp cTime) {
 		this.cTime = cTime;
 	}
-	
-	
+	public Timestamp getPubTime() {
+		return pubTime;
+	}
+	public void setPubTime(Timestamp pubTime) {
+		this.pubTime = pubTime;
+	}
 }

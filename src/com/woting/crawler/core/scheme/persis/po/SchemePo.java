@@ -10,6 +10,7 @@ public class SchemePo {
 	private int QTThread_Limit_Size;
 	private String XMLYCachePath;
 	private String QTCachePath;
+	private String CralwerSwitch;
 	public String getSchemenum() {
 		return Schemenum;
 	}
@@ -63,5 +64,11 @@ public class SchemePo {
 	}
 	public void setQTCachePath(String qTCachePath) {
 		QTCachePath = qTCachePath;
+	}
+	public String getCralwerSwitch() {
+		return CralwerSwitch;
+	}
+	public void setCralwerSwitch(String cralwerSwitch) {
+		CralwerSwitch = cralwerSwitch;
 	}
 }

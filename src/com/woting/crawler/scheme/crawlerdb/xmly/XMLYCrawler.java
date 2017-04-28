@@ -25,7 +25,7 @@ public class XMLYCrawler {
 	private Map<String, Object> newmap = new HashMap<>();
 	private HttpClientService httpClientService;
 	int httpclientnums = 0;
-	String path = "/opt/crawler/XMLYREF.txt";
+	String path = "/opt/CrawlerDB/XMLYREF.txt";
 	private Scheme scheme;
 	private EtlProcess etlProcess;
 	private File file = null;
@@ -155,18 +155,18 @@ public class XMLYCrawler {
 					public void run() {
 						String albumId = newls.get(fonum);
 						try {
-							FileUtils.doingDB(file, albumId, map, scheme.getSchemenum());
+//							FileUtils.doingDB(file, albumId, map, scheme.getSchemenum());
 							Thread.sleep(50);
 							String numstr = insertNewZJ(albumId,"1",false);
 							System.out.println(albumId+"   "+numstr);
 							if (numstr!=null) {
 								iList.add(Integer.valueOf(numstr));
 								String id = insertNewZJ(albumId, numstr, true);
-								if (id!=null) {
-									newmap.put(albumId, id);
-								    etlProcess.makeNewAlbum(id);
-								    FileUtils.didDB(file, albumId);
-								}
+//								if (id!=null) {
+//									newmap.put(albumId, id);
+//								    etlProcess.makeNewAlbum(id);
+//								    FileUtils.didDB(file, albumId);
+//								}
 							}
 						} catch (Exception e) {
 							System.out.println("http://mobile.ximalaya.com/mobile/v1/album?albumId="+albumId+"&device=android&isAsc=true&pageId=1&pageSize=1&pre_page=0&source=5");

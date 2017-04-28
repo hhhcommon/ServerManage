@@ -21,7 +21,7 @@
     <property name="url" value="${local.mysql.url}"/>
     <property name="username" value="${local.mysql.username}"/>
     <property name="password" value="${local.mysql.password}"/>
-    <property name="initialSize" value="30"/>
+    <property name="initialSize" value="500"/>
     <property name="maxActive" value="5000"/>
     <property name="maxWait" value="600000"/>
     <property name="poolPreparedStatements" value="true"/>
@@ -57,8 +57,8 @@
     <property name="url" value="${cacheDB.mysql.url}"/>
     <property name="username" value="${cacheDB.mysql.username}"/>
     <property name="password" value="${cacheDB.mysql.password}"/>
-    <property name="initialSize" value="30"/>
-    <property name="maxActive" value="50"/>
+    <property name="initialSize" value="500"/>
+    <property name="maxActive" value="5000"/>
     <property name="maxWait" value="60000"/>
     <property name="poolPreparedStatements" value="true"/>
     <property name="maxOpenPreparedStatements" value="30"/>
@@ -92,7 +92,7 @@
     <property name="url" value="${wtMain.mysql.url}"/>
     <property name="username" value="${wtMain.mysql.username}"/>
     <property name="password" value="${wtMain.mysql.password}"/>
-    <property name="initialSize" value="30"/>
+    <property name="initialSize" value="500"/>
     <property name="maxActive" value="5000"/>
     <property name="maxWait" value="60000"/>
     <property name="poolPreparedStatements" value="true"/>
@@ -181,6 +181,7 @@
   <bean id="scheme" class="com.woting.crawler.core.scheme.persis.po.SchemePo" scope="prototype">
     <property name="Schemenum" value="${scheme.Schemenum}"/>
     <property name="CrawlerExtent" value="${scheme.CrawlerExtent}"/>
+    <property name="CralwerSwitch" value="${scheme.CralwerSwitch}"/>
     <property name="NumberOfCrawlers" value="${scheme.NumberOfCrawlers}"/>
     <property name="RedisDB" value="${scheme.RedisDB}"/>
     <property name="RedisSnapShootDB" value="${scheme.RedisSnapShootDB}"/>
@@ -200,6 +201,15 @@
     <property name="wxAppId" value="${share.wxAppId}"/>
     <property name="wxAppSecret" value="${share.wxAppSecret}"/>
     <property name="RedisDB" value="${share.RedisDB}"/>
+  </bean>
+  
+  <!-- 分享功能 -->
+  <bean id="ossconfig" class="com.woting.cm.core.oss.persis.po.OssConfigPo" scope="prototype">
+    <property name="Endpoint" value="${oss.Endpoint}"/>
+    <property name="AccessKeyId" value="${oss.AccessKeyId}"/>
+    <property name="AccessKeySecret" value="${oss.AccessKeySecret}"/>
+    <property name="BucketName" value="${oss.BucketName}"/>
+    <property name="TempFile" value="${oss.TempFile}"/>
   </bean>
   
     <!--定义连接管理器-->

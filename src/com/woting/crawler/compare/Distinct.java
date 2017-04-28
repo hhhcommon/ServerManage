@@ -154,7 +154,7 @@ public class Distinct {
 		while (als.hasNext()) {
 			try {
 				AlbumPo al = (AlbumPo) als.next();
-				List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
+				List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), null);
 				if (aulist != null && aulist.size() > 0) {
 					Iterator<AudioPo> aus = aulist.iterator();
 					while (aus.hasNext()) {
@@ -245,7 +245,7 @@ public class Distinct {
 					if (smalist != null && smalist.size() > 0) {
 						logger.info("资源库存在专辑[{}]", al.getAlbumName() + "_" + al.getAlbumPublisher());
 						Album album = new Album();
-						List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
+						List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), null);
 						album.setAlbumPo(al);
 						album.setAudiolist(aulist);
 						oldlist.add(album);
@@ -286,7 +286,7 @@ public class Distinct {
 						Map<String, Object> m = new HashMap<>();
 						m.put("album", al);
 						m.put("Sma", sma);
-						List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
+						List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), null);
 						List<Map<String, Object>> lm = new ArrayList<>();
 						List<AudioPo> la = new ArrayList<>();
 						if (aulist != null && aulist.size() > 0) {

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- Etl与资源对应关系 -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="A_ALBUMAUDIOREF">
+  <!-- 对应关系 -->
+  <resultMap id="BaseResultMap" type="albumaudioref">
+    <id      column="id"             property="id"             jdbcType="VARCHAR"/>
+    <result  column="alId"           property="alId"           jdbcType="VARCHAR"/>
+    <result  column="auId"           property="auId"           jdbcType="VARCHAR"/>
+    <result  column="columnNum"      property="columnNum"      jdbcType="INTEGER"/>
+    <result  column="isMain"         property="isMain"         jdbcType="INTEGER"/>
+    <result  column="cTime"          property="cTime"          jdbcType="TIMESTAMP"/>
+  </resultMap>
+  
+  <!-- 条件子句 -->
+  <sql id="WhereClauseByEntiey">
+    <where>
+      <trim prefix="(" suffix=")" prefixOverrides="and">
+        <if test="id!=null">and id=#{id,jdbcType=VARCHAR}</if>
+        <if test="alId!=null">and alId=#{alId,jdbcType=VARCHAR}</if>
+        <if test="auId!=null">and auId=#{auId,jdbcType=VARCHAR}</if>
+        <if test="columnNum!=null">and columnNum=#{columnNum,jdbcType=INTEGER}</if>
+        <if test="isMain!=null">and isMain=#{isMain,jdbcType=INTEGER}</if>
+      </trim>
+    </where>
+  </sql>
+
+  <!-- 所有列 -->
+  <sql id="Base_Column_List">
+    id, alId, auId, columnNum, isMain, cTime
+  </sql>
+  
+  <!-- 新增数据 -->
+  <insert id="insert" parameterType="java.util.Map">
+    insert into c_AlbumAudio_Ref
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id!=null">id,</if>
+      <if test="alId!=null">alId,</if>
+      <if test="auId!=null">auId,</if>
+      <if test="columnNum!=null">columnNum,</if>
+      <if test="isMain!=null">isMain,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
+      <if test="alId!=null">#{alId,jdbcType=VARCHAR},</if>
+      <if test="auId!=null">#{auId,jdbcType=VARCHAR},</if>
+      <if test="columnNum!=null">#{columnNum,jdbcType=INTEGER},</if>
+      <if test="isMain!=null">#{isMain,jdbcType=INTEGER},</if>
+    </trim>
+  </insert>
+  
+  <select id="getList" parameterType="java.util.Map" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/> from c_AlbumAudio_Ref 
+    <if test="_parameter!=null">
+      <include refid="WhereClauseByEntiey"/>
+      <if test="sortByClause!=null">order by ${sortByClause}</if>
+    </if>
+  </select>
+  
+  <select id="getRefInfo" parameterType="java.util.Map" resultMap="BaseResultMap">
+    select * from c_AlbumAudio_Ref <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
+  </select>
+  
+  <select id="count" resultType="java.lang.Integer" parameterType="java.util.Map">
+    select count(*) from c_AlbumAudio_Ref where <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
+  </select>
+  
+  <delete id="deleteBy" parameterType="java.util.Map">
+    delete from c_AlbumAudio_Ref <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
+  </delete>
+  
+</mapper>

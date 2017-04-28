@@ -337,7 +337,7 @@ public class ImageUtils {
 		public static BufferedImage readPNGImage(String filename)
 		{
 			try {
-				File inputFile = new File(filename);  
+				File inputFile = new File(filename);
 		        BufferedImage sourceImage = ImageIO.read(inputFile);
 				return sourceImage;
 			} catch (FileNotFoundException e) {

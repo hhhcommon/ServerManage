@@ -53,29 +53,29 @@
   </sql>
 
   <insert id="insertList" parameterType="java.util.Map">
-    insert into hotspot_DictD(id, sourceId, mId, pId, publisher, ddName, nPy, aliasName, anPy, visitUrl, descn, isValidate, crawlerNum, schemeId, schemeName, cTime) values
+    insert into c_DictD(id, sourceId, mId, pId, publisher, ddName, nPy, aliasName, anPy, visitUrl, descn, isValidate, crawlerNum, schemeId, schemeName, cTime) values
     <foreach collection="list" item="list" index="index" separator=",">
      (#{list.id},#{list.sourceId},#{list.mId},#{list.pId},#{list.publisher},#{list.ddName},#{list.nPy},#{list.aliasName},#{list.anPy},#{list.visitUrl},#{list.descn},#{list.isValidate},#{list.crawlerNum},#{list.schemeId},#{list.schemeName},#{list.cTime})
     </foreach>
   </insert>
   
   <select id="getDictdValidNum" resultMap="BaseResultMap" parameterType="java.lang.String">
-    select * from hotspot_DictD where isValidate='1' and publisher=#{publisher,jdbcType=VARCHAR}
+    select * from c_DictD where isValidate='1' and publisher=#{publisher,jdbcType=VARCHAR}
   </select>
   
   <select id="getListByPub" resultMap="BaseResultMap" parameterType="java.util.Map">
-    select <include refid="Base_Column_List"/> from hotspot_DictD where publisher=#{publisher,jdbcType=VARCHAR}
+    select <include refid="Base_Column_List"/> from c_DictD where publisher=#{publisher,jdbcType=VARCHAR}
   </select>
   
   <select id="getListByMid" resultMap="BaseResultMap" parameterType="java.lang.String">
-    select <include refid="Base_Column_List"/> from hotspot_DictD where mId=#{mId,jdbcType=VARCHAR} and pId = '0'
+    select <include refid="Base_Column_List"/> from c_DictD where mId=#{mId,jdbcType=VARCHAR} and pId = '0'
   </select>
   
   <select id="getDictDInfo" resultMap="BaseResultMap" parameterType="java.util.Map">
-    select <include refid="Base_Column_List"/> from hotspot_DictD <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
+    select <include refid="Base_Column_List"/> from c_DictD <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
   </select>
   
   <select id="getMaxIsValidate" resultMap="BaseResultMap" parameterType="java.lang.String">
-    select <include refid="Base_Column_List"/> from hotspot_DictD where publisher=#{publisher,jdbcType=VARCHAR} order by crawlerNum desc limit 1
+    select <include refid="Base_Column_List"/> from c_DictD where publisher=#{publisher,jdbcType=VARCHAR} order by crawlerNum desc limit 1
   </select>
 </mapper>

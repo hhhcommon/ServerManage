@@ -72,7 +72,7 @@
   <select id="getListBy" resultMap="BaseResultMap" parameterType="java.util.Map">
     SELECT pers.* from c_Person pers
 	LEFT JOIN c_Person_Ref persf
-	ON pers.pSrcId = persf.personId
+	ON pers.id = persf.personId
 	where persf.resId = #{resId,jdbcType=VARCHAR} and persf.resTableName = #{resTableName,jdbcType=VARCHAR}
 	and pers.pSource=#{pSource,jdbcType=VARCHAR}
   </select>

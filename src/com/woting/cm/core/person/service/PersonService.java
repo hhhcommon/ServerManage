@@ -46,6 +46,18 @@ public class PersonService {
 		return null;
 	}
 	
+	public PersonRefPo getPersonRefBy(String personId, String resTableName, String resId) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("resTableName", resTableName);
+		m.put("resId", resId);
+		m.put("personId", personId);
+		List<PersonRefPo> pfs = personRefDao.queryForList("getListBy", m);
+		if (pfs!=null && pfs.size()>0) {
+			return pfs.get(0);
+		}
+		return null;
+	}
+	
 	public void insertPerson(List<PersonPo> ps) {
 		Map<String, Object> m = new HashMap<>();
 		m.put("list", ps);

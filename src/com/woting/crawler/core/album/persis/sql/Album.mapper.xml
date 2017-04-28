@@ -11,14 +11,8 @@
     <result  column="albumPublisher" property="albumPublisher" jdbcType="VARCHAR"/>
     <result  column="albumImg"       property="albumImg"       jdbcType="VARCHAR"/>
     <result  column="albumTags"      property="albumTags"      jdbcType="VARCHAR"/>
-    <result  column="categoryId"     property="categoryId"     jdbcType="VARCHAR"/>
-    <result  column="categoryName"   property="categoryName"   jdbcType="VARCHAR"/>
     <result  column="descn"          property="descn"          jdbcType="VARCHAR"/>
     <result  column="visitUrl"       property="visitUrl"       jdbcType="VARCHAR"/>
-    <result  column="playCount"      property="playCount"      jdbcType="VARCHAR"/>
-    <result  column="crawlerNum"     property="crawlerNum"     jdbcType="VARCHAR"/>
-    <result  column="schemeId"       property="schemeId"       jdbcType="VARCHAR"/>
-    <result  column="schemeName"     property="schemeName"     jdbcType="VARCHAR"/>
     <result  column="cTime"          property="cTime"          jdbcType="TIMESTAMP"/>
   </resultMap>
   
@@ -34,23 +28,19 @@
         <if test="albumPublisher!=null">and albumPublisher=#{albumPublisher,jdbcType=VARCHAR}</if>
         <if test="descn!=null">and descn=#{descn,jdbcType=VARCHAR}</if>
         <if test="visitUrl!=null">and visitUrl=#{visitUrl,jdbcType=VARCHAR}</if>
-        <if test="playCount!=null">and playCount=#{playCount,jdbcType=VARCHAR}</if>
-        <if test="crawlerNum!=null">and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}</if>
-        <if test="schemeId!=null">and schemeId=#{schemeId,jdbcType=VARCHAR}</if>
-        <if test="schemeName!=null">and schemeName=#{schemeName,jdbcType=VARCHAR}</if>
       </trim>
     </where>
   </sql>
 
   <!-- 所有列 -->
   <sql id="Base_Column_List">
-    id, albumId, albumName, albumPublisher, albumImg, albumTags, categoryId, categoryName, descn, visitUrl, playCount, crawlerNum, schemeId, schemeName, cTime
+    id, albumId, albumName, albumPublisher, albumImg, albumTags, descn, visitUrl, pubTime, cTime
   </sql>
 
   <insert id="insertList" parameterType="java.util.List">
-    Insert into c_Album (id,albumId,albumName,albumPublisher,albumImg,albumTags,categoryId,categoryName,descn,visitUrl,playCount,crawlerNum,schemeId,schemeName,cTime) values
+    Insert into c_Album (id, albumId, albumName, albumPublisher, albumImg, albumTags, descn, visitUrl, pubTime, cTime) values
     <foreach collection="list" item="list" index="index" separator=",">
-     (#{list.id},#{list.albumId},#{list.albumName},#{list.albumPublisher},#{list.albumImg},#{list.albumTags},#{list.categoryId},#{list.categoryName},#{list.descn},#{list.visitUrl},#{list.playCount},#{list.crawlerNum},#{list.schemeId},#{list.schemeName},#{list.cTime})
+     (#{list.id},#{list.albumId},#{list.albumName},#{list.albumPublisher},#{list.albumImg},#{list.albumTags},#{list.descn},#{list.visitUrl},#{list.pubTime},#{list.cTime})
     </foreach>
   </insert>
   
@@ -61,9 +51,6 @@
       <if test="albumTags!=null">albumTags=Null,</if>
       <if test="descn!=null">descn=Null,</if>
       <if test="visitUrl!=null">visitUrl=Null,</if>
-      <if test="playCount!=null">playCount=Null,</if>
-      <if test="schemeId!=null">schemeId=Null,</if>
-      <if test="schemeName!=null">schemeName=Null,</if>
     </set>
     <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
   </update>
@@ -76,8 +63,9 @@
     select <include refid="Base_Column_List"/> from c_Album
     <if test="_parameter!=null">
       <include refid="WhereClauseByEntiey"/>
-      <if test="sortByClause!=null">order by ${sortByClause}</if>
+      <if test="sortByClause!=null"> order by ${sortByClause}</if>
     </if>
+    <if test="pageByClause!=null"> limit ${pageByClause}</if>
   </select>
   
   <select id="getAlbumInfo" parameterType="java.lang.String" resultMap="BaseResultMap">

@@ -55,9 +55,9 @@ public class RemoveCrawlerSameRecord {
 										if (oldal.getDescn()!=null) {
 											oldalstr += oldal.getDescn();
 										}
-										if (oldal.getCategoryName()!=null) {
-											oldalstr += oldal.getCategoryName();
-										}
+//										if (oldal.getCategoryName()!=null) {
+//											oldalstr += oldal.getCategoryName();
+//										}
 										for (AlbumPo albumPo : albs) {
 											try {
 												String alstr = "";
@@ -70,9 +70,9 @@ public class RemoveCrawlerSameRecord {
 												if (albumPo.getDescn()!=null) {
 													alstr += albumPo.getDescn();
 												}
-												if (albumPo.getCategoryName()!=null) {
-													alstr += albumPo.getCategoryName();
-												}
+//												if (albumPo.getCategoryName()!=null) {
+//													alstr += albumPo.getCategoryName();
+//												}
 												if (oldalstr.equals(alstr)) {
 													albumService.removeAlbumById(albumPo.getId());
 												}
@@ -113,13 +113,13 @@ public class RemoveCrawlerSameRecord {
 											List<AudioPo> auds = audioService.getAudios(m);
 											if (auds != null) {
 												for (AudioPo audioPo : auds) {
-													String oldstr = oldau.getAudioImg()==null?"":oldau.getAudioImg()+oldau.getAudioTags()==null?"":oldau.getAudioTags()+oldau.getCategoryName()==null?"":oldau.getCategoryName()+oldau.getAudioURL()+oldau.getDescn()==null?"":oldau.getDescn();
-													String newstr = audioPo.getAudioImg()==null?"":audioPo.getAudioImg()+audioPo.getAudioTags()==null?"":audioPo.getAudioTags()+audioPo.getCategoryName()==null?"":audioPo.getCategoryName()+audioPo.getAudioURL()+audioPo.getDescn()==null?"":audioPo.getDescn();
-													System.out.println(oldstr);
-													System.out.println(newstr);
-													if (oldstr.equals(newstr)) {
-														audioService.removeSameAudio(audioPo.getId());
-													}
+//													String oldstr = oldau.getAudioImg()==null?"":oldau.getAudioImg()+oldau.getAudioTags()==null?"":oldau.getAudioTags()+oldau.getCategoryName()==null?"":oldau.getCategoryName()+oldau.getAudioURL()+oldau.getDescn()==null?"":oldau.getDescn();
+//													String newstr = audioPo.getAudioImg()==null?"":audioPo.getAudioImg()+audioPo.getAudioTags()==null?"":audioPo.getAudioTags()+audioPo.getCategoryName()==null?"":audioPo.getCategoryName()+audioPo.getAudioURL()+audioPo.getDescn()==null?"":audioPo.getDescn();
+//													System.out.println(oldstr);
+//													System.out.println(newstr);
+//													if (oldstr.equals(newstr)) {
+//														audioService.removeSameAudio(audioPo.getId());
+//													}
 												}
 											}
 										} catch (Exception e) {

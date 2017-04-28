@@ -19,8 +19,8 @@ Class-Path: runlib/spring-boot-starter-1.3.2.RELEASE.jar runlib/spring
  r runlib/cglib-nodep-3.1.jar runlib/jackson-databind-2.6.5.jar runlib
  /jackson-annotations-2.6.5.jar runlib/jackson-core-2.6.5.jar runlib/c
  rawler4j-4.2.jar runlib/slf4j-api-1.7.13.jar runlib/lidalia-slf4j-ext
- -1.0.0.jar runlib/guava-14.0.1.jar runlib/httpclient-4.5.1.jar runlib
- /httpcore-4.4.4.jar runlib/commons-codec-1.9.jar runlib/je-5.0.73.jar
+ -1.0.0.jar runlib/guava-14.0.1.jar runlib/httpclient-4.4.1.jar runlib
+ /httpcore-4.4.1.jar runlib/commons-codec-1.9.jar runlib/je-5.0.73.jar
   runlib/tika-parsers-1.5.jar runlib/tika-core-1.5.jar runlib/vorbis-j
  ava-tika-0.1.jar runlib/netcdf-4.2-min.jar runlib/apache-mime4j-core-
  0.7.2.jar runlib/apache-mime4j-dom-0.7.2.jar runlib/commons-compress-
@@ -43,7 +43,7 @@ Class-Path: runlib/spring-boot-starter-1.3.2.RELEASE.jar runlib/spring
  noggit-0.5.jar runlib/spring-data-commons-1.11.2.RELEASE.jar runlib/spri
  ng-data-keyvalue-1.0.2RELEASE.jar runlib/spring-data-redis-1.7.4.RELEASE
  .jar runlib/spring-oxm-4.2.4.RELEASE.jar runlib/thumbnailator-0.4.8.jar
-  runlib/httpclient-4.5.2.jar runlib/httpcore-4.4.4.jar
+  runlib/aliyun-sdk-oss-2.5.0.jar
 Created-By: Apache Maven 3.1.1
 Build-Jdk: 1.8.0_66
 Implementation-Vendor: Pivotal Software, Inc.

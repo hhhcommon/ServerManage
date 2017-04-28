@@ -15,14 +15,9 @@ public class AlbumPo extends BaseObject {
 	private String albumPublisher;
 	private String albumImg;
 	private String albumTags;
-	private String categoryId;
-	private String categoryName;
 	private String descn;
 	private String visitUrl;
-	private String playCount;
-	private String crawlerNum;
-	private String schemeId;
-	private String schemeName;
+	private Timestamp pubTime;
 	private Timestamp cTime;
 	private List<AudioPo> audioPos;
 	
@@ -62,18 +57,6 @@ public class AlbumPo extends BaseObject {
 	public void setAlbumTags(String albumTags) {
 		this.albumTags = albumTags;
 	}
-	public String getCategoryId() {
-		return categoryId;
-	}
-	public void setCategoryId(String categoryId) {
-		this.categoryId = categoryId;
-	}
-	public String getCategoryName() {
-		return categoryName;
-	}
-	public void setCategoryName(String categoryName) {
-		this.categoryName = categoryName;
-	}
 	public String getDescn() {
 		return descn;
 	}
@@ -86,30 +69,6 @@ public class AlbumPo extends BaseObject {
 	public void setVisitUrl(String visitUrl) {
 		this.visitUrl = visitUrl;
 	}
-	public String getPlayCount() {
-		return playCount;
-	}
-	public void setPlayCount(String playCount) {
-		this.playCount = playCount;
-	}
-	public String getCrawlerNum() {
-		return crawlerNum;
-	}
-	public void setCrawlerNum(String crawlerNum) {
-		this.crawlerNum = crawlerNum;
-	}
-	public String getSchemeId() {
-		return schemeId;
-	}
-	public void setSchemeId(String schemeId) {
-		this.schemeId = schemeId;
-	}
-	public String getSchemeName() {
-		return schemeName;
-	}
-	public void setSchemeName(String schemeName) {
-		this.schemeName = schemeName;
-	}
 	public Timestamp getcTime() {
 		return cTime;
 	}
@@ -121,5 +80,11 @@ public class AlbumPo extends BaseObject {
 	}
 	public void setAudioPos(List<AudioPo> audioPos) {
 		this.audioPos = audioPos;
+	}
+	public Timestamp getPubTime() {
+		return pubTime;
+	}
+	public void setPubTime(Timestamp pubTime) {
+		this.pubTime = pubTime;
 	}
 }

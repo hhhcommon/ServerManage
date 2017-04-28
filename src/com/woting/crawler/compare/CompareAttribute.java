@@ -232,7 +232,7 @@ public class CompareAttribute {
 														if (maxpernum>=0.8 && perId!=null) {
 															Map<String, Object> m = new HashMap<>();
 															m.put("titles", au.getAudioName() + "    " + pertitle);
-															m.put("zjtitle", au.getAlbumName() + "    " + solrInputPo.getItem_title());
+//															m.put("zjtitle", au.getAlbumName() + "    " + solrInputPo.getItem_title());
 															m.put("perId", perId);
 															m.put("audioId", au.getId());
 															m.put("pernum", maxpernum);

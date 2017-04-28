@@ -50,6 +50,13 @@ public class CPersonService {
 		cpersonRefDao.insert("insertList", m);
 	}
 	
+	public CPersonPo getCPersonById(String id) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("id", id);
+		CPersonPo cPo = cpersonDao.getInfoObject("getList", m);
+		return cPo;
+	}
+	
 	public CPersonPo getCPersonByPersonId(String pSource, String personId) {
 		Map<String, Object> m = new HashMap<>();
 		m.put("pSource", pSource);
@@ -67,6 +74,16 @@ public class CPersonService {
 		if (ps!=null && ps.size()>0) {
 			return ps.get(0);
 		}
+		return null;
+	}
+	
+	public List<CPersonPo> getCPersons(String pSource, String resId, String resTableName) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("pSource", pSource);
+		m.put("resTableName", resTableName);
+		m.put("resId", resId);
+		List<CPersonPo> ps = cpersonDao.queryForList("getListBy", m);
+		if (ps!=null && ps.size()>0) return ps;
 		return null;
 	}
 	

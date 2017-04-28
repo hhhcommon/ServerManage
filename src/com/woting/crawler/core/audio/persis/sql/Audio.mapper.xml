@@ -12,18 +12,10 @@
     <result  column="audioImg"       property="audioImg"       jdbcType="VARCHAR"/>
     <result  column="audioURL"       property="audioURL"       jdbcType="VARCHAR"/>
     <result  column="audioTags"      property="audioTags"      jdbcType="VARCHAR"/>
-    <result  column="albumId"        property="albumId"        jdbcType="VARCHAR"/>
-    <result  column="columnNum"      property="columnNum"      jdbcType="INTEGER"/>
-    <result  column="albumName"      property="albumName"      jdbcType="VARCHAR"/>
-    <result  column="categoryId"     property="categoryId"     jdbcType="VARCHAR"/>
-    <result  column="categoryName"   property="categoryName"   jdbcType="VARCHAR"/>
     <result  column="descn"          property="descn"          jdbcType="VARCHAR"/>
     <result  column="duration"       property="duration"       jdbcType="VARCHAR"/>
     <result  column="visitUrl"       property="visitUrl"       jdbcType="VARCHAR"/>
-    <result  column="playCount"      property="playCount"      jdbcType="VARCHAR"/>
-    <result  column="crawlerNum"     property="crawlerNum"     jdbcType="VARCHAR"/>
-    <result  column="schemeId"       property="schemeId"       jdbcType="VARCHAR"/>
-    <result  column="schemeName"     property="schemeName"     jdbcType="VARCHAR"/>
+    <result  column="pubTime"        property="pubTime"          jdbcType="TIMESTAMP"/>
     <result  column="cTime"          property="cTime"          jdbcType="TIMESTAMP"/>
   </resultMap>
   
@@ -35,13 +27,9 @@
         <if test="audioName!=null">and audioName=#{audioName,jdbcType=VARCHAR}</if>
         <if test="audioImg!=null">and audioImg=#{audioImg,jdbcType=VARCHAR}</if>
         <if test="audioURL!=null">and audioURL=#{audioURL,jdbcType=VARCHAR}</if>
-        <if test="columnNum!=null">and columnNum=#{columnNum,jdbcType=INTEGER}</if>
         <if test="audioPublisher!=null">and audioPublisher=#{audioPublisher,jdbcType=VARCHAR}</if>
         <if test="audioTags!=null">and audioTags=#{audioTags,jdbcType=VARCHAR}</if>
         <if test="descn!=null">and descn=#{descn,jdbcType=VARCHAR}</if>
-        <if test="crawlerNum!=null">and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}</if>
-        <if test="schemeId!=null">and schemeId=#{schemeId,jdbcType=VARCHAR}</if>
-        <if test="schemeName!=null">and schemeName=#{schemeName,jdbcType=VARCHAR}</if>
       </trim>
     </where>
   </sql>
@@ -57,18 +45,10 @@
       <if test="audioImg!=null">audioImg,</if>
       <if test="audioURL!=null">audioURL,</if>
       <if test="audioTags!=null">audioTags,</if>
-      <if test="albumId!=null">albumId,</if>
-      <if test="albumName!=null">albumName,</if>
-      <if test="columnNum!=null">columnNum,</if>
-      <if test="categoryId!=null">categoryId,</if>
-      <if test="categoryName!=null">categoryName,</if>
       <if test="descn!=null">descn,</if>
       <if test="duration!=null">duration,</if>
       <if test="visitUrl!=null">visitUrl,</if>
-      <if test="crawlerNum!=null">crawlerNum,</if>
-      <if test="schemeId!=null">schemeId,</if>
-      <if test="schemeName!=null">schemeName,</if>
-      <if test="playCount!=null">playCount,</if>
+      <if test="pubTime!=null">pubTime,</if>
       <if test="cTime!=null">cTime,</if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -79,31 +59,23 @@
       <if test="audioImg!=null">#{audioImg,jdbcType=VARCHAR},</if>
       <if test="audioURL!=null">#{audioURL,jdbcType=VARCHAR},</if>
       <if test="audioTags!=null">#{audioTags,jdbcType=VARCHAR},</if>
-      <if test="albumId!=null">#{albumId,jdbcType=VARCHAR},</if>
-      <if test="albumName!=null">#{albumName,jdbcType=VARCHAR},</if>
-      <if test="columnNum!=null">#{columnNum,jdbcType=INTEGER},</if>
-      <if test="categoryId!=null">#{categoryId,jdbcType=VARCHAR},</if>
-      <if test="categoryName!=null">#{categoryName,jdbcType=VARCHAR},</if>
       <if test="descn!=null">#{descn,jdbcType=VARCHAR},</if>
       <if test="duration!=null">#{duration,jdbcType=VARCHAR},</if>
       <if test="visitUrl!=null">#{visitUrl,jdbcType=VARCHAR},</if>
-      <if test="crawlerNum!=null">#{crawlerNum,jdbcType=VARCHAR},</if>
-      <if test="schemeId!=null">#{schemeId,jdbcType=VARCHAR},</if>
-      <if test="schemeName!=null">#{schemeName,jdbcType=VARCHAR},</if>
-      <if test="playCount!=null">#{playCount,jdbcType=VARCHAR},</if>
+      <if test="pubTime!=null">#{pubTime,jdbcType=TIMESTAMP},</if>
       <if test="cTime!=null">#{cTime,jdbcType=TIMESTAMP},</if>
     </trim>
   </insert>
 
   <!-- 所有列 -->
   <sql id="Base_Column_List">
-    id, audioId, audioName, audioPublisher, audioImg, audioURL, audioTags, albumId, albumName, columnNum, categoryId, categoryName, descn, duration, visitUrl, crawlerNum, schemeId, schemeName, playCount, cTime
+    id, audioId, audioName, audioPublisher, audioImg, audioURL, audioTags, descn, duration, visitUrl, pubTime, cTime
   </sql>
 
   <insert id="insertList" parameterType="java.util.List">
-    insert into c_Audio(id, audioId, audioName, audioPublisher, audioImg, audioURL, audioTags, albumId, albumName, columnNum, categoryId, categoryName, descn, duration, visitUrl, playCount, crawlerNum, schemeId, schemeName, cTime) values
+    insert into c_Audio(id, audioId, audioName, audioPublisher, audioImg, audioURL, audioTags, descn, duration, visitUrl, pubTime, cTime) values
     <foreach collection="list" item="list" index="index" separator=",">
-     (#{list.id},#{list.audioId},#{list.audioName},#{list.audioPublisher},#{list.audioImg},#{list.audioURL},#{list.audioTags},#{list.albumId},#{list.albumName},#{list.columnNum},#{list.categoryId},#{list.categoryName},#{list.descn},#{list.duration},#{list.visitUrl},#{list.playCount},#{list.crawlerNum},#{list.schemeId},#{list.schemeName},#{list.cTime})
+     (#{list.id},#{list.audioId},#{list.audioName},#{list.audioPublisher},#{list.audioImg},#{list.audioURL},#{list.audioTags},#{list.descn},#{list.duration},#{list.visitUrl},#{list.pubTime},#{list.cTime})
     </foreach>
   </insert>
   

@@ -12,7 +12,6 @@ import com.woting.crawler.core.timer.BCPlayIsValidateTimerJob;
 import com.woting.crawler.core.timer.CacheRefreshTimerJob;
 import com.woting.crawler.core.timer.CrawlerCategoryJob;
 import com.woting.crawler.core.timer.CrawlerSrcTimerJob;
-import com.woting.crawler.core.timer.PlayNumTimerJob;
 import com.woting.crawler.core.timer.RedisRefreshTimerJob;
 import com.woting.crawler.core.timer.ShareTimerJob;
 import com.woting.crawler.core.timer.persis.po.TimerPo;
@@ -189,7 +188,7 @@ public class Timer {
 			this.jobdetail1 = new JobDetailImpl("CrawlerSrc", "JobGroup1", CrawlerSrcTimerJob.class);
 			this.cronTrigger1 = new CronTriggerImpl("CronTrigger1", "TriggerGroup1");
 			cronTrigger1.setCronExpression(SrcCronExpression);
-			this.jobdetail2 = new JobDetailImpl("CrawlerPlayNum", "JobGroup2", PlayNumTimerJob.class);
+//			this.jobdetail2 = new JobDetailImpl("CrawlerPlayNum", "JobGroup2", PlayNumTimerJob.class);
 			this.cronTrigger2 = new CronTriggerImpl("CronTrigger2", "TriggerGroup2");
 			cronTrigger2.setCronExpression(PlayCountCronExpression);
 			this.jobdetail3 = new JobDetailImpl("CrawlerCategory", "JobGroup3", CrawlerCategoryJob.class);

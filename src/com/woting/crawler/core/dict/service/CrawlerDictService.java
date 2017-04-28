@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.spiritdata.framework.core.dao.mybatis.MybatisDAO;
 import com.woting.crawler.core.dict.persis.po.DictDPo;
 import com.woting.crawler.core.dict.persis.po.DictMPo;
+import com.woting.crawler.core.dict.persis.po.DictRefPo;
 @Service
 public class CrawlerDictService {
 
@@ -18,11 +19,14 @@ public class CrawlerDictService {
 	private MybatisDAO<DictMPo> dictmDao;
 	@Resource(name = "defaultDAO_CM")
 	private MybatisDAO<DictDPo> dictDDao;
+	@Resource(name = "defaultDAO_CM")
+	private MybatisDAO<DictRefPo> dictRefDao;
 
 	@PostConstruct
 	public void initParam() {
 		dictmDao.setNamespace("A_DICTM");
 		dictDDao.setNamespace("A_DICTD");
+		dictRefDao.setNamespace("A_DICTREF");
 	}
 	
 	public void insertDictM(List<DictMPo> dictmlist){
@@ -35,6 +39,13 @@ public class CrawlerDictService {
 		Map<String, Object> m = new HashMap<String,Object>();
 		m.put("list", dictdlist);
 		dictDDao.insert("insertList", m);
+	}
+	
+	public DictDPo getDictDInfo(String pId, String ddName) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("pId", pId);
+		m.put("ddName",ddName);
+		return dictDDao.getInfoObject("getDictDInfo", m);
 	}
 	
 	public DictMPo getDictMList(String id){
@@ -60,6 +71,26 @@ public class CrawlerDictService {
 			return ds.size();
 		else 
 			return 0;
+	}
+	
+	public void insertDictRef(DictRefPo dRefPo) {
+		dictRefDao.insert(dRefPo);
+	}
+	
+	public List<DictRefPo> getDictRefs(String resId, String resTableName, String dictDId) {
+		Map<String, Object> m = new HashMap<>();
+		if (resId!=null) m.put("resId", resId);
+		if (resTableName!=null) m.put("resTableName", resTableName);
+		if (dictDId!=null) m.put("cdictDid", dictDId);
+		return dictRefDao.queryForList("getList", m);
+	}
+	
+	public DictRefPo getDictRef(String resId, String resTableName, String dictDId) {
+		Map<String, Object> m = new HashMap<>();
+		if (resId!=null) m.put("resId", resId);
+		if (resTableName!=null) m.put("resTableName", resTableName);
+		if (dictDId!=null) m.put("cdictDid", dictDId);
+		return dictRefDao.getInfoObject("getList", m);
 	}
 	
 	private List<DictDPo> getDictDByNameAndPubIs1(DictDPo ddpo) {

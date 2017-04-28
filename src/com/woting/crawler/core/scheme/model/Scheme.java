@@ -25,6 +25,7 @@ public class Scheme {
 	private int QTThread_Limit_Size;
 	private String XMLYCachePath;
 	private String QTCachePath;
+	private String CralwerSwitch;
 	
 	public Scheme() {
 		SchemePo schemePo = (SchemePo) SpringShell.getBean("scheme");
@@ -38,6 +39,7 @@ public class Scheme {
 		this.setQTThread_Limit_Size(schemePo.getQTThread_Limit_Size());
 		this.setXMLYCachePath(schemePo.getXMLYCachePath());
 		this.setQTCachePath(schemePo.getQTCachePath());
+		this.setCralwerSwitch(schemePo.getCralwerSwitch());
 		this.etl1Process = new Etl1Process();
 		this.jedisConnectionFactory = (JedisConnectionFactory) SpringShell.getBean("connectionFactory");
 		this.redisOperService = new RedisOperService(jedisConnectionFactory, this.getRedisDB());
@@ -124,5 +126,29 @@ public class Scheme {
 	}
 	public void setQTCachePath(String qTCachePath) {
 		QTCachePath = qTCachePath;
+	}
+	public String getCralwerSwitch() {
+		return CralwerSwitch;
+	}
+	public void setCralwerSwitch(String cralwerSwitch) {
+		CralwerSwitch = cralwerSwitch;
+	}
+	
+	/**
+	 *  1  49
+	 *  0  48
+	 * @param num
+	 * @return
+	 */
+	public boolean isOrNoToCrawler(String name) {
+		if (CralwerSwitch!=null) {
+			int num = 9999;
+			if (name.equals("XMLY")) num = 0;
+			else if (name.equals("QT")) num = 1;
+			byte[] numb = CralwerSwitch.getBytes();
+			if (num+1>numb.length) return false;
+			else if (numb[num]==49) return true;
+		}
+		return false;
 	}
 }

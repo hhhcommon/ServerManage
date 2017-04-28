@@ -6,8 +6,10 @@
   <typeAliases>
     <typeAlias alias="album"      type="com.woting.crawler.core.album.persis.po.AlbumPo"/>
     <typeAlias alias="audio"      type="com.woting.crawler.core.audio.persis.po.AudioPo"/>
+    <typeAlias alias="albumaudioref"      type="com.woting.crawler.core.albumaudioref.persis.po.AlbumAudioRefPo"/>
     <typeAlias alias="dictm"      type="com.woting.crawler.core.dict.persis.po.DictMPo"/>
     <typeAlias alias="dictd"      type="com.woting.crawler.core.dict.persis.po.DictDPo"/>
+    <typeAlias alias="dictref"    type="com.woting.crawler.core.dict.persis.po.DictRefPo"/>
     <typeAlias alias="cperson"     type="com.woting.crawler.core.cperson.persis.po.CPersonPo"/>
     <typeAlias alias="cpersonref"  type="com.woting.crawler.core.cperson.persis.po.CPersonRefPo"/>
     <typeAlias alias="cplaycount"  type="com.woting.crawler.core.cplaycount.persis.po.CPlayCountPo"/>
@@ -21,8 +23,10 @@
   <mappers>
     <mapper resource="com/woting/crawler/core/album/persis/sql/Album.mapper.xml"/>
     <mapper resource="com/woting/crawler/core/audio/persis/sql/Audio.mapper.xml"/>
+    <mapper resource="com/woting/crawler/core/albumaudioref/persis/sql/AlbumAudioRef.mapper.xml"/>
     <mapper resource="com/woting/crawler/core/dict/persis/sql/DictM.mapper.xml"/>
     <mapper resource="com/woting/crawler/core/dict/persis/sql/DictD.mapper.xml"/>
+    <mapper resource="com/woting/crawler/core/dict/persis/sql/DictRef.mapper.xml"/>
     <mapper resource="com/woting/crawler/core/cperson/persis/sql/CPerson.mapper.xml"/>
     <mapper resource="com/woting/crawler/core/cperson/persis/sql/CPersonRef.mapper.xml"/>
     <mapper resource="com/woting/crawler/core/cplaycount/persis/sql/CPlayCount.mapper.xml"/>

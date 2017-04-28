@@ -1,48 +1,42 @@
-package com.woting.cm.core.media.persis.po;
+package com.woting.crawler.core.albumaudioref.persis.po;
 
 import java.sql.Timestamp;
 
 import com.spiritdata.framework.core.model.BaseObject;
 
-public class SeqMaRefPo extends BaseObject {
-
-	private static final long serialVersionUID = 2584492572420015736L;
+public class AlbumAudioRefPo extends BaseObject {
+	private static final long serialVersionUID = 3444958099759483741L;
+	
 	private String id;
-	private String sId;
-	private String mId;
+	private String alId;
+	private String auId;
 	private int columnNum;
-	private String descn;
 	private int isMain;
 	private Timestamp cTime;
+	
 	public String getId() {
 		return id;
 	}
 	public void setId(String id) {
 		this.id = id;
 	}
-	public String getsId() {
-		return sId;
+	public String getAlId() {
+		return alId;
 	}
-	public void setsId(String sId) {
-		this.sId = sId;
+	public void setAlId(String alId) {
+		this.alId = alId;
 	}
-	public String getmId() {
-		return mId;
+	public String getAuId() {
+		return auId;
 	}
-	public void setmId(String mId) {
-		this.mId = mId;
+	public void setAuId(String auId) {
+		this.auId = auId;
 	}
 	public int getColumnNum() {
 		return columnNum;
 	}
 	public void setColumnNum(int columnNum) {
 		this.columnNum = columnNum;
-	}
-	public String getDescn() {
-		return descn;
-	}
-	public void setDescn(String descn) {
-		this.descn = descn;
 	}
 	public int getIsMain() {
 		return isMain;

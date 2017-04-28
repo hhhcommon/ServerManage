@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
 import com.spiritdata.framework.core.dao.mybatis.MybatisDAO;
 import com.woting.cm.core.channel.persis.po.ChannelAssetPo;
+import com.woting.cm.core.channel.persis.po.ChannelMapRefPo;
 import com.woting.cm.core.channel.persis.po.ChannelPo;
 
 @Service
@@ -18,11 +19,14 @@ public class ChannelService {
 	private MybatisDAO<ChannelPo> channelDao;
 	@Resource(name = "defaultDAO")
 	private MybatisDAO<ChannelAssetPo> ChannelAssetDao;
+	@Resource(name = "defaultDAO")
+	private MybatisDAO<ChannelMapRefPo> ChannelMapRefDao;
 
 	@PostConstruct
 	public void initParam() {
 		channelDao.setNamespace("A_CHANNEL");
 		ChannelAssetDao.setNamespace("A_CHANNELASSET");
+		ChannelMapRefDao.setNamespace("A_CHANNELMAPREF");
 	}
 
 	public void insertChannelAssetList(List<ChannelAssetPo> chalist) {
@@ -67,6 +71,14 @@ public class ChannelService {
 				ChannelAssetDao.update(channelAssetPo);
 			}
 		}
+	}
+	
+	public List<ChannelMapRefPo> getChannelMapRefList(String channelId, String srcDid, int isValidate) {
+		Map<String, Object> m = new HashMap<>();
+		if (channelId!=null) m.put("channelId", channelId);
+		if (srcDid!=null) m.put("srcDid", srcDid);
+		if (isValidate!=0) m.put("isValidate", isValidate);
+		return ChannelMapRefDao.queryForList("getList", m);
 	}
 	
 	public List<ChannelPo> getChannelListNoRef() {

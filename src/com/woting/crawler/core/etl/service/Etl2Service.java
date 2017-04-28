@@ -45,7 +45,7 @@ import com.woting.crawler.core.cperson.persis.po.CPersonPo;
 import com.woting.crawler.core.cperson.service.CPersonService;
 import com.woting.crawler.core.etl.model.Etl2Process;
 import com.woting.crawler.ext.SpringShell;
-import com.woting.crawler.scheme.searchcrawler.utils.SearchUtils;
+//import com.woting.crawler.scheme.searchcrawler.utils.SearchUtils;
 import com.woting.crawler.scheme.utils.ConvertUtils;
 import com.woting.crawler.scheme.utils.FileUtils;
 import com.woting.crawler.scheme.utils.ShareHtml;
@@ -150,9 +150,9 @@ public class Etl2Service {
 						    if (resList != null && resList.size()>0) {
 							    SeqMediaAssetPo seq = mediaService.getSeqInfo(resList.get(0).getResId());
 							    if (seq != null) {
-							    	if (SearchUtils.isOrNoExist("CONTENT_SEQU_SAVED_"+al.getAlbumPo().getId(), ros)) {
-										SearchUtils.addRedisValue("CONTENT_SEQU_SAVED_"+al.getAlbumPo().getId(), seq.getId(), ros);
-									}
+//							    	if (SearchUtils.isOrNoExist("CONTENT_SEQU_SAVED_"+al.getAlbumPo().getId(), ros)) {
+//										SearchUtils.addRedisValue("CONTENT_SEQU_SAVED_"+al.getAlbumPo().getId(), seq.getId(), ros);
+//									}
 							    	List<DictRefResPo> dicts = dictService.getDictRefs(seq.getId(), "wt_SeqMediaAsset");
 							    	m.clear();
 							    	m.put("assetId", seq.getId());
@@ -185,9 +185,9 @@ public class Etl2Service {
 												}).start();
 												for (MediaAssetPo ma : malist) {
 													if (au.getAudioName().equals(ma.getMaTitle())) {
-														if (SearchUtils.isOrNoExist("CONTENT_AUDIO_SAVED_"+au.getId(), ros)) {
-															SearchUtils.addRedisValue("CONTENT_AUDIO_SAVED_"+au.getId(), ma.getId(), ros);
-														}
+//														if (SearchUtils.isOrNoExist("CONTENT_AUDIO_SAVED_"+au.getId(), ros)) {
+//															SearchUtils.addRedisValue("CONTENT_AUDIO_SAVED_"+au.getId(), ma.getId(), ros);
+//														}
 													}
 												}
 											}
@@ -317,12 +317,12 @@ public class Etl2Service {
 						resass.setcTime(new Timestamp(System.currentTimeMillis()));
 						resAss.add(resass);
 						saveContents(malist, resAss, maslist, seqreflist, mecounts, dictreflist, chalist, pfs);
-						if (SearchUtils.isOrNoExist("CONTENT_SEQU_SAVED_"+al.getId(), ros)) {
-							SearchUtils.addRedisValue("CONTENT_SEQU_SAVED_"+al.getId(), se.getId(), ros);
-						}
+//						if (SearchUtils.isOrNoExist("CONTENT_SEQU_SAVED_"+al.getId(), ros)) {
+//							SearchUtils.addRedisValue("CONTENT_SEQU_SAVED_"+al.getId(), se.getId(), ros);
+//						}
 						// 获取抓取到的专辑下级节目信息
 						if (aulist == null) {
-							aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
+//							aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
 						}
 						if (aulist.size() > 0) {
 							Map<String, Object> mall = ConvertUtils.convert2MediaAsset(aulist, se, (List<DictRefResPo>) map.get("dictref"), (List<ChannelAssetPo>) map.get("cha"));
@@ -345,9 +345,9 @@ public class Etl2Service {
 								for (AudioPo au : aulist) {
 									for (MediaAssetPo ma : malist) {
 										if (au.getAudioName().equals(ma.getMaTitle())) {
-											if (SearchUtils.isOrNoExist("CONTENT_AUDIO_SAVED_"+au.getId(), ros)) {
-												SearchUtils.addRedisValue("CONTENT_AUDIO_SAVED_"+au.getId(), ma.getId(), ros);
-											}
+//											if (SearchUtils.isOrNoExist("CONTENT_AUDIO_SAVED_"+au.getId(), ros)) {
+//												SearchUtils.addRedisValue("CONTENT_AUDIO_SAVED_"+au.getId(), ma.getId(), ros);
+//											}
 										}
 									}
 								}
