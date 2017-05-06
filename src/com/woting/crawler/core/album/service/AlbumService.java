@@ -74,7 +74,6 @@ public class AlbumService {
 		Map<String, Object> m = new HashMap<String,Object>();
 		m.put("albumId", albumId);
 		m.put("albumPublisher", publisher);
-		m.put("crawlerNum", num);
 		albumDao.delete("deleteBy", m);
 	}
 	

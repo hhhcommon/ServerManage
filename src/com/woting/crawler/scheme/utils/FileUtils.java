@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.spiritdata.framework.util.FileNameUtils;
 import com.spiritdata.framework.util.JsonUtils;
 import com.spiritdata.framework.util.SequenceUUID;
 import com.woting.cm.core.oss.utils.OssUtils;
@@ -162,7 +161,7 @@ public class FileUtils {
 							ImageHashService imageHashService = (ImageHashService) SpringShell.getBean("imageHashService");
 							ImageHash imageHash = new ImageHash();
 							imageHash.setId(purpose+"_"+m.get("HashCode").toString());
-							imageHash.setImagePath(path+imgName+ext);
+							imageHash.setImagePath("##userimg##"+imgName+ext);
 							imageHash.setImageSrcPath(imgpath);
 							imageHash.setPurpose(purpose);
 							imageHashService.insertImageHash(imageHash);
@@ -197,7 +196,7 @@ public class FileUtils {
 								ImageHashService imageHashService = (ImageHashService) SpringShell.getBean("imageHashService");
 								ImageHash imageHash = new ImageHash();
 								imageHash.setId(purpose+"_"+m.get("HashCode").toString());
-								imageHash.setImagePath(path+imgName+ext);
+								imageHash.setImagePath("##contentimg##"+imgName+ext);
 								imageHash.setImageSrcPath(imgpath);
 								imageHash.setPurpose(purpose);
 								imageHashService.insertImageHash(imageHash);

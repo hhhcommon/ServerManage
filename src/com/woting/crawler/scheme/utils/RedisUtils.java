@@ -1,5 +1,6 @@
 package com.woting.crawler.scheme.utils;
 
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 
 import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.spiritdata.framework.util.JsonUtils;
@@ -16,8 +18,10 @@ import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
 import com.woting.crawler.compare.SolrServer;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
+import com.woting.crawler.ext.SpringShell;
 
 public class RedisUtils {
+	
 	public static Logger logger = LoggerFactory.getLogger(RedisUtils.class);
 
 	public static void addSnapShootInfo(RedisOperService rs, String key,String value) {
@@ -327,6 +331,143 @@ public class RedisUtils {
 		} catch (Exception e){
 			e.printStackTrace();
 			return null;
+		}
+		return null;
+	}
+
+	public static void set(String JedisConnectionFactory,int redisDB, String key, String value) {
+		RedisOperService redis = null;
+		try {
+			JedisConnectionFactory jedisConnectionFactory = (JedisConnectionFactory) SpringShell.getBean(JedisConnectionFactory);
+			try {
+				redis = new RedisOperService(jedisConnectionFactory, redisDB);
+			} catch (Exception e) {
+				int excepNum = 10;
+				boolean isok = false;
+				while (excepNum-->0) {
+					try {
+						redis = new RedisOperService(jedisConnectionFactory, redisDB);
+					} catch (Exception e2) {continue;}
+					if (redis!=null) {
+						isok = true;
+						break;
+					}
+				}
+				if (isok) redis.set(key, value);
+				else throw e;
+			}
+			redis.set(key, value);
+		} catch (Exception e) {} finally {
+			if (redis!=null) redis.close();
+		}
+	}
+	
+	public static void set(String JedisConnectionFactory,int redisDB, String key, String value, long expireTime) {
+		RedisOperService redis = null;
+		try {
+			JedisConnectionFactory jedisConnectionFactory = (JedisConnectionFactory) SpringShell.getBean(JedisConnectionFactory);
+			try {
+				redis = new RedisOperService(jedisConnectionFactory, redisDB);
+			} catch (Exception e) {
+				int excepNum = 10;
+				boolean isok = false;
+				while (excepNum-->0) {
+					try {
+						redis = new RedisOperService(jedisConnectionFactory, redisDB);
+					} catch (Exception e2) {continue;}
+					if (redis!=null) {
+						isok = true;
+						break;
+					}
+				}
+				if (isok) redis.set(key, value, expireTime);
+				else throw e;
+			}
+			redis.set(key, value, expireTime);
+		} catch (Exception e) {} finally {
+			if (redis!=null) redis.close();
+		}
+	}
+	
+	public static String get(String JedisConnectionFactory,int redisDB, String key) {
+		RedisOperService redis = null;
+		try {
+			JedisConnectionFactory jedisConnectionFactory = (JedisConnectionFactory) SpringShell.getBean(JedisConnectionFactory);
+			try {
+				redis = new RedisOperService(jedisConnectionFactory, redisDB);
+			} catch (Exception e) {
+				int excepNum = 10;
+				boolean isok = false;
+				while (excepNum-->0) {
+					try {
+						redis = new RedisOperService(jedisConnectionFactory, redisDB);
+					} catch (Exception e2) {continue;}
+					if (redis!=null) {
+						isok = true;
+						break;
+					}
+				}
+				if (isok) return redis.get(key);
+				else throw e;
+			}
+			return redis.get(key);
+		} catch (Exception e) {} finally {
+			if (redis!=null) redis.close();
+		}
+		return null;
+	}
+	
+	public static void delete(String JedisConnectionFactory,int redisDB, String key) {
+		RedisOperService redis = null;
+		try {
+			JedisConnectionFactory jedisConnectionFactory = (JedisConnectionFactory) SpringShell.getBean(JedisConnectionFactory);
+			try {
+				redis = new RedisOperService(jedisConnectionFactory, redisDB);
+			} catch (Exception e) {
+				int excepNum = 10;
+				boolean isok = false;
+				while (excepNum-->0) {
+					try {
+						redis = new RedisOperService(jedisConnectionFactory, redisDB);
+					} catch (Exception e2) {continue;}
+					if (redis!=null) {
+						isok = true;
+						break;
+					}
+				}
+				if (isok) redis.del(key);
+				else throw e;
+			}
+			redis.del(key);
+		} catch (Exception e) {} finally {
+			if (redis!=null) redis.close();
+		}
+	}
+	
+	public static Set<String> keys(String JedisConnectionFactory,int redisDB, String keys) {
+		RedisOperService redis = null;
+		try {
+			JedisConnectionFactory jedisConnectionFactory = (JedisConnectionFactory) SpringShell.getBean(JedisConnectionFactory);
+			try {
+				redis = new RedisOperService(jedisConnectionFactory, redisDB);
+			} catch (Exception e) {
+				int excepNum = 10;
+				boolean isok = false;
+				while (excepNum-->0) {
+					try {
+						redis = new RedisOperService(jedisConnectionFactory, redisDB);
+					} catch (Exception e2) {continue;}
+					if (redis!=null) {
+						isok = true;
+						break;
+					}
+				}
+				if (isok) return redis.keys(keys);
+				else throw e;
+			}
+			return redis.keys(keys);
+		} catch (Exception e) {} finally {
+			if (redis!=null) redis.close();
 		}
 		return null;
 	}

@@ -49,9 +49,16 @@
     </trim>
   </insert>
   
-  <select id="getList" resultMap="BaseResultMap" parameterType="java.lang.String">
+  <select id="getList" resultMap="BaseResultMap" parameterType="java.util.Map">
     select <include refid="Base_Column_List"/>  from c_PlayCount
     <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if> 
+    <if test="orderSql!=null"> order by ${orderSql}</if>
+  </select>
+  
+  <select id="getListBySql" resultMap="BaseResultMap" parameterType="java.util.Map">
+    select <include refid="Base_Column_List"/>  from c_PlayCount
+    <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
+    <if test="whereSql!=null"> and ${whereSql}</if>
     <if test="orderSql!=null"> order by ${orderSql}</if>
   </select>
   

@@ -1,17 +1,24 @@
 package com.woting.crawler;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.quartz.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 
 import com.spiritdata.framework.core.cache.CacheEle;
 import com.spiritdata.framework.core.cache.SystemCache;
-import com.spiritdata.framework.util.JsonUtils;
-import com.woting.cm.core.oss.persis.po.OssConfigPo;
-import com.woting.crawler.core.cplaycount.service.CPlayCountService;
-import com.woting.crawler.core.scheme.model.Scheme;
+import com.spiritdata.framework.ext.spring.redis.RedisOperService;
+import com.woting.crawler.core.album.persis.po.AlbumPo;
+import com.woting.crawler.core.album.service.AlbumService;
+import com.woting.crawler.core.timer.UpdateCrawlerSrcTimerJob;
+import com.woting.crawler.core.timer.model.Timer;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.crawlerdb.crawler.EtlProcess;
 import com.woting.crawler.scheme.crawlerdb.qt.QTCrawler;
+import com.woting.crawler.scheme.crawlerdb.xmly.XMLYCrawler;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -75,8 +82,9 @@ public class Booter {
 //        	logger.info("定时加载出错，结束抓取服务");
 //        	return;
 //        }
-//        try {
+        try {
 //			scheduler.start();
+//			logger.info("资源抓取定时功能已加载[{}]", timer.getUpdateCrawlerSrcExpression());
 //			logger.info("首页资源抓取定时功能已加载[{}]", timer.getSrcCronExpression());
 //			logger.info("点击量抓取定时功能已加载[{}]", timer.getPlayCountCronExpression());
 //			logger.info("分类抓取定时功能已加载[{}]", timer.getCategoryCronExpression());
@@ -88,16 +96,16 @@ public class Booter {
 //			long beg = System.currentTimeMillis();
             EtlProcess etlProcess = new EtlProcess();
             etlProcess.convertToWT();
-//            etlProcess.makeDatas();
-//			Scheme scheme = new Scheme();
-//			QTCrawler qtCrawler = new QTCrawler(scheme);
-//			qtCrawler.beginCrawler();
-//            System.out.println(System.currentTimeMillis()-beg);
-//			while(true) {
-//				Thread.sleep(60*60*1000);
-//			}
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
+			while(true) {
+				UpdateCrawlerSrcTimerJob uJob = new UpdateCrawlerSrcTimerJob();
+				boolean isok = uJob.beginCrawler();
+				if (isok) {
+					logger.info("新内入中间库完成");
+				}
+				Thread.sleep(60*60*1000);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

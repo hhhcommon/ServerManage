@@ -28,6 +28,7 @@ import com.woting.crawler.core.dict.persis.po.DictRefPo;
 import com.woting.crawler.core.dict.service.CrawlerDictService;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.utils.ConvertUtils;
+import com.woting.crawler.scheme.utils.RedisUtils;
 
 public class QTEtl1Process {
 
@@ -37,6 +38,7 @@ public class QTEtl1Process {
 			String albumId = albummap.get("id").toString();
 			AlbumService albumService = (AlbumService) SpringShell.getBean("albumService");
 			String id = "QT_ALBUM_"+albumId;
+			RedisUtils.set("connectionFactory", 1, "LOADCRAWLERDB:"+id, System.currentTimeMillis()+"");
 			AlbumPo albumPo = albumService.getAlbumInfo(id);
 			if (albumPo!=null) return null;
 			
@@ -313,6 +315,8 @@ public class QTEtl1Process {
 					continue;
 				}
 			}
+			RedisUtils.delete("connectionFactory", 1, "LOADCRAWLERDB:"+id);
+			RedisUtils.set("connectionFactory", 1, "CRAWLERDB:"+id, System.currentTimeMillis()+"");
 			return albumPo.getId();
 		}
 		return null;

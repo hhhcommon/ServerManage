@@ -7,19 +7,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import com.spiritdata.framework.core.cache.SystemCache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.spiritdata.framework.util.SequenceUUID;
-import com.spiritdata.framework.util.StringUtils;
 import com.woting.cm.core.ResOrgAsset.persis.po.ResOrgAssetPo;
 import com.woting.cm.core.ResOrgAsset.service.ResOrgAssetService;
 import com.woting.cm.core.channel.persis.po.ChannelAssetPo;
 import com.woting.cm.core.channel.persis.po.ChannelMapRefPo;
 import com.woting.cm.core.channel.persis.po.ChannelPo;
 import com.woting.cm.core.channel.service.ChannelService;
-import com.woting.cm.core.dict.persis.po.DictDetailPo;
 import com.woting.cm.core.dict.persis.po.DictRefResPo;
 import com.woting.cm.core.dict.service.DictService;
 import com.woting.cm.core.media.persis.po.MaSourcePo;
@@ -33,22 +32,22 @@ import com.woting.cm.core.perimeter.service.OrganizeService;
 import com.woting.cm.core.person.persis.po.PersonPo;
 import com.woting.cm.core.person.persis.po.PersonRefPo;
 import com.woting.cm.core.person.service.PersonService;
-import com.woting.crawler.CrawlerConstants;
-import com.woting.crawler.compare.CompareAttribute;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.album.service.AlbumService;
+import com.woting.crawler.core.albumaudioref.persis.po.AlbumAudioRefPo;
+import com.woting.crawler.core.albumaudioref.service.AlbumAudioRefService;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.core.audio.service.AudioService;
-import com.woting.crawler.core.contentinfo.AddContentInfoThread;
 import com.woting.crawler.core.cperson.persis.po.CPersonPo;
 import com.woting.crawler.core.cperson.service.CPersonService;
-import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.core.solr.SolrUpdateThread;
+import com.woting.crawler.core.timer.model.Timer;
 import com.woting.crawler.ext.SpringShell;
-import com.woting.crawler.scheme.crawlerdb.qt.QTCrawler;
 import com.woting.crawler.scheme.utils.ConvertUtils;
+import com.woting.crawler.scheme.utils.RedisUtils;
 
 public class EtlProcess {
+	private Logger logger = LoggerFactory.getLogger(EtlProcess.class);
 	private AlbumService albumService;
 	private AudioService audioService;
 	private ChannelService channelService;
@@ -58,8 +57,7 @@ public class EtlProcess {
 	private PersonService personService;
 	private CPersonService cPersonService;
 	private OrganizeService organizeService;
-	private Scheme scheme;
-	private List<Map<String, Object>> cate2dictdlist;
+	private RedisOperService redis_7_2;
 	private List<ChannelPo> chlist;
 	private List<ChannelMapRefPo> chaMapRefs;
 	Map<String, Object> chmap = new HashMap<>();
@@ -76,14 +74,15 @@ public class EtlProcess {
 		personService = (PersonService) SpringShell.getBean("personService");
 		cPersonService = (CPersonService) SpringShell.getBean("CPersonService");
 		chaMapRefs = channelService.getChannelMapRefList(null, null, 1);
-//		chlist = channelService.getChannelList();
-//		if (chlist!=null && chlist.size()>0) {
-//			for (ChannelPo chPo : chlist) {
-//				chmap.put(chPo.getId(), chPo.getChannelName());
-//			}
-//		}
+		JedisConnectionFactory jedisConnectionFactory = (JedisConnectionFactory) SpringShell.getBean("connectionFactory");
+		redis_7_2 = new RedisOperService(jedisConnectionFactory, 1);
+		chlist = channelService.getChannelList();
+		if (chlist!=null && chlist.size()>0) {
+			for (ChannelPo chPo : chlist) {
+				chmap.put(chPo.getId(), chPo.getChannelName());
+			}
+		}
 		organizeService = (OrganizeService) SpringShell.getBean("organizeService");
-		this.scheme = new Scheme();
 	}
 	
 	public void makeDatas() {
@@ -102,8 +101,8 @@ public class EtlProcess {
 //				public void run() {
 //					if (scheme.isOrNoToCrawler("QT")) {
 //						System.out.println("蜻蜓启动");
-						QTCrawler qtCrawler = new QTCrawler(scheme);
-						qtCrawler.beginCrawler();
+//						QTCrawler qtCrawler = new QTCrawler(scheme);
+//						qtCrawler.beginCrawler();
 //					}
 //				}
 //			});
@@ -122,17 +121,33 @@ public class EtlProcess {
 	}
 	
 	public void convertToWT() {
-		int num = 0;
-		for (int i = 1; i < 1000; i++) {
-			Map<String, Object> m = new HashMap<>();
-			m.put("albumPublisher", "喜马拉雅");
-			m.put("pageByClause", (i-1)*10+","+10);
-			List<AlbumPo> als = albumService.getAlbumListBy(m);
-			if (als!=null && als.size()>0) {
-				for (AlbumPo al : als) {
-					System.out.println((new Timestamp(System.currentTimeMillis())).toString()+"            "+num++);
-					makeNewAlbum(al.getId());
+		while (true) {
+			try {
+				logger.info("开始中间库转正式库进程");
+				int num = 0;
+				Set<String> oldsets = RedisUtils.keys("connectionFactory", 1, "LOADWT:XMLY_*");
+				if (oldsets!=null && oldsets.size()>0) {
+					for (String oldset : oldsets) {
+						String[] s = oldset.split(":");
+						String albumId = s[1];
+						removeDB(albumId);
+						RedisUtils.delete("connectionFactory", 1, "LOADWT:"+albumId);
+						RedisUtils.set("connectionFactory", 1, "CRAWLERDB:"+albumId, System.currentTimeMillis()+"");
+					}
 				}
+				Set<String> sets = RedisUtils.keys("connectionFactory", 1, "CRAWLERDB:XMLY_*");
+				if (sets!=null && sets.size()>0) {
+					for (String set : sets) {
+						String[] s = set.split(":");
+						String albumId = s[1];
+						System.out.println((new Timestamp(System.currentTimeMillis())).toString()+"            "+num++ +"   " + albumId);
+						makeNewAlbum(albumId);
+					}
+				}
+				logger.info("中间库转正式库完成,共转换专辑   [{}]  个",num);
+				Thread.sleep(10*60*1000);
+			} catch (Exception e) {
+				continue;
 			}
 		}
 	}
@@ -153,12 +168,20 @@ public class EtlProcess {
 		}
 	}
 	
+	/**    id:*
+	 *     id_CTIME:*
+	 * redis对于处理内容进程加标记
+	 * 1 正在入库
+	 * 2入库完成
+	 * 3中间库内容不存在
+	 * @param id
+	 */
 	public void makeNewAlbum(String id) {
 		AlbumPo al = albumService.getAlbumInfo(id);
 		if (al!=null) {
-			Map<String, Object> map = ConvertUtils.convert2SeqMedia(al, chaMapRefs, chlist);
+			Map<String, Object> map = ConvertUtils.convert2SeqMedia(al, chaMapRefs, chmap);
 			try {
-				if (map!=null) {
+				if (map!=null && map.size()>0) {
 					SeqMediaAssetPo seq = (SeqMediaAssetPo) map.get("seq");
 					String pName = map.get("pName")==null?null:map.get("pName").toString();
 					String chstr = map.get("chaStr")==null?null:map.get("chaStr").toString();
@@ -166,7 +189,7 @@ public class EtlProcess {
 					new SolrUpdateThread(seq, pName, chstr).start();
 				}
 			} catch (Exception e) {}
-		}
+		} else RedisUtils.delete("connectionFactory", 1, "CRAWLERDB:"+id);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -379,40 +402,39 @@ public class EtlProcess {
 		}
 	}
 	
-	public void removeDBAll(Map<String, Object> dbmap, String publisher) {
-		if (dbmap!=null && dbmap.size()>0) {
-			if (dbmap.containsKey("CrawlerNum")) {
-				String crawlerNum = dbmap.get("CrawlerNum").toString();
-				dbmap.remove("CrawlerNum");
-				Set<String> sets = dbmap.keySet();
-				if (sets!=null && sets.size()>0) {
-					for (String albumId : sets) {
-						try {
-							System.out.println("删除临时专辑数据  "+albumId);
-						    removeDB(albumId, publisher, crawlerNum);
-						} catch (Exception e) {
-							continue;
-						}
-					}
-				}
-			}
-		}
-	}
+//	public void removeDBAll(Map<String, Object> dbmap, String publisher) {
+//		if (dbmap!=null && dbmap.size()>0) {
+//			if (dbmap.containsKey("CrawlerNum")) {
+//				String crawlerNum = dbmap.get("CrawlerNum").toString();
+//				dbmap.remove("CrawlerNum");
+//				Set<String> sets = dbmap.keySet();
+//				if (sets!=null && sets.size()>0) {
+//					for (String albumId : sets) {
+//						try {
+//							System.out.println("删除临时专辑数据  "+albumId);
+//						    removeDB(albumId, publisher, crawlerNum);
+//						} catch (Exception e) {
+//							continue;
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}
 	
-	private void removeDB(String albumId, String publisher, String crawlernum) {
+	
+	private void removeDB(String albumId) {
 		ResOrgAssetService resOrgAssetService = (ResOrgAssetService) SpringShell.getBean("resOrgAssetService");
-		albumService.removeSameAlbum(albumId, publisher, crawlernum);
-		cPersonService.removePersonRef(albumId, "c_Album");
-		List<AudioPo> aus = audioService.getAudioListByAlbumId(albumId, publisher, crawlernum);
+		AlbumAudioRefService albumAudioRefService = (AlbumAudioRefService) SpringShell.getBean("albumAudioRefService");
+		List<AlbumAudioRefPo> albumAudioRefPos = albumAudioRefService.getAlbumAudioRefs(albumId);
 		String ids = "";
 		String maIds = "";
 		String unionsql = "";
-		if (aus!=null && aus.size()>0) {
-			for (AudioPo audioPo : aus) {
-				if (audioPo!=null) {
-					cPersonService.removePersonRef(audioPo.getAudioId(), "c_Audio");
-					ids += " or origSrcId = '"+audioPo.getAudioId()+"'";
-					unionsql += " UNION (select resId from wt_ResOrgAsset_Ref where origSrcId = '"+audioPo.getAudioId()+"' and orgName = '"+publisher+"')";
+		if (albumAudioRefPos!=null && albumAudioRefPos.size()>0) {
+			for (AlbumAudioRefPo albumAudioRefPo : albumAudioRefPos) {
+				if (albumAudioRefPo!=null) {
+					ids += " or origId = '"+albumAudioRefPo.getAuId()+"'";
+					unionsql += " UNION (select resId from wt_ResOrgAsset_Ref where origId = '"+albumAudioRefPo.getAuId()+"')";
 				}
 			}
 		}
@@ -431,19 +453,18 @@ public class EtlProcess {
 				}
 				maIds = maIds.substring(3);
 			}
-			resOrgAssetService.deleteByOrigSrcIds(ids, publisher, "wt_MediaAsset");
+			resOrgAssetService.deleteByOrigIds(ids, "wt_MediaAsset");
 		}
-		audioService.removeSameAudio(albumId, publisher, crawlernum);
-		ResOrgAssetPo resOrgAssetPo = resOrgAssetService.getResOrgAssetPo(albumId, publisher, "wt_SeqMediaAsset");
+		ResOrgAssetPo resOrgAssetPo = resOrgAssetService.getResOrgAssetPo(albumId, null, "wt_SeqMediaAsset");
 		if (resOrgAssetPo!=null) {
-			resOrgAssetService.deleteByOrigSrcId(albumId, publisher, "wt_SeqMediaAsset");
+			resOrgAssetService.deleteByOrigId(albumId, null, "wt_SeqMediaAsset");
 			if (maIds!=null && maIds.length()>0) {
 				String smaId = resOrgAssetPo.getResId();
 				Map<String, Object> m = new HashMap<>();
 				m.put("resmaIds", maIds);
 				m.put("ressmaIds", smaId);
 				m.put("assetIds", maIds.replace("resId", "assetId"));
-			    mediaService.removeSeqMediaAssetAll(smaId);
+			    mediaService.removeSeqMediaAssetAll(m);
 			}
 		}
 	}

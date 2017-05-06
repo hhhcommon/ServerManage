@@ -339,7 +339,7 @@ public class MediaService {
 		mediaplaycountDao.update("updateMediaPlayCount", mply);
 	}
 	
-	public void removeSeqMediaAssetAll(String smaId) {
-		mediaAssetDao.delete("multiSmaAllById", smaId);
+	public void removeSeqMediaAssetAll(Map<String, Object> m) {
+		mediaAssetDao.delete("multiSmaAllById", m);
 	}
 }

@@ -17,6 +17,7 @@ public class AlbumPo extends BaseObject {
 	private String albumTags;
 	private String descn;
 	private String visitUrl;
+	private int isValidate;
 	private Timestamp pubTime;
 	private Timestamp cTime;
 	private List<AudioPo> audioPos;
@@ -62,6 +63,12 @@ public class AlbumPo extends BaseObject {
 	}
 	public void setDescn(String descn) {
 		this.descn = descn;
+	}
+	public int getIsValidate() {
+		return isValidate;
+	}
+	public void setIsValidate(int isValidate) {
+		this.isValidate = isValidate;
 	}
 	public String getVisitUrl() {
 		return visitUrl;

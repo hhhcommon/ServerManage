@@ -37,6 +37,7 @@ import com.woting.crawler.core.dict.service.CrawlerDictService;
 import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.utils.HttpUtils;
+import com.woting.crawler.scheme.utils.RedisUtils;
 
 public class XMLYEtl1Process {
 	
@@ -50,9 +51,9 @@ public class XMLYEtl1Process {
 		String albumId = albummap.get("albumId")+"";
 		AlbumService albumService = (AlbumService) SpringShell.getBean("albumService");
 		String id = "XMLY_ALBUM_"+albumId;
+		RedisUtils.set("connectionFactory", 1, "LOADCRAWLERDB:"+id, System.currentTimeMillis()+"");
 		AlbumPo albumPo = albumService.getAlbumInfo(id);
 		if (albumPo!=null) return null;
-		
 		albumPo = new AlbumPo();
 		albumPo.setId(id);
 		albumPo.setAlbumId(albummap.get("albumId")+"");
@@ -63,6 +64,7 @@ public class XMLYEtl1Process {
 			albumPo.setAlbumImg(img);
 			albumPo.setAlbumName(albummap.get("title")+"");
 			albumPo.setAlbumPublisher("喜马拉雅");
+			
 			if (albummap.get("tags")!=null && albummap.get("tags").toString().length()>0) {
 				albumPo.setAlbumTags(albummap.get("tags")+"");
 			}
@@ -333,6 +335,8 @@ public class XMLYEtl1Process {
 				}
 			}
 		}
+		RedisUtils.delete("connectionFactory", 1, "LOADCRAWLERDB:"+id);
+		RedisUtils.set("connectionFactory", 1, "CRAWLERDB:"+id, System.currentTimeMillis()+"");
 		return albumPo.getId();
 	}
 }

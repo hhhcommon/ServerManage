@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- Etl与资源对应关系 -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="A_RECORD">
+  <!-- 对应关系 -->
+  <resultMap id="BaseResultMap" type="record">
+    <id      column="id"          property="id"          jdbcType="INTEGER"/>
+    <result  column="beginTime"   property="beginTime"   jdbcType="TIMESTAMP"/>
+    <result  column="endTime"     property="endTime"     jdbcType="TIMESTAMP"/>
+    <result  column="recordType"  property="recordType"  jdbcType="VARCHAR"/>
+    <result  column="descn"       property="descn"       jdbcType="VARCHAR"/>
+    <result  column="duration"    property="duration"    jdbcType="INTEGER"/>
+    <result  column="recordCount" property="recordCount" jdbcType="INTEGER"/>
+  </resultMap>
+
+  <!-- 所有列 -->
+  <sql id="Base_Column_List">
+    id, beginTime, endTime, recordType, descn, duration, recordCount
+  </sql>
+  
+  <!-- 条件子句 -->
+  <sql id="WhereClauseByEntiey">
+    <where>
+      <trim prefix="(" suffix=")" prefixOverrides="and">
+        <if test="id!=null and id!=0">and id=#{id,jdbcType=VARCHAR}</if>
+        <if test="beginTime!=null">and beginTime=#{beginTime,jdbcType=TIMESTAMP}</if>
+        <if test="endTime!=null">and endTime=#{endTime,jdbcType=TIMESTAMP}</if>
+        <if test="recordType!=null">and recordType=#{recordType,jdbcType=VARCHAR}</if>
+        <if test="descn!=null">and descn=#{descn,jdbcType=VARCHAR}</if>
+        <if test="duration!=null">and duration=#{duration,jdbcType=INTEGER}</if>
+        <if test="recordCount!=null">and recordCount=#{recordCount,jdbcType=INTEGER}</if>
+      </trim>
+    </where>
+  </sql>
+  
+  <!-- 新增数据 -->
+  <insert id="insert" parameterType="java.util.Map">
+    insert into c_Record
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id!=null and id!=0">id,</if>
+      <if test="beginTime!=null">beginTime,</if>
+      <if test="endTime!=null">endTime,</if>
+      <if test="recordType!=null">recordType,</if>
+      <if test="descn!=null">descn,</if>
+      <if test="duration!=null">duration,</if>
+      <if test="recordCount!=null">recordCount,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id!=null and id!=0">#{id,jdbcType=VARCHAR},</if>
+      <if test="beginTime!=null">#{beginTime,jdbcType=TIMESTAMP},</if>
+      <if test="endTime!=null">#{endTime,jdbcType=TIMESTAMP},</if>
+      <if test="recordType!=null">#{recordType,jdbcType=VARCHAR},</if>
+      <if test="descn!=null">#{descn,jdbcType=VARCHAR},</if>
+      <if test="duration!=null">#{duration,jdbcType=INTEGER},</if>
+      <if test="recordCount!=null">#{recordCount,jdbcType=INTEGER},</if>
+    </trim>
+  </insert>
+  
+  <!-- 修改 根据主键-->
+  <update id="update" parameterType="java.util.Map">
+    update c_Record
+    <set>
+      <if test="beginTime!=null">and beginTime=#{beginTime,jdbcType=TIMESTAMP}</if>
+      <if test="endTime!=null">and endTime=#{endTime,jdbcType=TIMESTAMP}</if>
+      <if test="recordType!=null">and recordType=#{recordType,jdbcType=VARCHAR}</if>
+      <if test="descn!=null">and descn=#{descn,jdbcType=VARCHAR}</if>
+      <if test="duration!=null">and duration=#{duration,jdbcType=INTEGER}</if>
+      <if test="recordCount!=null">and recordCount=#{recordCount,jdbcType=INTEGER}</if>
+    </set>
+    where id=#{id,jdbcType=VARCHAR}
+  </update>
+  
+  <select id="getList" resultMap="BaseResultMap" parameterType="java.util.Map">
+    select <include refid="Base_Column_List"/>  from c_Record
+    <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if> 
+    <if test="orderSql!=null"> order by ${orderSql}</if>
+  </select>
+  
+  <select id="getInfo" resultMap="BaseResultMap" parameterType="java.lang.String">
+    select <include refid="Base_Column_List"/>  from c_Record where id=#{id,jdbcType=VARCHAR}
+  </select>
+  
+</mapper>

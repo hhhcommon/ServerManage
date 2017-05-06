@@ -1,10 +1,11 @@
 package com.woting.crawler.scheme.crawlerdb.xmly;
 
-import java.io.File;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.jsoup.Jsoup;
@@ -12,40 +13,57 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import com.spiritdata.framework.util.JsonUtils;
+import com.woting.crawler.core.album.service.AlbumService;
 import com.woting.crawler.core.httpclient.service.HttpClientService;
+import com.woting.crawler.core.record.persis.po.RecordPo;
+import com.woting.crawler.core.record.service.RecordService;
 import com.woting.crawler.core.scheme.model.Scheme;
 import com.woting.crawler.ext.SpringShell;
-import com.woting.crawler.scheme.crawlerdb.crawler.EtlProcess;
 import com.woting.crawler.scheme.utils.CleanDataUtils;
-import com.woting.crawler.scheme.utils.FileUtils;
 import com.woting.crawler.scheme.utils.HttpUtils;
+import com.woting.crawler.scheme.utils.RedisUtils;
 
 public class XMLYCrawler {
 	private Map<String, Object> map = new HashMap<>();
-	private Map<String, Object> newmap = new HashMap<>();
+//	private Map<String, Object> newmap = new HashMap<>();
+//	private Map<String, Object> filtMap = new HashMap<>();
 	private HttpClientService httpClientService;
+	private AlbumService albumService;
 	int httpclientnums = 0;
 	String path = "/opt/CrawlerDB/XMLYREF.txt";
+	List<Integer> iList = new ArrayList<>();
 	private Scheme scheme;
-	private EtlProcess etlProcess;
-	private File file = null;
+	private long begTime;
 	
-	
-	@SuppressWarnings("unchecked")
-	public XMLYCrawler(Scheme scheme) {
-		file = new File(path);
-		String str = FileUtils.readFile(file);
-		if (str!=null && str.length()>0) {
-			map = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
-		}
+	public XMLYCrawler() {
+		begTime = System.currentTimeMillis();
 		httpClientService = (HttpClientService) SpringShell.getBean("httpClientService");
-		this.scheme = scheme;
-		etlProcess = new EtlProcess();
-		if (map.containsKey("doingDB")) {
-			Map<String, Object> dbmap = (Map<String, Object>) map.get("doingDB");
-			etlProcess.removeDBAll(dbmap, "喜马拉雅");
-			map.remove("doingDB");
-			FileUtils.writeFile(JsonUtils.objToJson(map), file);
+		albumService = (AlbumService) SpringShell.getBean("albumService");
+		this.scheme = new Scheme();
+		Set<String> sets = RedisUtils.keys("connectionFactory", 1, "LOADCRAWLERDB:XMLY_ALBUM*");
+		if (sets!=null && sets.size()>0) {
+			for (String set : sets) {
+				String val = RedisUtils.get("connectionFactory", 1, set);
+				if (val!=null) {
+					try {
+						long ctime = Long.valueOf(val);
+						String[] vals = set.split(":");
+						String id = vals[1];
+						if (System.currentTimeMillis()-ctime>(10*60*1000)) {
+							albumService.removeAlbumById(id);
+							RedisUtils.delete("connectionFactory", 1, set);
+						}
+					} catch (Exception e) {}
+				}
+			}
+		}
+		sets = RedisUtils.keys("connectionFactory", 1, "*XMLY_ALBUM*");
+		if (sets!=null && sets.size()>0) {
+			for (String set : sets) {
+				String[] vals = set.split("_");
+				String id = vals[2];
+				map.put(id, null);
+			}
 		}
 	}
 	
@@ -147,7 +165,6 @@ public class XMLYCrawler {
 			}
 			System.out.println(newls.size());
 			int audios = 0;
-			List<Integer> iList = new ArrayList<>();
 			fixedThreadPool = Executors.newFixedThreadPool(scheme.getXMLYThread_Limit_Size());
 			for (int i = 0; i < newls.size(); i++) {
 				int fonum = i;
@@ -160,13 +177,7 @@ public class XMLYCrawler {
 							String numstr = insertNewZJ(albumId,"1",false);
 							System.out.println(albumId+"   "+numstr);
 							if (numstr!=null) {
-								iList.add(Integer.valueOf(numstr));
 								String id = insertNewZJ(albumId, numstr, true);
-//								if (id!=null) {
-//									newmap.put(albumId, id);
-//								    etlProcess.makeNewAlbum(id);
-//								    FileUtils.didDB(file, albumId);
-//								}
 							}
 						} catch (Exception e) {
 							System.out.println("http://mobile.ximalaya.com/mobile/v1/album?albumId="+albumId+"&device=android&isAsc=true&pageId=1&pageSize=1&pre_page=0&source=5");
@@ -190,6 +201,16 @@ public class XMLYCrawler {
 					}
 				}
 			}
+			RecordService recordService = (RecordService) SpringShell.getBean("recordService");
+			RecordPo rPo = new RecordPo();
+			rPo.setBeginTime(new Timestamp(begTime));
+			long endTime = System.currentTimeMillis();
+			rPo.setEndTime(new Timestamp(endTime));
+			rPo.setDuration((int)(endTime-begTime));
+			rPo.setRecordType("XMLY_ADD");
+			rPo.setDescn("定时扫描，喜马拉雅新增内容,新增专辑 "+ iList.size() +",  新增节目 "+ audios);
+			rPo.setRecordCount(audios);
+			recordService.insertRecord(rPo);
 			System.out.println(audios);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -221,6 +242,7 @@ public class XMLYCrawler {
 				if (toInsert) {
 					XMLYEtl1Process xmlyEtl1Process = new XMLYEtl1Process();
 				    String id = xmlyEtl1Process.insertNewAlbum(alm,map,scheme);
+				    iList.add(Integer.valueOf(pageSize));
 				    return id;
 				}
 				return tracks.get("totalCount").toString();

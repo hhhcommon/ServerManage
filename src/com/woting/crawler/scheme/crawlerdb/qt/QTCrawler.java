@@ -1,9 +1,11 @@
 package com.woting.crawler.scheme.crawlerdb.qt;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.jsoup.Jsoup;
@@ -12,7 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.spiritdata.framework.util.JsonUtils;
+import com.woting.crawler.core.album.service.AlbumService;
+import com.woting.crawler.core.record.persis.po.RecordPo;
+import com.woting.crawler.core.record.service.RecordService;
 import com.woting.crawler.core.scheme.model.Scheme;
+import com.woting.crawler.ext.SpringShell;
+import com.woting.crawler.scheme.utils.RedisUtils;
 
 public class QTCrawler {
 	private Logger logger = LoggerFactory.getLogger(QTCrawler.class);
@@ -20,14 +27,42 @@ public class QTCrawler {
 	int httpclientnums = 0;
 	String path = null;
 	private Scheme scheme;
+	private AlbumService albumService;
 	private boolean isOk = false;
+	private List<Integer> iList = new ArrayList<>();
+	private long begTime;
 	
-	public QTCrawler(Scheme scheme) {
-		this.scheme = scheme;
-		if (scheme.getQTCachePath()==null || scheme.getQTCachePath().length()<1) {
-			return;
-		}
+	public QTCrawler() {
+		this.begTime = System.currentTimeMillis();
+		this.scheme = new Scheme();
 		this.isOk = true;
+		albumService = (AlbumService) SpringShell.getBean("albumService");
+		this.scheme = new Scheme();
+		Set<String> sets = RedisUtils.keys("connectionFactory", 1, "LOADCRAWLERDB:QT_ALBUM*");
+		if (sets!=null && sets.size()>0) {
+			for (String set : sets) {
+				String val = RedisUtils.get("connectionFactory", 1, set);
+				if (val!=null) {
+					try {
+						long ctime = Long.valueOf(val);
+						String[] vals = set.split(":");
+						String id = vals[1];
+						if (System.currentTimeMillis()-ctime>(10*60*1000)) {
+							albumService.removeAlbumById(id);
+							RedisUtils.delete("connectionFactory", 1, set);
+						}
+					} catch (Exception e) {}
+				}
+			}
+		}
+		sets = RedisUtils.keys("connectionFactory", 1, "*QT_ALBUM*");
+		if (sets!=null && sets.size()>0) {
+			for (String set : sets) {
+				String[] vals = set.split("_");
+				String id = vals[2];
+				map.put(id, null);
+			}
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -73,7 +108,9 @@ public class QTCrawler {
 															String albumId = m.get("id").toString();
 															synchronized (map) {
 																if (map.containsKey(albumId)) {
-																	String cates = map.get(albumId).toString();
+																	String cates = "";
+																	if(map.get(albumId)!=null) 
+																		cates = map.get(albumId).toString();
 																	if (!cates.contains(cateName)) {
 																		map.put(albumId, cates+","+cateName);
 																	}
@@ -113,7 +150,6 @@ public class QTCrawler {
 			}
 			System.out.println("待新增专辑"+newls.size());
 //			EtlProcess etlProcess = new EtlProcess();
-			List<Integer> iList = new ArrayList<>();
 			fixedThreadPool = Executors.newFixedThreadPool(scheme.getQTThread_Limit_Size());
 			for (int i = 0; i < newls.size(); i++) {
 				int fonum = i;
@@ -128,11 +164,6 @@ public class QTCrawler {
 							if (numstr!=null) {
 								iList.add(Integer.valueOf(numstr));
 								String id = insertNewZJ(albumId, numstr, true);
-//								if (id!=null) {
-//									newmap.put(albumId, id);
-//									etlProcess.makeNewAlbum(id);
-//									FileUtils.didDB(file, albumId);
-//								}
 							}
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -141,6 +172,7 @@ public class QTCrawler {
 				});
 			}
 			fixedThreadPool.shutdown();
+			int audios = 0;
 			while (true) {
 				Thread.sleep(10000);
 				System.out.println(iList.size());
@@ -148,6 +180,23 @@ public class QTCrawler {
 					break;
 				}
 			}
+			if (iList!=null && iList.size()>0) {
+				for (Integer integer : iList) {
+					if (integer!=null) {
+						audios += integer;
+					}
+				}
+			}
+			RecordService recordService = (RecordService) SpringShell.getBean("recordService");
+			RecordPo rPo = new RecordPo();
+			rPo.setBeginTime(new Timestamp(begTime));
+			long endTime = System.currentTimeMillis();
+			rPo.setEndTime(new Timestamp(endTime));
+			rPo.setDuration((int)(endTime-begTime));
+			rPo.setRecordType("QT_ADD");
+			rPo.setDescn("定时扫描，蜻蜓新增内容,新增专辑 "+ iList.size() +",  新增节目 "+ audios);
+			rPo.setRecordCount(audios);
+			recordService.insertRecord(rPo);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -192,6 +241,7 @@ public class QTCrawler {
 				}
 				QTEtl1Process qtEtl1Process = new QTEtl1Process();
 				String id = qtEtl1Process.insertNewAlbum(map, albummap, usermap, audios);
+				iList.add(audios.size());
 				return id;
 			}
 		} catch (Exception e) {

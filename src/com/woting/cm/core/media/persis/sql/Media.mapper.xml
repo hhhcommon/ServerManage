@@ -432,14 +432,14 @@
 	</select>
 	
 	<delete id="multiSmaAllById" parameterType="java.util.Map">
-      DELETE FROM wt_SeqMediaAsset where id=#{ressmaIds,jdbcType=VARCHAR};
+      DELETE FROM wt_SeqMediaAsset where id = #{ressmaIds,jdbcType=VARCHAR};
       DELETE FROM wt_MediaAsset where id IN (SELECT mId FROM wt_SeqMA_Ref where sId = #{ressmaIds,jdbcType=VARCHAR}) ;
       DELETE FROM wt_MaSource where maId IN (SELECT mId FROM wt_SeqMA_Ref where sId = #{ressmaIds,jdbcType=VARCHAR}) ;
-      DELETE FROM wt_ChannelAsset where (#{assetIds,jdbcType=VARCHAR} and assetType = 'wt_MediaAsset') or (assetId = #{ressmaIds,jdbcType=VARCHAR} and assetType = 'wt_SeqMediaAsset');
-      DELETE FROM wt_ResDict_Ref where (#{resmaIds,jdbcType=VARCHAR} and resTableName = 'wt_MediaAsset') or (resId = #{ressmaIds,jdbcType=VARCHAR} and resTableName = 'wt_SeqMediaAsset');
-      DELETE FROM wt_MediaPlayCount where (#{resmaIds,jdbcType=VARCHAR}) and resTableName = 'wt_MediaAsset') or (resId = #{ressmaIds,jdbcType=VARCHAR} and resTableName = 'wt_SeqMediaAsset');
-      DELETE FROM wt_Person_Ref where (#{resmaIds,jdbcType=VARCHAR}) and resTableName = 'wt_MediaAsset') or (resId = #{ressmaIds,jdbcType=VARCHAR} and resTableName = 'wt_SeqMediaAsset');
-      DELETE FROM wt_Kw_Res WHERE (#{resmaIds,jdbcType=VARCHAR}) and resTableName = 'wt_MediaAsset') or (resId = #{ressmaIds,jdbcType=VARCHAR} and resTableName = 'wt_SeqMediaAsset');
+      DELETE FROM wt_ChannelAsset where ((#{assetIds,jdbcType=VARCHAR}) and assetType = 'wt_MediaAsset') or (assetId = #{ressmaIds,jdbcType=VARCHAR} and assetType = 'wt_SeqMediaAsset');
+      DELETE FROM wt_ResDict_Ref where ((#{resmaIds,jdbcType=VARCHAR}) and resTableName = 'wt_MediaAsset') or (resId = #{ressmaIds,jdbcType=VARCHAR} and resTableName = 'wt_SeqMediaAsset');
+      DELETE FROM wt_MediaPlayCount where ((#{resmaIds,jdbcType=VARCHAR}) and resTableName = 'wt_MediaAsset') or (resId = #{ressmaIds,jdbcType=VARCHAR} and resTableName = 'wt_SeqMediaAsset');
+      DELETE FROM wt_Person_Ref where ((#{resmaIds,jdbcType=VARCHAR}) and resTableName = 'wt_MediaAsset') or (resId = #{ressmaIds,jdbcType=VARCHAR} and resTableName = 'wt_SeqMediaAsset');
+      DELETE FROM wt_Kw_Res WHERE ((#{resmaIds,jdbcType=VARCHAR}) and resTableName = 'wt_MediaAsset') or (resId = #{ressmaIds,jdbcType=VARCHAR} and resTableName = 'wt_SeqMediaAsset');
       DELETE FROM wt_SeqMA_Ref where sId = #{ressmaIds,jdbcType=VARCHAR};
     </delete>
 

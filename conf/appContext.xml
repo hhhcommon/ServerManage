@@ -11,6 +11,7 @@
     <property name="locations">
       <list merge="default">
         <value>/conf/database.properties</value>
+        <value>/conf/quartz.properties</value>
       </list>
     </property>
   </bean>
@@ -175,6 +176,7 @@
     <property name="ShareCronExpression" value="${timer.ShareCronExpression}"/>
     <property name="CacheRefreshExpression" value="${timer.CacheRefreshExpression}"/>
     <property name="RedisRefreshExpression" value="${timer.RedisRefreshExpression}"/>
+    <property name="UpdateCrawlerSrcExpression" value="${timer.UpdateCrawlerSrcExpression}"/>
   </bean>
   
   <!-- 抓取计划加载功能 -->

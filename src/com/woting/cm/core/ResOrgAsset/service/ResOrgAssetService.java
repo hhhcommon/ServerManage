@@ -67,25 +67,24 @@ public class ResOrgAssetService{
 		return null;
     }
     
-    public ResOrgAssetPo getResOrgAssetPo(String origSrcId, String orgName, String resTableName) {
+    public ResOrgAssetPo getResOrgAssetPo(String origId, String orgName, String resTableName) {
     	Map<String, Object> m = new HashMap<>();
-    	m.put("origSrcId", origSrcId);
+    	m.put("origId", origId);
     	m.put("orgName", orgName);
     	m.put("resTableName", resTableName);
     	return resOrgAssetDao.getInfoObject("getList", m);
     }
     
-    public void deleteByOrigSrcIds(String origSrcIds, String orgName, String resTableName) {
+    public void deleteByOrigIds(String origIds, String resTableName) {
     	Map<String, Object> m = new HashMap<>();
-    	m.put("whereSql", origSrcIds);
-    	m.put("orgName", orgName);
+    	m.put("whereSql", origIds);
     	m.put("resTableName", resTableName);
     	resOrgAssetDao.delete("deleteByEntity", m);
     }
     
-    public void deleteByOrigSrcId(String origSrcId, String orgName, String resTableName) {
+    public void deleteByOrigId(String origId, String orgName, String resTableName) {
     	Map<String, Object> m = new HashMap<>();
-    	m.put("origSrcId", origSrcId);
+    	m.put("origId", origId);
     	m.put("orgName", orgName);
     	m.put("resTableName", resTableName);
     	resOrgAssetDao.delete("deleteByEntity", m);

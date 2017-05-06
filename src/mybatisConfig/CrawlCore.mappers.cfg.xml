@@ -18,6 +18,7 @@
     <typeAlias alias="csubscribe"  type="com.woting.crawler.core.csubscribe.persis.po.CSubscribePo"/>
     <typeAlias alias="cforward"    type="com.woting.crawler.core.cforward.persis.po.CForwardPo"/>
     <typeAlias alias="imagehash"   type="com.woting.crawler.core.imagehash.persis.po.ImageHash"/>
+    <typeAlias alias="record"      type="com.woting.crawler.core.record.persis.po.RecordPo"/>
   </typeAliases>
   <!-- SQL文件设置 -->
   <mappers>
@@ -35,5 +36,6 @@
     <mapper resource="com/woting/crawler/core/csubscribe/persis/sql/CSubscribe.mapper.xml"/>
     <mapper resource="com/woting/crawler/core/cforward/persis/sql/CForward.mapper.xml"/>
     <mapper resource="com/woting/crawler/core/imagehash/persis/sql/ImageHash.mapper.xml"/>
+    <mapper resource="com/woting/crawler/core/record/persis/sql/Record.mapper.xml"/>
   </mappers>
 </configuration>

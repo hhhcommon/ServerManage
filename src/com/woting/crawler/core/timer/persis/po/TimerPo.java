@@ -8,6 +8,8 @@ public class TimerPo {
 	private String ShareCronExpression;
 	private String CacheRefreshExpression;
 	private String RedisRefreshExpression;
+	private String UpdateCrawlerSrcExpression;
+	
 	public String getCronExpression() {
 		return CronExpression;
 	}
@@ -49,5 +51,11 @@ public class TimerPo {
 	}
 	public void setRedisRefreshExpression(String redisRefreshExpression) {
 		RedisRefreshExpression = redisRefreshExpression;
+	}
+	public String getUpdateCrawlerSrcExpression() {
+		return UpdateCrawlerSrcExpression;
+	}
+	public void setUpdateCrawlerSrcExpression(String updateCrawlerSrcExpression) {
+		UpdateCrawlerSrcExpression = updateCrawlerSrcExpression;
 	}
 }

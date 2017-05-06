@@ -84,11 +84,11 @@
   </select>
   
   <select id="getAudioByAlbumIdAndPublisher" parameterType="java.util.Map" resultMap="BaseResultMap">
-    select * from c_Audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{audioPublisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+    select * from c_Audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{audioPublisher,jdbcType=VARCHAR}
   </select>
   
   <select id="getAudioNumByAlbumIdAndPublisher" parameterType="java.util.Map" resultType="java.lang.Integer">
-    select count(*) from c_Audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{publisher,jdbcType=VARCHAR} and crawlerNum=#{crawlerNum,jdbcType=VARCHAR}
+    select count(*) from c_Audio where albumId=#{albumId,jdbcType=VARCHAR} and audioPublisher=#{publisher,jdbcType=VARCHAR}
   </select>
   
   <select id="getAudioList" parameterType="java.util.Map" resultMap="BaseResultMap">
