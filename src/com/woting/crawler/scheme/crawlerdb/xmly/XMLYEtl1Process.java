@@ -88,7 +88,7 @@ public class XMLYEtl1Process {
 			albumPos.add(albumPo);
 			try {
 				albumService.insertAlbumList(albumPos);
-			} catch (Exception e) {}
+			} catch (Exception e) {e.printStackTrace();}
 			
 			// 549a0acd560f4685ad8c2dc05808735c
 			List<Map<String, Object>> dictRefLs = new ArrayList<>();

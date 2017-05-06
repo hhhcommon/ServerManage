@@ -121,35 +121,40 @@ public class EtlProcess {
 	}
 	
 	public void convertToWT() {
-		while (true) {
-			try {
-				logger.info("开始中间库转正式库进程");
-				int num = 0;
-				Set<String> oldsets = RedisUtils.keys("connectionFactory", 1, "LOADWT:XMLY_*");
-				if (oldsets!=null && oldsets.size()>0) {
-					for (String oldset : oldsets) {
-						String[] s = oldset.split(":");
-						String albumId = s[1];
-						removeDB(albumId);
-						RedisUtils.delete("connectionFactory", 1, "LOADWT:"+albumId);
-						RedisUtils.set("connectionFactory", 1, "CRAWLERDB:"+albumId, System.currentTimeMillis()+"");
+		new Thread(new Runnable() {
+			public void run() {
+					while (true) {
+					try {
+						logger.info("开始中间库转正式库进程");
+						int num = 0;
+						Set<String> oldsets = RedisUtils.keys("connectionFactory", 1, "LOADWT:XMLY_*");
+						if (oldsets!=null && oldsets.size()>0) {
+							for (String oldset : oldsets) {
+								String[] s = oldset.split(":");
+								String albumId = s[1];
+								removeDB(albumId);
+								RedisUtils.delete("connectionFactory", 1, "LOADWT:"+albumId);
+								RedisUtils.set("connectionFactory", 1, "CRAWLERDB:"+albumId, System.currentTimeMillis()+"");
+							}
+						}
+						Set<String> sets = RedisUtils.keys("connectionFactory", 1, "CRAWLERDB:XMLY_*");
+						if (sets!=null && sets.size()>0) {
+							for (String set : sets) {
+								String[] s = set.split(":");
+								String albumId = s[1];
+								System.out.println((new Timestamp(System.currentTimeMillis())).toString()+"            "+num++ +"   " + albumId);
+								makeNewAlbum(albumId);
+							}
+						}
+						logger.info("中间库转正式库完成,共转换专辑   [{}]  个",num);
+						Thread.sleep(5*60*1000);
+					} catch (Exception e) {
+						continue;
 					}
 				}
-				Set<String> sets = RedisUtils.keys("connectionFactory", 1, "CRAWLERDB:XMLY_*");
-				if (sets!=null && sets.size()>0) {
-					for (String set : sets) {
-						String[] s = set.split(":");
-						String albumId = s[1];
-						System.out.println((new Timestamp(System.currentTimeMillis())).toString()+"            "+num++ +"   " + albumId);
-						makeNewAlbum(albumId);
-					}
-				}
-				logger.info("中间库转正式库完成,共转换专辑   [{}]  个",num);
-				Thread.sleep(10*60*1000);
-			} catch (Exception e) {
-				continue;
 			}
-		}
+		}).start();
+		
 	}
 	
 	public void makeAlbum(String id, boolean noCompare) {
