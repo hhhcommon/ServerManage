@@ -107,8 +107,30 @@ public class KeyWordService {
 						kwpo.setOwnerId("cm");
 						kwpo.setOwnerType(0);
 						kwpo.setcTime(new Timestamp(System.currentTimeMillis()));
-						insertKeyWords(kwpo);
-						
+						try {
+							insertKeyWords(kwpo);
+						} catch (Exception e) {
+							KeyWordPo keyWordPo = keyWordDao.getInfoObject("getList", m);
+							if (keyWordPo!=null) {
+								KwResPo kwr = new KwResPo();
+								kwr.setId(SequenceUUID.getPureUUID());
+								kwr.setKwId(kwpo.getId());
+								if (resTableName.equals("wt_SeqMediaAsset")) {
+									kwr.setRefName("标签-专辑");
+								} else {
+									if (resTableName.equals("wt_MediaAsset")) {
+										kwr.setRefName("标签-节目");
+									} else if (resTableName.equals("wt_Channel")) {
+										kwr.setRefName("标签-栏目");
+									}
+								}
+								kwr.setResTableName(resTableName);
+								kwr.setResId(resId);
+								kwr.setcTime(new Timestamp(System.currentTimeMillis()));
+								insertKwRefs(kwr);
+							}
+							continue;
+						}
 						KwResPo kwr = new KwResPo();
 						kwr.setId(SequenceUUID.getPureUUID());
 						kwr.setKwId(kwpo.getId());

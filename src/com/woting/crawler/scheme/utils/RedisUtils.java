@@ -1,6 +1,5 @@
 package com.woting.crawler.scheme.utils;
 
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -470,5 +469,33 @@ public class RedisUtils {
 			if (redis!=null) redis.close();
 		}
 		return null;
+	}
+	
+	/**
+	 * 
+	 * @param JedisConnectionFactory
+	 * @param redisDB
+	 * @param Id
+	 * @param purpose 目的
+	 * 				=0 保证正在入中间库唯一性
+	 * 				=1保证待抓取唯一性
+	 * 				=2保证正在入正式库唯一性
+	 * 				=3保证已入正式库唯一性
+	 * 				=4清除所有
+	 * @return
+	 */
+	public static void keepKeyToOnly(String JedisConnectionFactory,int redisDB, String id, int purpose) {
+		Set<String> sets = keys(JedisConnectionFactory, redisDB, "*" + id + "*");
+		String[] tempStrs = {"LOADCRAWLERDB:","CRAWLERDB:","LOADWT:","WT:"};
+		boolean isok = false;
+		if (sets!=null && sets.size()>0) {
+			for (String set : sets) {
+				if (set!=null) {
+					if (purpose!=4 && set.equals(tempStrs[purpose]+id)) isok = true;
+					else delete(JedisConnectionFactory, redisDB, set);
+				}
+			}
+		}
+		if (purpose!=4 && !isok) set(JedisConnectionFactory, redisDB, tempStrs[purpose]+id, System.currentTimeMillis()+"");
 	}
 }

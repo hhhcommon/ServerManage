@@ -37,13 +37,15 @@ public class SolrJService {
 		if (media!=null) {
 			SolrInputPo sPo = SolrUtils.convert2SolrInput(media, pid, persons, chstr, playcount);
 			SolrInputDocument document = SolrUtils.convert2SolrDocument(sPo);
-			try {
-				httpSolrServer.add(document);
-				httpSolrServer.commit();
-			} catch (SolrServerException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
+			int num = 0;
+			while (num++<10) {
+				try {
+					httpSolrServer.add(document);
+					httpSolrServer.commit();
+				} catch (Exception e) {
+					continue;
+				}
+				break;
 			}
 		}
 	}
@@ -107,7 +109,7 @@ public class SolrJService {
 			solrQuery.setQuery("*:*");
 		} else {
 			querystr = SolrUtils.makeQueryStr(querystr, true);
-			solrQuery.setQuery("item_title:"+querystr);
+			solrQuery.setQuery(querystr);
 		}
 		solrQuery.setStart((page -1) * pageSize);
 		solrQuery.setRows(pageSize);
@@ -186,6 +188,15 @@ public class SolrJService {
 	        return results;
 		}
 		return null;
+	}
+	
+	public void deleteById (String id) {
+		try {
+			httpSolrServer.deleteById(id);
+			httpSolrServer.commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void deleteAll() {

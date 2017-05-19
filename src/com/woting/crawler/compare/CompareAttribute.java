@@ -31,7 +31,7 @@ public class CompareAttribute {
 	private float sameproportion = 0.8f;
 	private RedisOperService rs;
 
-	public CompareAttribute(String crawlernum) {
+	public CompareAttribute() {
 //		this.crawlernum = crawlernum;
 //		Scheme scheme = (Scheme) SystemCache.getCache(CrawlerConstants.SCHEME).getContent();
 //		rs = scheme.getRedisOperService();
@@ -174,7 +174,7 @@ public class CompareAttribute {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public boolean getSolrListToCompare(AlbumPo albumPo) {
+	public Map<String, Object> getSolrListToCompare(AlbumPo albumPo, boolean addMedia) {
 		if (albumPo!=null) {
 			SolrJService solrJService = (SolrJService) SpringShell.getBean("solrJService");
 			try {
@@ -207,20 +207,32 @@ public class CompareAttribute {
 														for (SolrInputPo solrInputPo2 : ausolrs) {
 															long timelong = solrInputPo2.getItem_timelong();
 															long differlong = Math.abs(timelong-autimelong);
-															long permitlong = Math.round(timelong*0.05);
+															long permitlong = Math.round(timelong*0.3);
 															if (differlong < permitlong) {
 																if (differlong <= 1000) {
 																	System.out.println(au.getAudioName() + "    " + solrInputPo2.getItem_title());
-																	float pernum = compareTitle(solrJService, au.getAudioName(), solrInputPo2.getItem_title());
-																	if (pernum>0.365 && pernum > maxpernum) {
-																		maxpernum = (float) ((pernum+1)/2);
+																	if (au.getAudioName().equals(solrInputPo2.getItem_title())) {
+																		maxpernum = 2;
 																		perId = solrInputPo2.getItem_id();
 																		pertitle = solrInputPo2.getItem_title();
+																	} else {
+																		float pernum = compareTitle(solrJService, au.getAudioName(), solrInputPo2.getItem_title());
+																		if (pernum==1) {
+																			maxpernum = 2;
+																			perId = solrInputPo2.getItem_id();
+																			pertitle = solrInputPo2.getItem_title();
+																		} else {
+																			if (pernum>0.365 && pernum > maxpernum) {
+																				maxpernum = (float) ((pernum+1)/2);
+																				perId = solrInputPo2.getItem_id();
+																				pertitle = solrInputPo2.getItem_title();
+																			}
+																		}
 																	}
 																} else {
 																	System.out.println(au.getAudioName() + "    " + solrInputPo2.getItem_title());
 																	float pernum = compareTitle(solrJService, au.getAudioName(), solrInputPo2.getItem_title());
-																	pernum = (float) ((pernum*1.3+(float)((differlong+0.0)/permitlong)*0.7+0.0)/2);
+																	pernum = (float) ((pernum*1.3+(float)((permitlong - differlong+0.0)/permitlong)*0.7+0.0)/2);
 																	if (pernum>=0.8 && pernum > maxpernum) {
 																		maxpernum = pernum;
 																		perId = solrInputPo2.getItem_id();
@@ -252,21 +264,25 @@ public class CompareAttribute {
 														else isok = false;
 													}
 													if (isok) {
-														File file = new File("/opt/wtcs/sim.txt");
+														File file = FileUtils.createFile("/opt/wtcs/sim.txt");
 														String lsstr = FileUtils.readFile(file);
 														List<Object> ls = new ArrayList<>();
 														if (lsstr!=null && lsstr.length()>0) {
-															ls = (List<Object>) JsonUtils.jsonToObj(lsstr, List.class);												
-															ls.add(simls);
+															try {
+																ls = (List<Object>) JsonUtils.jsonToObj(lsstr, List.class);												
+															    ls.add(simls);
+															} catch (Exception e) {}
 														} else {
 															ls.add(simls);
 														}
 														try {
 															FileUtils.writeFile(JsonUtils.objToJson(ls), file);
-														} catch (Exception e) {}
-														EtlProcess eProcess = new EtlProcess();
-														eProcess.makeSameAlbum(albumPo, smaId, simls);
-														return true;
+														} catch (Exception e) {e.printStackTrace();}
+														Map<String, Object> param = new HashMap<>();
+														param.put("albumPo", albumPo);
+														param.put("smaId", smaId);
+														param.put("simls", simls);
+														return param;
 													}
 												}
 											}
@@ -279,9 +295,80 @@ public class CompareAttribute {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-				return false;
+				return null;
 			}
 		}
-		return false;
+		return null;
+	}
+	
+	public Map<String, Object> getSolrListToCompareMedia(String smaId, String maId) {
+		try {
+			SolrJService solrJService = (SolrJService) SpringShell.getBean("solrJService");
+			mediaService = (MediaService) SpringShell.getBean("mediaService");
+			MediaAssetPo ma = mediaService.getMaInfoById(maId);
+			if (ma==null) return null;
+			SolrSearchResult sResult = solrJService.solrSearch(null, null, "*,score", 1, 5, "item_type:SEQU","item_id:"+smaId);
+			if (sResult==null) return null;
+			SolrInputPo solrInputPo = sResult.getSolrInputPos().get(0);
+			if (solrInputPo==null) return null;
+			int mediasize =new Long(solrInputPo.getItem_mediasize()).intValue();
+			List<SortClause> solrsort2s = SolrUtils.makeSolrSort("score desc");
+			SolrSearchResult sResult2 = solrJService.solrSearch(ma.getMaTitle(), solrsort2s, "*,score", 1, mediasize, "item_type:AUDIO", "item_pid:"+solrInputPo.getItem_id());
+			if (sResult2==null) return null;
+			List<SolrInputPo> ausolrs = sResult2.getSolrInputPos();
+			if (ausolrs==null || ausolrs.size()==0) return null;
+			long autimelong = Long.valueOf(ma.getTimeLong());
+			List<Map<String, Object>> simls = new ArrayList<>(); //相似节目列表
+			float maxpernum = 0;
+			String perId = "";
+			String pertitle = "";
+			for (SolrInputPo solrInputPo2 : ausolrs) {
+				long timelong = solrInputPo2.getItem_timelong();
+				long differlong = Math.abs(timelong-autimelong);
+				long permitlong = Math.round(timelong*0.3);
+				if (differlong > permitlong) continue;
+				if (differlong <= 1000) {
+					System.out.println(ma.getMaTitle() + "    " + solrInputPo2.getItem_title());
+					if (ma.getMaTitle().equals(solrInputPo2.getItem_title())) {
+						maxpernum = 2;
+						perId = solrInputPo2.getItem_id();
+						pertitle = solrInputPo2.getItem_title();
+					} else {
+						float pernum = compareTitle(solrJService, ma.getMaTitle(), solrInputPo2.getItem_title());
+						if (pernum==1) {
+							maxpernum = 2;
+							perId = solrInputPo2.getItem_id();
+							pertitle = solrInputPo2.getItem_title();
+						} else {
+							if (pernum>0.365 && pernum > maxpernum) {
+								maxpernum = (float) ((pernum+1)/2);
+								perId = solrInputPo2.getItem_id();
+								pertitle = solrInputPo2.getItem_title();
+							}
+						}
+					}
+				} else {
+					System.out.println(ma.getMaTitle() + "    " + solrInputPo2.getItem_title());
+					float pernum = compareTitle(solrJService, ma.getMaTitle(), solrInputPo2.getItem_title());
+					pernum = (float) ((pernum*1.3+(float)((permitlong - differlong+0.0)/permitlong)*0.7+0.0)/2);
+					if (pernum>=0.8 && pernum > maxpernum) {
+						maxpernum = pernum;
+						perId = solrInputPo2.getItem_id();
+						pertitle = solrInputPo2.getItem_title();
+					}
+				}
+			}
+			if (maxpernum>=0.8 && perId!=null) {
+				Map<String, Object> m = new HashMap<>();
+				m.put("titles", ma.getMaTitle() + "    " + pertitle);
+				m.put("perId", perId);
+				m.put("maId", ma.getId());
+				m.put("pernum", maxpernum);
+				return m;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

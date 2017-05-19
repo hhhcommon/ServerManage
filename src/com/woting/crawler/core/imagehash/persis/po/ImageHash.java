@@ -11,6 +11,7 @@ public class ImageHash extends BaseObject {
 	private String imageSrcPath;
 	private String imagePath;
 	private String purpose;
+	private int isValidate;
 	private Timestamp cTime;
 	public String getId() {
 		return id;
@@ -35,6 +36,12 @@ public class ImageHash extends BaseObject {
 	}
 	public void setPurpose(String purpose) {
 		this.purpose = purpose;
+	}
+	public int getIsValidate() {
+		return isValidate;
+	}
+	public void setIsValidate(int isValidate) {
+		this.isValidate = isValidate;
 	}
 	public Timestamp getcTime() {
 		return cTime;

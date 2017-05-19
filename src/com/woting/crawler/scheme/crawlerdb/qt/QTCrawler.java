@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.spiritdata.framework.util.JsonUtils;
+import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.album.service.AlbumService;
 import com.woting.crawler.core.record.persis.po.RecordPo;
 import com.woting.crawler.core.record.service.RecordService;
@@ -32,35 +33,49 @@ public class QTCrawler {
 	private List<Integer> iList = new ArrayList<>();
 	private long begTime;
 	
-	public QTCrawler() {
+	public QTCrawler(boolean isLoad) {
 		this.begTime = System.currentTimeMillis();
 		this.scheme = new Scheme();
 		this.isOk = true;
 		albumService = (AlbumService) SpringShell.getBean("albumService");
 		this.scheme = new Scheme();
-		Set<String> sets = RedisUtils.keys("connectionFactory", 1, "LOADCRAWLERDB:QT_ALBUM*");
-		if (sets!=null && sets.size()>0) {
-			for (String set : sets) {
-				String val = RedisUtils.get("connectionFactory", 1, set);
-				if (val!=null) {
-					try {
-						long ctime = Long.valueOf(val);
-						String[] vals = set.split(":");
-						String id = vals[1];
-						if (System.currentTimeMillis()-ctime>(10*60*1000)) {
-							albumService.removeAlbumById(id);
-							RedisUtils.delete("connectionFactory", 1, set);
+		if (isLoad) {
+			Map<String, Object> m = new HashMap<>();
+			m.put("isValidate", 0);
+			m.put("albumPublisher", "蜻蜓");
+			m.put("sortByClause", " cTime DESC");
+			int num = albumService.getAlbumNum(m);
+			if (num!=0) {
+				int page = num/1000+1;
+				for (int i = 1; i <= page; i++) {
+					m.put("pageByClause", (i-1)*1000+",1000");
+					List<AlbumPo> aPos = albumService.getAlbumListBy(m);
+					if (aPos!=null && aPos.size()>0) {
+						for (AlbumPo albumPo : aPos) {
+							long cTime = albumPo.getcTime().getTime();
+							if (System.currentTimeMillis()-cTime>(10*60*1000)) {
+								albumService.removeAlbumById(albumPo.getId());
+							}
 						}
-					} catch (Exception e) {}
+					}
 				}
 			}
-		}
-		sets = RedisUtils.keys("connectionFactory", 1, "*QT_ALBUM*");
-		if (sets!=null && sets.size()>0) {
-			for (String set : sets) {
-				String[] vals = set.split("_");
-				String id = vals[2];
-				map.put(id, null);
+			
+			m.clear();
+			m.put("albumPublisher", "蜻蜓");
+			m.put("sortByClause", " cTime DESC");
+			num = albumService.getAlbumNum(m);
+			if (num!=0) {
+				int page = num/1000+1;
+				for (int i = 1; i <= page; i++) {
+					m.put("pageByClause", (i-1)*1000+",1000");
+					List<AlbumPo> aPos = albumService.getAlbumListBy(m);
+					if (aPos!=null) {
+						for (AlbumPo albumPo : aPos) {
+							map.put(albumPo.getAlbumId(), albumPo.getCategory());
+						}
+					}
+				}
 			}
 		}
 	}
@@ -78,7 +93,7 @@ public class QTCrawler {
 			String catestr = doc.body().html();
 			Map<String, Object> qtcatemap = (Map<String, Object>) JsonUtils.jsonToObj(catestr, Map.class);
 			List<Map<String, Object>> cateLs = (List<Map<String, Object>>) qtcatemap.get("data");
-			ExecutorService fixedThreadPool = Executors.newFixedThreadPool(cateLs.size());
+			ExecutorService fixedThreadPool = Executors.newFixedThreadPool(cateLs.size()/2);
 			if (cateLs!=null && cateLs.size()>0) {
 				for (Map<String, Object> cam : cateLs) {
 					if (cam!=null && cam.size()>0) {
@@ -236,13 +251,14 @@ public class QTCrawler {
 					Map<String, Object> audiomap = (Map<String, Object>) JsonUtils.jsonToObj(mediaInfo, Map.class);
 					List<Map<String, Object>> audiols = (List<Map<String, Object>>) audiomap.get("data");
 					if (audiols!=null && audiols.size()>0) {
+						audios.removeAll(audiols);
 						audios.addAll(audiols);
 					}
 				}
 				QTEtl1Process qtEtl1Process = new QTEtl1Process();
-				String id = qtEtl1Process.insertNewAlbum(map, albummap, usermap, audios);
-				iList.add(audios.size());
-				return id;
+				int ausnum = qtEtl1Process.insertNewAlbum(map, albummap, usermap, audios);
+				iList.add(ausnum);
+				return ausnum+"";
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

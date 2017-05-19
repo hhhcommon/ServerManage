@@ -88,11 +88,21 @@ public class AudioService {
 		return audioDao.getCount("getAudioNumByAlbumIdAndPublisher", m);
 	}
 	
+	public List<AudioPo> getAudioListByAlbumId(String albumId,String publisher){
+		Map<String, Object> m = new HashMap<String,Object>();
+		m.put("albumId", albumId);
+		m.put("audioPublisher", publisher);
+		List<AudioPo> list = audioDao.queryForList("getAudioByAlbumIdAndPublisher", m);
+		if (list!=null && list.size()>0) {
+			return list;
+		}
+		return null;
+	}
+	
 	public List<AudioPo> getAudioListByAlbumId(String albumId,String publisher, String num){
 		Map<String, Object> m = new HashMap<String,Object>();
 		m.put("albumId", albumId);
 		m.put("audioPublisher", publisher);
-		m.put("crawlerNum", num);
 		List<AudioPo> list = audioDao.queryForList("getAudioByAlbumIdAndPublisher", m);
 		if (list!=null && list.size()>0) {
 			return list;

@@ -13,6 +13,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import com.spiritdata.framework.util.JsonUtils;
+import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.album.service.AlbumService;
 import com.woting.crawler.core.httpclient.service.HttpClientService;
 import com.woting.crawler.core.record.persis.po.RecordPo;
@@ -35,34 +36,47 @@ public class XMLYCrawler {
 	private Scheme scheme;
 	private long begTime;
 	
-	public XMLYCrawler() {
+	public XMLYCrawler(boolean isLoad) {
 		begTime = System.currentTimeMillis();
 		httpClientService = (HttpClientService) SpringShell.getBean("httpClientService");
 		albumService = (AlbumService) SpringShell.getBean("albumService");
 		this.scheme = new Scheme();
-		Set<String> sets = RedisUtils.keys("connectionFactory", 1, "LOADCRAWLERDB:XMLY_ALBUM*");
-		if (sets!=null && sets.size()>0) {
-			for (String set : sets) {
-				String val = RedisUtils.get("connectionFactory", 1, set);
-				if (val!=null) {
-					try {
-						long ctime = Long.valueOf(val);
-						String[] vals = set.split(":");
-						String id = vals[1];
-						if (System.currentTimeMillis()-ctime>(10*60*1000)) {
-							albumService.removeAlbumById(id);
-							RedisUtils.delete("connectionFactory", 1, set);
+		if (isLoad) {
+			Map<String, Object> m = new HashMap<>();
+			m.put("isValidate", 0);
+			m.put("albumPublisher", "喜马拉雅");
+			m.put("sortByClause", " cTime DESC");
+			int num = albumService.getAlbumNum(m);
+			if (num!=0) {
+				int page = num/1000+1;
+				for (int i = 1; i <= page; i++) {
+					m.put("pageByClause", (i-1)*1000+",1000");
+					List<AlbumPo> aPos = albumService.getAlbumListBy(m);
+					if (aPos!=null && aPos.size()>0) {
+						for (AlbumPo albumPo : aPos) {
+							long cTime = albumPo.getcTime().getTime();
+							if (System.currentTimeMillis()-cTime>(10*60*1000)) {
+								albumService.removeAlbumById(albumPo.getId());
+							}
 						}
-					} catch (Exception e) {}
+					}
 				}
 			}
-		}
-		sets = RedisUtils.keys("connectionFactory", 1, "*XMLY_ALBUM*");
-		if (sets!=null && sets.size()>0) {
-			for (String set : sets) {
-				String[] vals = set.split("_");
-				String id = vals[2];
-				map.put(id, null);
+			m.clear();
+			m.put("albumPublisher", "喜马拉雅");
+			m.put("sortByClause", " cTime DESC");
+			num = albumService.getAlbumNum(m);
+			if (num!=0) {
+				int page = num/1000+1;
+				for (int i = 1; i <= page; i++) {
+					m.put("pageByClause", (i-1)*1000+",1000");
+					List<AlbumPo> aPos = albumService.getAlbumListBy(m);
+					if (aPos!=null) {
+						for (AlbumPo albumPo : aPos) {
+							map.put(albumPo.getAlbumId(), albumPo.getCategory());
+						}
+					}
+				}
 			}
 		}
 	}
@@ -107,13 +121,13 @@ public class XMLYCrawler {
 			addcatemap.put("CateUrl", "http://www.ximalaya.com/dq/other/");
 			ls.add(addcatemap);
 //			catemap.putAll(catemap2);
-			int crawlerSize = ls.size()/2+1;
+			int crawlerSize = ls.size()/4+1;
 			ExecutorService fixedThreadPool = Executors.newFixedThreadPool(crawlerSize);
 			for (int i = 1; i <= crawlerSize; i++) {
 				int fonum = i;
 				fixedThreadPool.execute(new Runnable() {
 					public void run() {
-						List<Map<String, Object>> ls2 = ls.subList((fonum-1)*2, fonum*2>ls.size()?ls.size():fonum*2);
+						List<Map<String, Object>> ls2 = ls.subList((fonum-1)*4, fonum*4>ls.size()?ls.size():fonum*4);
 						for (Map<String, Object> map2 : ls2) {
 							String url = map2.get("CateUrl").toString();
 							String cateName = map2.get("CateName").toString();
@@ -172,12 +186,11 @@ public class XMLYCrawler {
 					public void run() {
 						String albumId = newls.get(fonum);
 						try {
-//							FileUtils.doingDB(file, albumId, map, scheme.getSchemenum());
 							Thread.sleep(50);
 							String numstr = insertNewZJ(albumId,"1",false);
 							System.out.println(albumId+"   "+numstr);
 							if (numstr!=null) {
-								String id = insertNewZJ(albumId, numstr, true);
+								insertNewZJ(albumId, numstr, true);
 							}
 						} catch (Exception e) {
 							System.out.println("http://mobile.ximalaya.com/mobile/v1/album?albumId="+albumId+"&device=android&isAsc=true&pageId=1&pageSize=1&pre_page=0&source=5");
@@ -222,7 +235,7 @@ public class XMLYCrawler {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private String insertNewZJ(String albumId, String pageSize, boolean toInsert) {
+	public String insertNewZJ(String albumId, String pageSize, boolean toInsert) {
 		try {
 			Document doc = null;
 			Map<String, Object> alm = null;
@@ -241,9 +254,11 @@ public class XMLYCrawler {
 				Map<String, Object> tracks = (Map<String, Object>) almm.get("tracks");
 				if (toInsert) {
 					XMLYEtl1Process xmlyEtl1Process = new XMLYEtl1Process();
-				    String id = xmlyEtl1Process.insertNewAlbum(alm,map,scheme);
-				    iList.add(Integer.valueOf(pageSize));
-				    return id;
+				    int num = xmlyEtl1Process.insertNewAlbum(alm,map,scheme);
+				    if (num!=0) {
+						iList.add(num);
+					}
+				    return num+"";
 				}
 				return tracks.get("totalCount").toString();
 			}

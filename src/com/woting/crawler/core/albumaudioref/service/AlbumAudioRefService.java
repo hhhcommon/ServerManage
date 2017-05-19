@@ -29,4 +29,21 @@ public class AlbumAudioRefService {
 		m.put("alId", alId);
 		return albumAudioRefDao.queryForList("getList", m);
 	}
+	
+	public int getAlbumAudioRefNum(String alId) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("alId", alId);
+		return albumAudioRefDao.getCount("count",m);
+	}
+	
+	public AlbumAudioRefPo getAlbumAudioRefBy(String alId, String auId) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("alId", alId);
+		m.put("auId", auId);
+		return albumAudioRefDao.getInfoObject("getRefInfo", m);
+	}
+	
+	public void updateAlbumAudioRef(AlbumAudioRefPo albumAudioRefPo) {
+		albumAudioRefDao.update(albumAudioRefPo);
+	}
 }

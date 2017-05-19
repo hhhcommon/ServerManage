@@ -1,24 +1,13 @@
 package com.woting.crawler;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.quartz.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 
 import com.spiritdata.framework.core.cache.CacheEle;
 import com.spiritdata.framework.core.cache.SystemCache;
-import com.spiritdata.framework.ext.spring.redis.RedisOperService;
-import com.woting.crawler.core.album.persis.po.AlbumPo;
-import com.woting.crawler.core.album.service.AlbumService;
 import com.woting.crawler.core.timer.UpdateCrawlerSrcTimerJob;
-import com.woting.crawler.core.timer.model.Timer;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.crawlerdb.crawler.EtlProcess;
-import com.woting.crawler.scheme.crawlerdb.qt.QTCrawler;
-import com.woting.crawler.scheme.crawlerdb.xmly.XMLYCrawler;
+import com.woting.crawler.scheme.crawlerdb.qt.UpdateQTSrc;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -94,15 +83,24 @@ public class Booter {
 //			logger.info("同步Solr和Redis数据[{}]", timer.getRedisRefreshExpression());
 //			new CrawlerSearch().start();
 //			long beg = System.currentTimeMillis();
+        	
+//        	UpdateXMLYSrc updateXMLYSrc = new UpdateXMLYSrc();
+//        	updateXMLYSrc.updateSrc();
+        	
+//        	UpdateQTSrc updateQTSrc = new UpdateQTSrc();
+//        	updateQTSrc.updateSrc();
+//        	Map<String, Object> map = updateQTSrc.getZJData("100498", "30");
+//        	System.out.println(JsonUtils.objToJson(map));
+        	
             EtlProcess etlProcess = new EtlProcess();
             etlProcess.convertToWT();
 			while(true) {
+				Thread.sleep(10*60*60*1000);
 				UpdateCrawlerSrcTimerJob uJob = new UpdateCrawlerSrcTimerJob();
 				boolean isok = uJob.beginCrawler();
 				if (isok) {
-					logger.info("新内入中间库完成");
+					logger.info("各平台栏目下新增内容入中间库完成");
 				}
-				Thread.sleep(60*60*1000);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

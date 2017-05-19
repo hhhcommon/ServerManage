@@ -33,14 +33,15 @@ import com.woting.crawler.scheme.utils.RedisUtils;
 public class QTEtl1Process {
 
 	@SuppressWarnings("unchecked")
-	public String insertNewAlbum(Map<String, Object> map, Map<String, Object> albummap, Map<String, Object> usermap, List<Map<String, Object>> audios) {
+	public int insertNewAlbum(Map<String, Object> map, Map<String, Object> albummap, Map<String, Object> usermap, List<Map<String, Object>> audios) {
 		if (albummap!=null && albummap.size()>0 && audios!=null && audios.size()>0) {
 			String albumId = albummap.get("id").toString();
 			AlbumService albumService = (AlbumService) SpringShell.getBean("albumService");
+			AlbumAudioRefService aRefService = (AlbumAudioRefService) SpringShell.getBean("albumAudioRefService");
 			String id = "QT_ALBUM_"+albumId;
-			RedisUtils.set("connectionFactory", 1, "LOADCRAWLERDB:"+id, System.currentTimeMillis()+"");
+//			RedisUtils.set("connectionFactory", 1, "LOADCRAWLERDB:"+id, System.currentTimeMillis()+"");
 			AlbumPo albumPo = albumService.getAlbumInfo(id);
-			if (albumPo!=null) return null;
+			if (albumPo!=null) return 0;
 			
 			albumPo = new AlbumPo();
 			albumPo.setId(id);
@@ -62,6 +63,7 @@ public class QTEtl1Process {
 			albumPo.setAlbumPublisher("蜻蜓");
 			albumPo.setAlbumName(albummap.get("title").toString());
 			albumPo.setVisitUrl("http://neo.qingting.fm/channels/"+albumPo.getAlbumId());
+			albumPo.setCategory(map.get(albumPo.getAlbumId()).toString());
 			Map<String, Object> detailmap = (Map<String, Object>) albummap.get("detail");
 			String descn = albummap.get("description").toString();
 			if (descn.length()>0) albumPo.setDescn(descn);
@@ -198,7 +200,6 @@ public class QTEtl1Process {
 			}
 			AudioService audioService = (AudioService) SpringShell.getBean("audioService");
 			CCommentService commentService = (CCommentService) SpringShell.getBean("CCommentService");
-			AlbumAudioRefService aRefService = (AlbumAudioRefService) SpringShell.getBean("albumAudioRefService");
 			for (int i = 0; i < audios.size(); i++) {
 				try {
 					Map<String, Object> audiomap = audios.get(i);
@@ -225,8 +226,9 @@ public class QTEtl1Process {
 	//				audioPo.setCrawlerNum("1");
 					audioPo.setVisitUrl("http://neo.qingting.fm/channels/"+albumPo.getAlbumId()+"/programs/"+audioPo.getAudioId());
 					String updatetime = audiomap.get("update_time").toString();
-					if (updatetime.equals("0000-00-00 00:00:00")) audioPo.setcTime(new Timestamp(System.currentTimeMillis()));
-					else {audioPo.setcTime(new Timestamp(ConvertUtils.makeLongTime(updatetime)));}
+					if (updatetime.equals("0000-00-00 00:00:00")) audioPo.setPubTime(new Timestamp(System.currentTimeMillis()));
+					else {audioPo.setPubTime(new Timestamp(ConvertUtils.makeLongTime(updatetime)));}
+					audioPo.setcTime(new Timestamp(System.currentTimeMillis()));
 					String playcount = "0";
 					try {
 						Document doc = Jsoup.connect("http://i.qingting.fm/wapi/program_playcount?pids="+albumPo.getAlbumId()+"_"+audioPo.getAudioId()).ignoreContentType(true).timeout(10000).get();
@@ -289,7 +291,7 @@ public class QTEtl1Process {
 						cPlayCountPo.setId(SequenceUUID.getPureUUID());
 						cPlayCountPo.setPublisher("蜻蜓");
 						cPlayCountPo.setResTableName("c_Audio");
-						cPlayCountPo.setResId(audioPo.getAudioId());
+						cPlayCountPo.setResId(audioPo.getId());
 						cPlayCountPo.setPlayCount(Long.valueOf(playcount));
 						cPlayCountService.insertCPlayCount(cPlayCountPo);
 					} catch (Exception e) {}
@@ -315,14 +317,21 @@ public class QTEtl1Process {
 					continue;
 				}
 			}
-			RedisUtils.delete("connectionFactory", 1, "LOADCRAWLERDB:"+id);
-			RedisUtils.set("connectionFactory", 1, "CRAWLERDB:"+id, System.currentTimeMillis()+"");
-			return albumPo.getId();
+			int alaunum = aRefService.getAlbumAudioRefNum(id);
+			if (alaunum>0) {
+//				RedisUtils.delete("connectionFactory", 1, "LOADCRAWLERDB:"+id);
+//				RedisUtils.set("connectionFactory", 1, "CRAWLERDB:"+id, System.currentTimeMillis()+"");
+				AlbumPo al = new AlbumPo();
+				al.setId(id);
+				al.setIsValidate(1);
+				albumService.updateAlbum(al);
+				return alaunum;
+			} else return 0;
 		}
-		return null;
+		return 0;
 	}
 
-	private String makePlayCount(String playnum) {
+	public static String makePlayCount(String playnum) {
 		int lastnum = -1;
 		int begnum = -1;
 		begnum = playnum.indexOf(".");

@@ -79,9 +79,9 @@ public class CPersonService {
 	
 	public List<CPersonPo> getCPersons(String pSource, String resId, String resTableName) {
 		Map<String, Object> m = new HashMap<>();
-		m.put("pSource", pSource);
-		m.put("resTableName", resTableName);
-		m.put("resId", resId);
+		if (pSource!=null) m.put("pSource", pSource);
+		if (resId!=null) m.put("resTableName", resTableName);
+		if (resTableName!=null) m.put("resId", resId);
 		List<CPersonPo> ps = cpersonDao.queryForList("getListBy", m);
 		if (ps!=null && ps.size()>0) return ps;
 		return null;

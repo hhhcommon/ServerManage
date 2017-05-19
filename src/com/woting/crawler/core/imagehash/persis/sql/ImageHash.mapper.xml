@@ -9,6 +9,7 @@
     <result  column="imageSrcPath"   property="imageSrcPath"   jdbcType="VARCHAR"/>
     <result  column="imagePath"      property="imagePath"      jdbcType="VARCHAR"/>
     <result  column="purpose"        property="purpose"        jdbcType="VARCHAR"/>
+    <result  column="isValidate"     property="isValidate"     jdbcType="INTEGER"/>
     <result  column="cTime"          property="cTime"          jdbcType="TIMESTAMP"/>
   </resultMap>
 
@@ -25,10 +26,23 @@
         <if test="imageSrcPath!=null">and imageSrcPath=#{imageSrcPath,jdbcType=VARCHAR}</if>
         <if test="imagePath!=null">and imagePath=#{imagePath,jdbcType=VARCHAR}</if>
         <if test="purpose!=null">and purpose=#{purpose,jdbcType=VARCHAR}</if>
+        <if test="isValidate!=null">and isValidate=#{isValidate,jdbcType=INTEGER}</if>
         <if test="cTime!=null">and cTime=#{cTime,jdbcType=TIMESATMP}</if>
       </trim>
     </where>
   </sql>
+  
+  <!-- 修改 根据主键-->
+  <update id="update" parameterType="java.util.Map">
+    update c_ImageHashCode
+    <set>
+      <if test="imageSrcPath!=null">imageSrcPath=#{imageSrcPath,jdbcType=VARCHAR},</if>
+      <if test="imagePath!=null">imagePath=#{imagePath,jdbcType=VARCHAR},</if>
+      <if test="purpose!=null">purpose=#{purpose,jdbcType=VARCHAR},</if>
+      <if test="isValidate!=null and isValidate!=0">isValidate=#{isValidate,jdbcType=INTEGER},</if>
+    </set>
+    where id=#{id,jdbcType=VARCHAR}
+  </update>
   
   <!-- 新增数据 -->
   <insert id="insert" parameterType="java.util.Map">
@@ -38,12 +52,14 @@
       <if test="imageSrcPath!=null">imageSrcPath,</if>
       <if test="imagePath!=null">imagePath,</if>
       <if test="purpose!=null">purpose,</if>
+      <if test="isValidate!=null">isValidate,</if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
       <if test="imageSrcPath!=null">#{imageSrcPath,jdbcType=VARCHAR},</if>
       <if test="imagePath!=null">#{imagePath,jdbcType=VARCHAR},</if>
       <if test="purpose!=null">#{purpose,jdbcType=VARCHAR},</if>
+      <if test="isValidate!=null">#{isValidate,jdbcType=VARCHAR},</if>
     </trim>
   </insert>
   
@@ -51,6 +67,7 @@
     select <include refid="Base_Column_List"/>  from c_ImageHashCode
     <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if> 
     <if test="orderSql!=null"> order by ${orderSql}</if>
+    <if test="limitSql!=null"> limit ${limitSql}</if>
   </select>
   
   <select id="getInfo" resultMap="BaseResultMap" parameterType="java.lang.String">

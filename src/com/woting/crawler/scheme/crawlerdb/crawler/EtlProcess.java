@@ -1,17 +1,16 @@
 package com.woting.crawler.scheme.crawlerdb.crawler;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-import com.spiritdata.framework.ext.spring.redis.RedisOperService;
+
+import com.spiritdata.framework.util.JsonUtils;
 import com.spiritdata.framework.util.SequenceUUID;
 import com.woting.cm.core.ResOrgAsset.persis.po.ResOrgAssetPo;
 import com.woting.cm.core.ResOrgAsset.service.ResOrgAssetService;
@@ -21,6 +20,7 @@ import com.woting.cm.core.channel.persis.po.ChannelPo;
 import com.woting.cm.core.channel.service.ChannelService;
 import com.woting.cm.core.dict.persis.po.DictRefResPo;
 import com.woting.cm.core.dict.service.DictService;
+import com.woting.cm.core.keyword.service.KeyWordService;
 import com.woting.cm.core.media.persis.po.MaSourcePo;
 import com.woting.cm.core.media.persis.po.MediaAssetPo;
 import com.woting.cm.core.media.persis.po.MediaPlayCountPo;
@@ -32,345 +32,427 @@ import com.woting.cm.core.perimeter.service.OrganizeService;
 import com.woting.cm.core.person.persis.po.PersonPo;
 import com.woting.cm.core.person.persis.po.PersonRefPo;
 import com.woting.cm.core.person.service.PersonService;
+import com.woting.crawler.compare.CompareAttribute;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.album.service.AlbumService;
 import com.woting.crawler.core.albumaudioref.persis.po.AlbumAudioRefPo;
 import com.woting.crawler.core.albumaudioref.service.AlbumAudioRefService;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.core.audio.service.AudioService;
-import com.woting.crawler.core.cperson.persis.po.CPersonPo;
-import com.woting.crawler.core.cperson.service.CPersonService;
+import com.woting.crawler.core.dict.persis.po.DictRefPo;
+import com.woting.crawler.core.dict.service.CrawlerDictService;
+import com.woting.crawler.core.samedb.persis.po.SameDBPo;
+import com.woting.crawler.core.samedb.service.SameDBService;
 import com.woting.crawler.core.solr.SolrUpdateThread;
-import com.woting.crawler.core.timer.model.Timer;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.utils.ConvertUtils;
-import com.woting.crawler.scheme.utils.RedisUtils;
 
 public class EtlProcess {
 	private Logger logger = LoggerFactory.getLogger(EtlProcess.class);
 	private AlbumService albumService;
-	private AudioService audioService;
 	private ChannelService channelService;
 	private MediaService mediaService;
 	private ResOrgAssetService resAssService;
 	private DictService dictService;
 	private PersonService personService;
-	private CPersonService cPersonService;
 	private OrganizeService organizeService;
-	private RedisOperService redis_7_2;
 	private List<ChannelPo> chlist;
 	private List<ChannelMapRefPo> chaMapRefs;
 	Map<String, Object> chmap = new HashMap<>();
-	
+
 	public EtlProcess() {
-//		cate2dictdlist = FileUtils.readFileByJson(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent() + "conf/craw.txt");
 		albumService = (AlbumService) SpringShell.getBean("albumService");
-		audioService = (AudioService) SpringShell.getBean("audioService");
 		channelService = (ChannelService) SpringShell.getBean("channelService");
-		audioService = (AudioService) SpringShell.getBean("audioService");
 		mediaService = (MediaService) SpringShell.getBean("mediaService");
 		resAssService = (ResOrgAssetService) SpringShell.getBean("resOrgAssetService");
 		dictService = (DictService) SpringShell.getBean("dictService");
 		personService = (PersonService) SpringShell.getBean("personService");
-		cPersonService = (CPersonService) SpringShell.getBean("CPersonService");
 		chaMapRefs = channelService.getChannelMapRefList(null, null, 1);
-		JedisConnectionFactory jedisConnectionFactory = (JedisConnectionFactory) SpringShell.getBean("connectionFactory");
-		redis_7_2 = new RedisOperService(jedisConnectionFactory, 1);
 		chlist = channelService.getChannelList();
-		if (chlist!=null && chlist.size()>0) {
+		if (chlist != null && chlist.size() > 0) {
 			for (ChannelPo chPo : chlist) {
 				chmap.put(chPo.getId(), chPo.getChannelName());
 			}
 		}
 		organizeService = (OrganizeService) SpringShell.getBean("organizeService");
 	}
-	
-	public void makeDatas() {
-		try {
-//			ExecutorService fixedThreadPool = Executors.newFixedThreadPool(2);
-//			fixedThreadPool.execute(new Runnable() {
-//				public void run() {
-//					if (scheme.isOrNoToCrawler("XMLY")) {
-//						System.out.println("喜马拉雅启动");
-//						XMLYCrawler xmlyCrawler = new XMLYCrawler(scheme);
-//						xmlyCrawler.beginCrawler();
-//					}
-//				}
-//			});
-//			fixedThreadPool.execute(new Runnable() {
-//				public void run() {
-//					if (scheme.isOrNoToCrawler("QT")) {
-//						System.out.println("蜻蜓启动");
-//						QTCrawler qtCrawler = new QTCrawler(scheme);
-//						qtCrawler.beginCrawler();
-//					}
-//				}
-//			});
-//			fixedThreadPool.shutdown();
-//			if (!fixedThreadPool.isTerminated()) {
-//				while (true) {
-//					Thread.sleep(10000);
-//					if (fixedThreadPool.isTerminated()) {
-//						break;
-//					}
-//				}
-//			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
+
 	public void convertToWT() {
 		new Thread(new Runnable() {
 			public void run() {
-					while (true) {
+				while (true) {
 					try {
 						logger.info("开始中间库转正式库进程");
-						int num = 0;
-						Set<String> oldsets = RedisUtils.keys("connectionFactory", 1, "LOADWT:XMLY_*");
-						if (oldsets!=null && oldsets.size()>0) {
-							for (String oldset : oldsets) {
-								String[] s = oldset.split(":");
-								String albumId = s[1];
-								removeDB(albumId);
-								RedisUtils.delete("connectionFactory", 1, "LOADWT:"+albumId);
-								RedisUtils.set("connectionFactory", 1, "CRAWLERDB:"+albumId, System.currentTimeMillis()+"");
+						List<AlbumPo> aPos = null;
+						Map<String, Object> m = new HashMap<>();
+						m.put("isValidate", 2);
+						// m.put("albumPublisher", "蜻蜓");
+						m.put("sortByClause", " cTime DESC");
+						m.put("pageByClause", "0,5000");
+						aPos = albumService.getAlbumListBy(m);
+						ExecutorService fixedThreadPool = Executors.newFixedThreadPool(2);
+						if (aPos != null && aPos.size() > 0) {
+							for (AlbumPo albumPo : aPos) {
+								fixedThreadPool.execute(new Runnable() {
+									public void run() {
+										removeDB(albumPo.getId());
+										albumPo.setIsValidate(1);
+										albumService.updateAlbum(albumPo);
+									}
+								});
 							}
 						}
-						Set<String> sets = RedisUtils.keys("connectionFactory", 1, "CRAWLERDB:XMLY_*");
-						if (sets!=null && sets.size()>0) {
-							for (String set : sets) {
-								String[] s = set.split(":");
-								String albumId = s[1];
-								System.out.println((new Timestamp(System.currentTimeMillis())).toString()+"            "+num++ +"   " + albumId);
-								makeNewAlbum(albumId);
+						fixedThreadPool.shutdown();
+						while (true) {
+							Thread.sleep(1000);
+							System.out.println("等待清除上次未完成数据");
+							if (fixedThreadPool.isTerminated()) {
+								break;
 							}
 						}
-						logger.info("中间库转正式库完成,共转换专辑   [{}]  个",num);
-						Thread.sleep(5*60*1000);
+						fixedThreadPool = Executors.newFixedThreadPool(5);
+						m.clear();
+						m.put("isValidate", 1);
+//						m.put("albumPublisher", "蜻蜓");
+						m.put("sortByClause", " cTime DESC");
+						m.put("pageByClause", "0,5000");
+						aPos = albumService.getAlbumListBy(m);
+						if (aPos != null && aPos.size() > 0) {
+							CompareAttribute cAttribute = new CompareAttribute();
+							AudioService audioService = (AudioService) SpringShell.getBean("audioService");
+							for (AlbumPo albumPo : aPos) {
+								fixedThreadPool.execute(new Runnable() {
+									@SuppressWarnings("unchecked")
+									public void run() {
+										System.out.println((new Timestamp(System.currentTimeMillis())).toString() + "      " + albumPo.getId());
+										Map<String, Object> map = null; // 是否有相似专辑
+										if (!albumPo.getAlbumPublisher().equals("喜马拉雅")) {
+											List<AudioPo> audioPos = audioService.getAudioListByAlbumId(albumPo.getId(),albumPo.getAlbumPublisher());
+											if (audioPos != null && audioPos.size() > 0) {
+												albumPo.setAudioPos(audioPos);
+												try {
+													map = cAttribute.getSolrListToCompare(albumPo, false);
+												} catch (Exception e) {}
+											}
+										}
+										if (map!=null && map.size()>0) {
+											AlbumPo _albumPo = (AlbumPo) map.get("albumPo");
+											String smaId = map.get("smaId").toString();
+											List<Map<String, Object>> simls = (List<Map<String, Object>>) map.get("simls");
+											makeSameAlbum(_albumPo, smaId, simls);
+										} else makeNewAlbum(albumPo.getId());
+									}
+								});
+							}
+						}
+						fixedThreadPool.shutdown();
+						while (true) {
+							Thread.sleep(10000);
+							if (fixedThreadPool.isTerminated()) {
+								break;
+							}
+						}
+						logger.info("中间库转正式库完成");
+						Thread.sleep(20 * 60 * 1000);
 					} catch (Exception e) {
+						e.printStackTrace();
 						continue;
 					}
 				}
 			}
 		}).start();
-		
 	}
-	
-	public void makeAlbum(String id, boolean noCompare) {
-		if (noCompare==true) makeNewAlbum(id);
-		else {
-			AlbumPo al = albumService.getAlbumInfo(id);
-			if (al!=null) {
-//				List<AudioPo> aulist = audioService.getAudioListByAlbumId(al.getAlbumId(), al.getAlbumPublisher(), al.getCrawlerNum());
-//				al.setAudioPos(aulist);
-//				CompareAttribute cAttribute = new CompareAttribute(al.getCrawlerNum());
-//				boolean isok = cAttribute.getSolrListToCompare(al);
-//				if (!isok) {
-//					makeNewAlbum(id);
-//				}
-			}
-		}
-	}
-	
-	/**    id:*
-	 *     id_CTIME:*
-	 * redis对于处理内容进程加标记
-	 * 1 正在入库
-	 * 2入库完成
-	 * 3中间库内容不存在
+
+	/**
+	 * id:* id_CTIME:* redis对于处理内容进程加标记 1 正在入库 2入库完成 3中间库内容不存在
+	 * 
 	 * @param id
 	 */
 	public void makeNewAlbum(String id) {
 		AlbumPo al = albumService.getAlbumInfo(id);
-		if (al!=null) {
-			Map<String, Object> map = ConvertUtils.convert2SeqMedia(al, chaMapRefs, chmap);
+		if (al != null) {
+			Map<String, Object> map = null;
 			try {
-				if (map!=null && map.size()>0) {
+				map = ConvertUtils.convert2SeqMedia(al, chaMapRefs, chmap);
+			} catch (Exception e) {
+				al.setIsValidate(2);
+				albumService.updateAlbum(al);
+				e.printStackTrace();
+			}
+			try {
+				if (map != null && map.size() > 0) {
 					SeqMediaAssetPo seq = (SeqMediaAssetPo) map.get("seq");
-					String pName = map.get("pName")==null?null:map.get("pName").toString();
-					String chstr = map.get("chaStr")==null?null:map.get("chaStr").toString();
 					new AddCacheDBInfoThread(seq.getId()).start();
-					new SolrUpdateThread(seq, pName, chstr).start();
+					new SolrUpdateThread(seq).start();
 				}
-			} catch (Exception e) {}
-		} else RedisUtils.delete("connectionFactory", 1, "CRAWLERDB:"+id);
-	}
-	
-	@SuppressWarnings("unchecked")
-	public void makeSameAlbum(AlbumPo albumPo, String smaId, List<Map<String, Object>> ls) {
-		SeqMediaAssetPo sma = mediaService.getSeqInfo(smaId);
-		if (sma!=null && ls!=null && ls.size()>0) {
-			List<OrganizePo> oganlist = organizeService.getOrganizeList();
-			//抓取专辑与相重已入库专辑资源关系
-			ResOrgAssetPo resOrgAssetsma = new ResOrgAssetPo();
-			resOrgAssetsma.setId(SequenceUUID.getPureUUID());
-			resOrgAssetsma.setResTableName("wt_SeqMediaAsset");
-			resOrgAssetsma.setResId(smaId);
-			resOrgAssetsma.setOrgName(albumPo.getAlbumPublisher());
-			resOrgAssetsma.setOrigId(albumPo.getId());
-			resOrgAssetsma.setOrigTableName("c_Album");
-			resOrgAssetsma.setOrigSrcId(albumPo.getAlbumId());
-			resAssService.insertResOrgAsset(resOrgAssetsma);
-			//重复专辑主播合并
-			CPersonPo cPersonPo = cPersonService.getCPerson(albumPo.getAlbumPublisher(), albumPo.getAlbumId(), "c_Album");
-			PersonPo personPo = null;
-			String orgId = null;
-			if (cPersonPo!=null) {
-				List<PersonPo> pers = personService.getPersonsByResIdAndResTableName(albumPo.getId(), "wt_SeqMediaAsset");
-				boolean isExist = true;
-				if (pers!=null && pers.size()>0) {
-					for (PersonPo per : pers) {
-						if (cPersonPo.getpName().equals(per.getpName()) && cPersonPo.getpSource().equals(per.getpSource())) {
-							isExist = false;
-						}
-					}
-				}
-				if (isExist) {
-					Map<String, Object> pm = new HashMap<>();
-					pm.put("origId",cPersonPo.getId());
-					pm.put("origTableName", "c_Person");
-					List<ResOrgAssetPo> resOrgAssetPos = resAssService.getResOrgAssetPo(pm);
-					if (resOrgAssetPos!=null && resOrgAssetPos.size()>0) {
-						ResOrgAssetPo resOrgAssetper = resOrgAssetPos.get(0);
-						personPo = personService.getPersonByPersonId(resOrgAssetper.getResId());
-						if (personPo!=null) {
-							PersonRefPo personRefPo = new PersonRefPo();
-							personRefPo.setId(SequenceUUID.getPureUUID());
-							personRefPo.setPersonId(personPo.getId());
-							personRefPo.setRefName("主播-专辑");
-							personRefPo.setResId(sma.getId());
-							personRefPo.setResTableName("wt_SeqMediaAsset");
-							personService.insertPersonRef(personRefPo);
-						}
-					}
-				} else {
-					personPo = ConvertUtils.convert2Person(cPersonPo);
-					if (personPo!=null) {
-						personService.insertPerson(personPo);
-						ResOrgAssetPo resOrgAssetper = new ResOrgAssetPo();
-						resOrgAssetper.setId(SequenceUUID.getPureUUID());
-						resOrgAssetper.setOrgName(personPo.getpSource());
-						resOrgAssetper.setOrigId(cPersonPo.getId());
-						resOrgAssetper.setOrigTableName("cPerson");
-						resOrgAssetper.setOrigSrcId(cPersonPo.getId());
-						resOrgAssetper.setResId(personPo.getId());
-						resOrgAssetper.setResTableName("wt_Person");
-						resAssService.insertResOrgAsset(resOrgAssetper);
-						
-						PersonRefPo personRefPo = new PersonRefPo();
-						personRefPo.setId(SequenceUUID.getPureUUID());
-						personRefPo.setPersonId(personPo.getId());
-						personRefPo.setRefName("主播-专辑");
-						personRefPo.setResId(sma.getId());
-						personRefPo.setResTableName("wt_SeqMediaAsset");
-						personService.insertPersonRef(personRefPo);
-					}
-				}
-			}
-			
-			List<AudioPo> aus = albumPo.getAudioPos();
-			for (OrganizePo organs : oganlist) {
-				if (organs.getOrgName().equals(albumPo.getAlbumPublisher())) {
-					orgId = organs.getId();
-					break;
-				}
-			}
-			//处理相重节目
-			for (Map<String, Object> m : ls) {
-				String maId = m.get("perId").toString();
-				String id = m.get("audioId").toString();
-				if(aus!=null && aus.size()>0) {
-					Iterator<AudioPo> its = aus.iterator();
-					while (its.hasNext()) {
-						AudioPo audioPo = (AudioPo) its.next();
-						if (audioPo.getId().equals(id)) {
-							List<MaSourcePo> masls = mediaService.getMaSources(maId);
-							if (masls!=null && masls.size()>0) {
-								MaSourcePo mas = new MaSourcePo();
-								mas.setId(SequenceUUID.getPureUUID());
-								mas.setMaId(maId);
-								mas.setMaSrcType(1);
-								for (OrganizePo organs : oganlist) {
-									if (organs.getOrgName().equals(audioPo.getAudioPublisher())) {
-										mas.setMaSource(organs.getOrgName());
-										mas.setMaSrcId(organs.getId());
-										break;
-									}
-								}
-								mas.setIsMain(0);
-								mas.setPlayURI(audioPo.getAudioURL());
-								mas.setMaSrcType(0);
-								mas.setDescn(audioPo.getDescn());
-								mediaService.insertMas(mas);
-								ResOrgAssetPo resOrgAsset = new ResOrgAssetPo();
-								resOrgAsset.setId(SequenceUUID.getPureUUID());
-								resOrgAsset.setOrgName(audioPo.getAudioPublisher());
-								resOrgAsset.setResTableName("wt_MediaAsset");
-								resOrgAsset.setResId(maId);
-								resOrgAsset.setOrigId(audioPo.getId());
-								resOrgAsset.setOrigTableName("c_Audio");
-								resOrgAsset.setOrigSrcId(audioPo.getAudioId());
-								resAssService.insertResOrgAsset(resOrgAsset);
-								if (personPo!=null) {
-									PersonRefPo personRefPo = new PersonRefPo();
-									personRefPo.setId(SequenceUUID.getPureUUID());
-									personRefPo.setPersonId(personPo.getId());
-									personRefPo.setRefName("主播-节目");
-									personRefPo.setResId(maId);
-									personRefPo.setResTableName("wt_MediaAsset");
-									personService.insertPersonRef(personRefPo);
-								}
-							}
-							its.remove();
-						}
-					}
-				}
-			}
-			
-			if (aus!=null && aus.size()>0) {
-				SeqMaRefPo smaref = mediaService.getOneSmarefOrderByColumnNum(smaId);
-				if (smaref!=null) {
-					int maxnum = smaref.getColumnNum();
-					List<MediaAssetPo> malist = new ArrayList<MediaAssetPo>();
-					List<ResOrgAssetPo> resAss = new ArrayList<ResOrgAssetPo>();
-					List<MaSourcePo> maslist = new ArrayList<MaSourcePo>();
-					List<DictRefResPo> dictreflist = new ArrayList<DictRefResPo>();
-					List<ChannelAssetPo> chalist = new ArrayList<ChannelAssetPo>();
-					List<SeqMaRefPo> seqreflist = new ArrayList<SeqMaRefPo>();
-					List<MediaPlayCountPo> mecounts = new ArrayList<MediaPlayCountPo>();
-					List<PersonRefPo> pfs = new ArrayList<>();
-					Map<String, Object> param = new HashMap<>();
-					param.put("assetId", sma.getId());
-					param.put("assetType", "wt_SeqMediaAsset");
-					List<ChannelAssetPo> chas = channelService.getChannelAssetListBy(param);
-					List<DictRefResPo> dictrefs = dictService.getDictRefs(smaId, "wt_SeqMediaAsset");
-					Map<String, Object> mall = ConvertUtils.convert2MediaAsset(aus, sma, orgId, maxnum, chas, dictrefs);
-					if (mall != null && mall.containsKey("malist")) {
-					    malist = (List<MediaAssetPo>) mall.get("malist");
-					    resAss = (List<ResOrgAssetPo>) mall.get("resAss");
-					    maslist = (List<MaSourcePo>) mall.get("maslist");
-					    dictreflist = (List<DictRefResPo>) mall.get("dictreflist");
-					    chalist = (List<ChannelAssetPo>) mall.get("chalist");
-					    seqreflist = (List<SeqMaRefPo>) mall.get("seqmareflist");
-					    if (mall.containsKey("mediaplaycount")) {
-						    mecounts = (List<MediaPlayCountPo>) mall.get("mediaplaycount");
-					    }
-					    pfs = (List<PersonRefPo>) mall.get("personRef");
-				    }
-				    if (malist.size() > 0) {
-					    try {
-						    saveContents(malist, resAss, maslist, seqreflist, mecounts, dictreflist, chalist, pfs);
-					    } catch (Exception e) {
-						    e.printStackTrace();
-					    }
-				    }
-//				    new ShareHtml(sma.getId(), "SEQU").start();
-				}
+			} catch (Exception e) {
 			}
 		}
 	}
-	
+
+	@SuppressWarnings("unchecked")
+	public void makeSameAlbum(AlbumPo albumPo, String smaId, List<Map<String, Object>> ls) {
+		Map<String, Object> mas = null;
+		mas = ConvertUtils.convert2SeqMediaToSame(albumPo);
+		if (mas == null) return;
+		SeqMediaAssetPo sma = mediaService.getSeqInfo(smaId);
+		if (sma != null && ls != null && ls.size() > 0) {
+			SameDBService sameDBService = (SameDBService) SpringShell.getBean("sameDBService");
+			List<OrganizePo> oganlist = organizeService.getOrganizeList();
+			String sameSmaId = mas.get("smaId").toString();
+			List<PersonPo> persons = (List<PersonPo>) mas.get("persons");
+			Map<String, Object> auid_maid = (Map<String, Object>) mas.get("auid_maid");
+			SameDBPo sameDBPo = new SameDBPo();
+			sameDBPo.setId(SequenceUUID.getPureUUID());
+			sameDBPo.setResTableName("wt_SeqMediaAsset");
+			sameDBPo.setResId(smaId);
+			sameDBPo.setSameId(sameSmaId);
+			sameDBPo.setIsValidate(0);
+			sameDBService.insert(sameDBPo);
+			if (persons != null && persons.size() > 0) {
+				for (PersonPo personPo : persons) {
+					PersonRefPo personRefPo = new PersonRefPo();
+					personRefPo.setId(SequenceUUID.getPureUUID());
+					personRefPo.setPersonId(personPo.getId());
+					personRefPo.setRefName("主播-专辑");
+					personRefPo.setResTableName("wt_SeqMediaAsset");
+					personRefPo.setResId(smaId);
+					personRefPo.setcTime(new Timestamp(System.currentTimeMillis()));
+					personService.insertPersonRef(personRefPo);
+				}
+			}
+
+			Map<String, Object> exmaIdMap = new HashMap<>();
+			for (Map<String, Object> m : ls) {
+				String maId = m.get("perId").toString();
+				String id = m.get("audioId").toString();
+				String samemaId = auid_maid.get(id).toString();
+				exmaIdMap.put(samemaId, null);
+				SameDBPo sameDBma = new SameDBPo();
+				sameDBma.setId(SequenceUUID.getPureUUID());
+				sameDBma.setResTableName("wt_MediaAsset");
+				sameDBma.setResId(maId);
+				sameDBma.setSameId(samemaId);
+				sameDBma.setIsValidate(0);
+				sameDBService.insert(sameDBma);
+				List<MaSourcePo> masls = mediaService.getMaSources(samemaId);
+				if (masls != null && masls.size() > 0) {
+					for (MaSourcePo maSourcePo : masls) {
+						MaSourcePo masPo = new MaSourcePo();
+						masPo.setId(SequenceUUID.getPureUUID());
+						masPo.setMaId(maId);
+						masPo.setMaSrcType(1);
+						for (OrganizePo organs : oganlist) {
+							if (organs.getOrgName().equals(albumPo.getAlbumPublisher())) {
+								masPo.setMaSource(organs.getOrgName());
+								masPo.setMaSrcId(organs.getId());
+								break;
+							}
+						}
+						masPo.setIsMain(0);
+						masPo.setPlayURI(maSourcePo.getPlayURI());
+						masPo.setDescn(maSourcePo.getDescn());
+						mediaService.insertMas(masPo);
+
+						if (persons != null && persons.size() > 0) {
+							for (PersonPo personPo : persons) {
+								PersonRefPo personRefPo = new PersonRefPo();
+								personRefPo.setId(SequenceUUID.getPureUUID());
+								personRefPo.setPersonId(personPo.getId());
+								personRefPo.setRefName("主播-节目");
+								personRefPo.setResTableName("wt_MediaAsset");
+								personRefPo.setResId(maId);
+								personRefPo.setcTime(new Timestamp(System.currentTimeMillis()));
+								personService.insertPersonRef(personRefPo);
+							}
+						}
+						sameDBma.setIsValidate(1);
+						sameDBService.update(sameDBma);
+					}
+				}
+			}
+			int columnNum = 0;
+			KeyWordService keyWordService = (KeyWordService) SpringShell.getBean("keyWordService");
+			CrawlerDictService crawlerDictService = (CrawlerDictService) SpringShell.getBean("crawlerDictService");
+			List<DictRefPo> cdRefPos = crawlerDictService.getDictRefs(albumPo.getId(), "c_Album", null);
+			String chaNameStr = "";
+			Map<String, Object> chaMapRefIdMap = new HashMap<>();
+			if (cdRefPos != null && cdRefPos.size() > 0 && chaMapRefs != null && chaMapRefs.size() > 0) {
+				for (DictRefPo dictRefPo : cdRefPos) {
+					for (ChannelMapRefPo chaRef : chaMapRefs) {
+						if (chaRef.getSrcDid().equals(dictRefPo.getCdictDid())) {
+							if (!chaNameStr.contains(chaRef.getChannelId())) {
+								chaNameStr += "," + chaRef.getChannelId();
+								chaMapRefIdMap.put(chaRef.getChannelId(), "wt_ChannelMapRef_" + chaRef.getId());
+							}
+						}
+					}
+				}
+			}
+
+			SeqMaRefPo smaref = mediaService.getOneSmarefOrderByColumnNum(smaId);
+			if (smaref != null)
+				columnNum = smaref.getColumnNum();
+			List<MediaAssetPo> maPos = mediaService.getMasByAlbumId(albumPo.getId());
+			if (maPos != null && maPos.size() > 0) {
+				for (MediaAssetPo mediaAssetPo : maPos) {
+					if (exmaIdMap.containsKey(mediaAssetPo.getId())) continue;
+					columnNum++;
+					SeqMaRefPo seqMaRefPo = new SeqMaRefPo();
+					seqMaRefPo.setId(SequenceUUID.getPureUUID());
+					seqMaRefPo.setsId(smaId);
+					seqMaRefPo.setmId(mediaAssetPo.getId());
+					seqMaRefPo.setDescn(mediaAssetPo.getDescn());
+					seqMaRefPo.setIsMain(0);
+					seqMaRefPo.setColumnNum(columnNum);
+					seqMaRefPo.setcTime(new Timestamp(System.currentTimeMillis()));
+					mediaService.insertSeqRef(seqMaRefPo);
+
+					if (persons != null && persons.size() > 0) {
+						for (PersonPo personPo : persons) {
+							PersonRefPo personRefPo = new PersonRefPo();
+							personRefPo.setId(SequenceUUID.getPureUUID());
+							personRefPo.setPersonId(personPo.getId());
+							personRefPo.setRefName("主播-节目");
+							personRefPo.setResTableName("wt_MediaAsset");
+							personRefPo.setResId(mediaAssetPo.getId());
+							personRefPo.setcTime(new Timestamp(System.currentTimeMillis()));
+							personService.insertPersonRef(personRefPo);
+						}
+					}
+
+					if (chaNameStr.length() > 0) {
+						if (chaNameStr.lastIndexOf(",") == 0)
+							chaNameStr = chaNameStr.substring(1);
+						String[] chasStr = chaNameStr.split(",");
+						if (chasStr.length > 0) {
+							for (String chaStr : chasStr) {
+								DictRefResPo dictRefRes = new DictRefResPo();
+								dictRefRes.setId(SequenceUUID.getPureUUID());
+								dictRefRes.setRefName("专辑-内容分类");
+								dictRefRes.setResTableName("wt_MediaAsset");
+								dictRefRes.setResId(mediaAssetPo.getId());
+								dictRefRes.setDictMid("3");
+								dictRefRes.setDictDid(chaStr);
+								dictRefRes.setCTime(new Timestamp(System.currentTimeMillis()));
+								if (dictService.getDictRefs(dictRefRes.getDictDid(), dictRefRes.getResId(),
+										dictRefRes.getResTableName()) == null) {
+									try {
+										dictService.insertDictRef(dictRefRes);
+									} catch (Exception e) {
+									}
+								}
+
+								ChannelAssetPo cha = new ChannelAssetPo();
+								cha.setId(SequenceUUID.getPureUUID());
+								cha.setAssetType("wt_MediaAsset");
+								cha.setAssetId(mediaAssetPo.getId());
+								cha.setPublisherId(mediaAssetPo.getMaPubId());
+								cha.setIsValidate(1); // 设为无效
+								cha.setCheckerId("1");
+								cha.setPubName(mediaAssetPo.getMaTitle());
+								cha.setPubImg(mediaAssetPo.getMaImg());
+								cha.setSort(0);
+								cha.setFlowFlag(2);
+								try {
+									cha.setInRuleIds(chaMapRefIdMap.get(chaStr).toString());
+								} catch (Exception e) {
+									System.err.println(chaStr);
+									System.err.println(JsonUtils.objToJson(chaMapRefIdMap));
+									continue;
+								}
+								cha.setCheckRuleIds("etl");
+								cha.setCTime(new Timestamp(System.currentTimeMillis()));
+								cha.setPubTime(mediaAssetPo.getMaPublishTime());
+								cha.setChannelId(chaStr);
+								List<ChannelAssetPo> chass = channelService.getChannelAssetListBy(cha.getChannelId(),
+										cha.getAssetId(), cha.getAssetType());
+								if (chass != null && chass.size() > 0) {
+									for (ChannelAssetPo channelAssetPo : chass) {
+										String inRuleIds = channelAssetPo.getInRuleIds();
+										inRuleIds += "," + cha.getInRuleIds();
+										channelAssetPo.setInRuleIds(inRuleIds);
+										channelService.updateChannelAsset(channelAssetPo);
+									}
+								} else {
+									try {
+										channelService.insertChannelAsset(cha);
+									} catch (Exception e) {
+									}
+								}
+								keyWordService.saveKwAndKeRef(mediaAssetPo.getKeyWords(), "wt_Channel",
+										cha.getChannelId()); // 标签与栏目绑定
+							}
+						}
+					} else {
+						Map<String, Object> m = new HashMap<>();
+						m.put("assetId", smaId);
+						m.put("assetType", "wt_SeqMediaAsset");
+						m.put("isValidate", 1);
+						m.put("flowFalg", 2);
+						List<ChannelAssetPo> chas = channelService.getChannelAssetListBy(m);
+						if (chas != null && chas.size() > 0) {
+							for (ChannelAssetPo channelAssetPo : chas) {
+								DictRefResPo dictref = new DictRefResPo();
+								dictref.setId(SequenceUUID.getPureUUID());
+								dictref.setRefName("专辑-内容分类");
+								dictref.setResTableName("wt_MediaAsset");
+								dictref.setResId(mediaAssetPo.getId());
+								dictref.setDictMid("3");
+								dictref.setDictDid(channelAssetPo.getChannelId());
+								dictref.setCTime(new Timestamp(System.currentTimeMillis()));
+								if (dictService.getDictRefs(dictref.getDictDid(), dictref.getResId(),
+										dictref.getResTableName()) == null) {
+									try {
+										dictService.insertDictRef(dictref);
+									} catch (Exception e) {
+									}
+								}
+
+								ChannelAssetPo cha = new ChannelAssetPo();
+								cha.setId(SequenceUUID.getPureUUID());
+								cha.setAssetType("wt_MediaAsset");
+								cha.setAssetId(mediaAssetPo.getId());
+								cha.setPublisherId(mediaAssetPo.getMaPubId());
+								cha.setIsValidate(1); // 设为无效
+								cha.setCheckerId("1");
+								cha.setPubName(mediaAssetPo.getMaTitle());
+								cha.setPubImg(mediaAssetPo.getMaImg());
+								cha.setSort(0);
+								cha.setFlowFlag(2);
+								cha.setInRuleIds(channelAssetPo.getInRuleIds());
+								cha.setCheckRuleIds("etl");
+								cha.setCTime(new Timestamp(System.currentTimeMillis()));
+								cha.setPubTime(mediaAssetPo.getMaPublishTime());
+								cha.setChannelId(channelAssetPo.getChannelId());
+								List<ChannelAssetPo> chass = channelService.getChannelAssetListBy(cha.getChannelId(),
+										cha.getAssetId(), cha.getAssetType());
+								if (chass != null && chass.size() > 0) {
+									for (ChannelAssetPo _channelAssetPo : chass) {
+										String inRuleIds = _channelAssetPo.getInRuleIds();
+										inRuleIds += "," + cha.getInRuleIds();
+										_channelAssetPo.setInRuleIds(inRuleIds);
+										channelService.updateChannelAsset(_channelAssetPo);
+									}
+								} else {
+									try {
+										channelService.insertChannelAsset(cha);
+									} catch (Exception e) {
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			sameDBPo.setIsValidate(1);
+			sameDBService.update(sameDBPo);
+			new AddCacheDBInfoThread(smaId).start();
+			new SolrUpdateThread(sma).start();
+		}
+	}
+
 	public void saveContents(List<MediaAssetPo> malist, List<ResOrgAssetPo> resAss, List<MaSourcePo> maslist,
 			List<SeqMaRefPo> seqreflist, List<MediaPlayCountPo> mecounts, List<DictRefResPo> dictreflist,
 			List<ChannelAssetPo> chalist, List<PersonRefPo> pfs) {
@@ -406,70 +488,69 @@ public class EtlProcess {
 			personService.insertPersonRef(pfs);
 		}
 	}
-	
-//	public void removeDBAll(Map<String, Object> dbmap, String publisher) {
-//		if (dbmap!=null && dbmap.size()>0) {
-//			if (dbmap.containsKey("CrawlerNum")) {
-//				String crawlerNum = dbmap.get("CrawlerNum").toString();
-//				dbmap.remove("CrawlerNum");
-//				Set<String> sets = dbmap.keySet();
-//				if (sets!=null && sets.size()>0) {
-//					for (String albumId : sets) {
-//						try {
-//							System.out.println("删除临时专辑数据  "+albumId);
-//						    removeDB(albumId, publisher, crawlerNum);
-//						} catch (Exception e) {
-//							continue;
-//						}
-//					}
-//				}
-//			}
-//		}
-//	}
-	
-	
+
+	// public void removeDBAll(Map<String, Object> dbmap, String publisher) {
+	// if (dbmap!=null && dbmap.size()>0) {
+	// if (dbmap.containsKey("CrawlerNum")) {
+	// String crawlerNum = dbmap.get("CrawlerNum").toString();
+	// dbmap.remove("CrawlerNum");
+	// Set<String> sets = dbmap.keySet();
+	// if (sets!=null && sets.size()>0) {
+	// for (String albumId : sets) {
+	// try {
+	// System.out.println("删除临时专辑数据 "+albumId);
+	// removeDB(albumId, publisher, crawlerNum);
+	// } catch (Exception e) {
+	// continue;
+	// }
+	// }
+	// }
+	// }
+	// }
+	// }
+
 	private void removeDB(String albumId) {
 		ResOrgAssetService resOrgAssetService = (ResOrgAssetService) SpringShell.getBean("resOrgAssetService");
 		AlbumAudioRefService albumAudioRefService = (AlbumAudioRefService) SpringShell.getBean("albumAudioRefService");
+		// SolrJService solrJService = (SolrJService)
+		// SpringShell.getBean("solrJService");
 		List<AlbumAudioRefPo> albumAudioRefPos = albumAudioRefService.getAlbumAudioRefs(albumId);
 		String ids = "";
 		String maIds = "";
-		String unionsql = "";
-		if (albumAudioRefPos!=null && albumAudioRefPos.size()>0) {
+		String unionsql = "select resId from wt_ResOrgAsset_Ref where  ";
+		if (albumAudioRefPos != null && albumAudioRefPos.size() > 0) {
 			for (AlbumAudioRefPo albumAudioRefPo : albumAudioRefPos) {
-				if (albumAudioRefPo!=null) {
-					ids += " or origId = '"+albumAudioRefPo.getAuId()+"'";
-					unionsql += " UNION (select resId from wt_ResOrgAsset_Ref where origId = '"+albumAudioRefPo.getAuId()+"')";
+				if (albumAudioRefPo != null) {
+					ids += " or origId = '" + albumAudioRefPo.getAuId() + "'";
 				}
 			}
 		}
-		if (unionsql.length()>0) {
-			System.out.println(unionsql.substring(6));
-		}
-		
-		if (ids.length()>0) {
+
+		if (ids.length() > 0) {
 			ids = ids.substring(3);
-			ids = "("+ids+")";
-			
-			List<ResOrgAssetPo> res = resOrgAssetService.getResOrgAssetListBySQL(unionsql.substring(6));
-			if (res!=null && res.size()>0) {
+			ids = "(" + ids + ")";
+
+			List<ResOrgAssetPo> res = resOrgAssetService.getResOrgAssetListBySQL(unionsql + ids);
+			if (res != null && res.size() > 0) {
 				for (ResOrgAssetPo resOrgAssetPo : res) {
-					maIds += " or resId = '"+resOrgAssetPo.getResId()+"'";
+					maIds += " or resId = '" + resOrgAssetPo.getResId() + "'";
+					// solrJService.deleteById("AUDIO_"+resOrgAssetPo.getResId());
 				}
 				maIds = maIds.substring(3);
 			}
 			resOrgAssetService.deleteByOrigIds(ids, "wt_MediaAsset");
 		}
 		ResOrgAssetPo resOrgAssetPo = resOrgAssetService.getResOrgAssetPo(albumId, null, "wt_SeqMediaAsset");
-		if (resOrgAssetPo!=null) {
+		if (resOrgAssetPo != null) {
 			resOrgAssetService.deleteByOrigId(albumId, null, "wt_SeqMediaAsset");
-			if (maIds!=null && maIds.length()>0) {
+			// solrJService.deleteById("SEQU_"+resOrgAssetPo.getResId());
+			if (maIds != null && maIds.length() > 0) {
 				String smaId = resOrgAssetPo.getResId();
 				Map<String, Object> m = new HashMap<>();
 				m.put("resmaIds", maIds);
 				m.put("ressmaIds", smaId);
 				m.put("assetIds", maIds.replace("resId", "assetId"));
-			    mediaService.removeSeqMediaAssetAll(m);
+				mediaService.removeSeqMediaAssetAll(m);
 			}
 		}
 	}

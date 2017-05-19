@@ -41,7 +41,7 @@ public class FileUtils {
 		else
 			return false;
 	}
-	
+
 	public static boolean writeFile(String jsonstr, File file) {
 		try {
 			OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
@@ -96,7 +96,7 @@ public class FileUtils {
 		}
 		return sb;
 	}
-	
+
 	public static String readFile(File file) {
 		String sb = "";
 		if (!file.exists()) {
@@ -115,9 +115,9 @@ public class FileUtils {
 		}
 		return sb;
 	}
-	
+
 	public static void writeContentInfo(String key, String jsonstr) {
-		File file = FileUtils.createFile("/opt/dataCenter/contentinfo/"+key+".json");
+		File file = FileUtils.createFile("/opt/dataCenter/contentinfo/" + key + ".json");
 		FileUtils.writeFile(jsonstr, file);
 	}
 
@@ -138,104 +138,116 @@ public class FileUtils {
 	}
 
 	public static String makeImgFile(String purpose, String imgpath) {
-		String tempfile = "/opt/tempfile/";
-		synchronized (FileUtils.class) {
-			if (purpose.equals("1")) { // 用户头像处理
-				String ext = ".png";
-				String imgName = SequenceUUID.getPureUUID();
-				String path = "userimg/";
-				String filepath = tempfile + imgName + ".png";
-				try {
-					download(imgpath, imgName + ".png", tempfile);
-					Map<String, Object> m = compareImageHash(filepath, purpose);
-					if (m.get("ISOK").equals("true")) {
-						String imgPath = path+"/"+imgName+ext;
-						String img150path = path+"/"+imgName + ".150_150" + ext;
-						String img300path = path+"/"+imgName + ".300_300" + ext;
-						String img450path = path+"/"+imgName + ".450_450" + ext;
-						OssUtils.upLoadObject(imgPath, new File(filepath), true);
-						OssUtils.makePictureResize(imgPath, img150path, 150);
-						OssUtils.makePictureResize(imgPath, img300path, 300);
-						OssUtils.makePictureResize(imgPath, img450path, 450);
-						if (m.containsKey("HashCode")) {
-							ImageHashService imageHashService = (ImageHashService) SpringShell.getBean("imageHashService");
-							ImageHash imageHash = new ImageHash();
-							imageHash.setId(purpose+"_"+m.get("HashCode").toString());
-							imageHash.setImagePath("##userimg##"+imgName+ext);
-							imageHash.setImageSrcPath(imgpath);
-							imageHash.setPurpose(purpose);
-							imageHashService.insertImageHash(imageHash);
-						}
-						return "##userimg##"+imgName+ext;
-					} else return m.get("Path").toString();
-				} catch (Exception e) {
-					e.printStackTrace();
-					System.err.println("图片出错路径:" + imgpath);
-					return null;
-				} finally {
-					File file = new File(filepath);
-					if (file.isFile() && file.exists()) file.delete();
-				}
-			} else {
-				if (purpose.equals("2")) { // 内容图片处理
-					String ext = ".png";
-					String imgName = SequenceUUID.getPureUUID();
-					String path = "contentimg/";
-					String filepath = tempfile + imgName + ".png";
-					try {
-						download(imgpath, imgName + ".png", tempfile);
-						Map<String, Object> m = compareImageHash(filepath, purpose);
-						if (m.get("ISOK").equals("true")) {
-							String imgPath = path+"/"+imgName + ext;
-							String img180path = path+"/"+imgName + ".180_180" + ext;
-							String img300path = path+"/"+imgName + ".300_300" + ext;
-							OssUtils.upLoadObject(imgPath, new File(filepath), true);
-							OssUtils.makePictureResize(imgPath, img180path, 180);
-							OssUtils.makePictureResize(imgPath, img300path, 300);
-							if (m.containsKey("HashCode")) {
-								ImageHashService imageHashService = (ImageHashService) SpringShell.getBean("imageHashService");
-								ImageHash imageHash = new ImageHash();
-								imageHash.setId(purpose+"_"+m.get("HashCode").toString());
-								imageHash.setImagePath("##contentimg##"+imgName+ext);
-								imageHash.setImageSrcPath(imgpath);
-								imageHash.setPurpose(purpose);
-								imageHashService.insertImageHash(imageHash);
-							}
-							return "##contentimg##"+imgName+ext;
-						} else return m.get("Path").toString();
-					} catch (Exception e) {
-						e.printStackTrace();
-						System.err.println("图片出错路径:" + imgpath);
-						return null;
-					} finally {
-						File file = new File(filepath);
-						if (file.isFile() && file.exists()) file.delete();
-					}
-				} else {
-					if (purpose.equals("3")) { // 轮播图处理
-						String ext = ".png";
-						String imgName = SequenceUUID.getPureUUID();
-						String path = "contentimg/";
-						String filepath = tempfile + imgName + ".png";
-						try {
-							download(imgpath, imgName + ".png", tempfile);
-							String imgPath = path+"/"+imgName + ext;
-							String img1080_450path = path+"/"+imgName + ".1080_450" + ext;
-							OssUtils.upLoadObject(imgPath, new File(filepath), true);
-							OssUtils.makePictureResize(imgPath, img1080_450path, 1080, 450);
-							return "##contentimg##"+imgName+ext;
-						} catch (Exception e) {
-							e.printStackTrace();
-							System.err.println("图片出错路径:" + imgpath);
-							return null;
-						} finally {
-							File file = new File(filepath);
-							if (file.isFile() && file.exists()) file.delete();
-						}
-					}
-				}
-			}
-		}
+//		String tempfile = "/opt/tempfile/";
+//		String osstempfile = "tempfile/";
+//		Map<String, Object> m = null;
+//		if (purpose.equals("1")) { // 用户头像处理
+//			String ext = ".png";
+//			String imgName = SequenceUUID.getPureUUID();
+//			String path = "userimg/";
+//			String filepath = tempfile + imgName + ".png";
+//			String ossfilepath = osstempfile + imgName + ".png";
+//			try {
+//				download(imgpath, imgName + ".png", tempfile);
+//				if (!OssUtils.upLoadObject(ossfilepath, new File(filepath), true)) return null;
+//				OssUtils.makePictureType(ossfilepath, filepath, "png");
+//				synchronized (FileUtils.class) {
+//					m = compareImageHash(filepath, purpose, imgpath, imgName);
+//				}
+//				if (m.get("ISOK").equals("true")) {
+//					String imgPath = path + imgName + ext;
+//					String img150path = path + imgName + ".150_150" + ext;
+//					String img300path = path + imgName + ".300_300" + ext;
+//					String img450path = path + imgName + ".450_450" + ext;
+//					OssUtils.upLoadObject(imgPath, new File(filepath), true);
+//					OssUtils.makePictureResize(imgPath, img150path, 150);
+//					OssUtils.makePictureResize(imgPath, img300path, 300);
+//					OssUtils.makePictureResize(imgPath, img450path, 450);
+//					if (m.containsKey("HashCode")) {
+//						ImageHashService imageHashService = (ImageHashService) SpringShell.getBean("imageHashService");
+//						ImageHash imageHash = new ImageHash();
+//						imageHash.setId(purpose + "_" + m.get("HashCode").toString());
+//						imageHash.setIsValidate(1);
+//						imageHashService.updateImageHash(imageHash);
+//					}
+//					return "##userimg##" + imgName + ext;
+//				} else return m.get("Path").toString();
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//				System.err.println("图片出错路径:" + imgpath);
+//				return null;
+//			} finally {
+//				File file = new File(filepath);
+//				if (file.isFile() && file.exists()) file.delete();
+//				OssUtils.deleteObject(ossfilepath);
+//			}
+//		} else {
+//			if (purpose.equals("2")) { // 内容图片处理
+//				String ext = ".png";
+//				String imgName = SequenceUUID.getPureUUID();
+//				String path = "contentimg/";
+//				String filepath = tempfile + imgName + ".png";
+//				String ossfilepath = osstempfile + imgName + ".png";
+//				try {
+//					download(imgpath, imgName + ".png", tempfile);
+//					if (!OssUtils.upLoadObject(ossfilepath, new File(filepath), true)) return null;
+//					OssUtils.makePictureType(ossfilepath, filepath, "png");
+//					synchronized (FileUtils.class) {
+//						m = compareImageHash(filepath, purpose, imgpath, imgName);
+//					}
+//					if (m.get("ISOK").equals("true")) {
+//						String imgPath = path + imgName + ext;
+//						String img180path = path + imgName + ".180_180" + ext;
+//						String img300path = path + imgName + ".300_300" + ext;
+//						OssUtils.upLoadObject(imgPath, new File(filepath), true);
+//						OssUtils.makePictureResize(imgPath, img180path, 180);
+//						OssUtils.makePictureResize(imgPath, img300path, 300);
+//						if (m.containsKey("HashCode")) {
+//							ImageHashService imageHashService = (ImageHashService) SpringShell.getBean("imageHashService");
+//							ImageHash imageHash = new ImageHash();
+//							imageHash.setId(purpose + "_" + m.get("HashCode").toString());
+//							imageHash.setIsValidate(1);
+//							imageHashService.updateImageHash(imageHash);
+//						}
+//						return "##contentimg##" + imgName + ext;
+//					} else return m.get("Path").toString();
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//					System.err.println("图片出错路径:" + imgpath);
+//					return null;
+//				} finally {
+//					File file = new File(filepath);
+//					if (file.isFile() && file.exists()) file.delete();
+//					OssUtils.deleteObject(ossfilepath);
+//				}
+//			} else {
+//				if (purpose.equals("3")) { // 轮播图处理
+//					String ext = ".png";
+//					String imgName = SequenceUUID.getPureUUID();
+//					String path = "contentimg/";
+//					String filepath = tempfile + imgName + ".png";
+//					String ossfilepath = osstempfile + imgName + ".png";
+//					try {
+//						download(imgpath, imgName + ".png", tempfile);
+//						if (!OssUtils.upLoadObject(ossfilepath, new File(filepath), true)) return null;
+//						OssUtils.makePictureType(ossfilepath, filepath, "png");
+//						String imgPath = path + imgName + ext;
+//						String img1080_450path = path + imgName + ".1080_450" + ext;
+//						OssUtils.upLoadObject(imgPath, new File(filepath), true);
+//						OssUtils.makePictureResize(imgPath, img1080_450path, 1080, 450);
+//						return "##contentimg##" + imgName + ext;
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//						System.err.println("图片出错路径:" + imgpath);
+//						return null;
+//					} finally {
+//						File file = new File(filepath);
+//						if (file.isFile() && file.exists()) file.delete();
+//						OssUtils.deleteObject(ossfilepath);
+//					}
+//				}
+//			}
+//		}
 		return null;
 	}
 
@@ -244,10 +256,25 @@ public class FileUtils {
 		URL url = new URL(urlString);
 		// 打开连接
 		URLConnection con = url.openConnection();
-		// 设置请求超时为5s
-		con.setConnectTimeout(50 * 1000);
+		// 设置请求超时为500s
+		con.setConnectTimeout(500 * 1000);
+		con.setReadTimeout(500 * 1000);
 		// 输入流
-		InputStream is = con.getInputStream();
+		InputStream is = null;
+		try {
+			is = con.getInputStream();
+		} catch (Exception e) {}
+		if (is==null) {
+			int num = 10;
+			while (num-- > 0) {
+				try {
+					Thread.sleep(50);
+					is = con.getInputStream();
+					if (is!=null) break;
+				} catch (Exception e) {e.getMessage();}
+			}
+		}
+		if (is==null) return;
 		// 1K的数据缓冲
 		byte[] bs = new byte[1024];
 		// 读取到的数据长度
@@ -267,18 +294,24 @@ public class FileUtils {
 		is.close();
 	}
 
-	public static Map<String, Object> compareImageHash(String path,String purpose) {
+	public static Map<String, Object> compareImageHash(String path, String purpose, String imgpath, String imgName) {
 		Map<String, Object> map = new HashMap<>();
 		try {
 			ImageHashService imageHashService = (ImageHashService) SpringShell.getBean("imageHashService");
 			String hashcode = ImageUtils.produceFingerPrint(path);
-			ImageHash imageHash = imageHashService.getImageHash(purpose+"_"+hashcode);
+			ImageHash imageHash = imageHashService.getImageHash(purpose + "_" + hashcode);
 			if (imageHash != null) {
 				map.put("ISOK", "false");
 				map.put("Path", imageHash.getImagePath());
 			} else {
 				map.put("ISOK", "true");
 				map.put("HashCode", hashcode);
+				imageHash = new ImageHash();
+				imageHash.setId(purpose + "_" + hashcode);
+				imageHash.setImagePath("##contentimg##" + imgName + ".png");
+				imageHash.setImageSrcPath(imgpath);
+				imageHash.setPurpose(purpose);
+				imageHashService.insertImageHash(imageHash);
 			}
 		} catch (Exception e) {
 			map.clear();
@@ -296,8 +329,8 @@ public class FileUtils {
 				String str = readFile(file);
 				if (str != null && str.length() > 32) {
 					map = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
-				} else map = new HashMap<>();
-	
+				} else
+					map = new HashMap<>();
 				Map<String, Object> dbmap = null;
 				if (map.containsKey("doingDB")) {
 					dbmap = (Map<String, Object>) map.get("doingDB");
@@ -313,7 +346,7 @@ public class FileUtils {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public static void didDB(File file, String albumId) {
 		try {
@@ -325,8 +358,9 @@ public class FileUtils {
 				String str = readFile(file);
 				if (str != null && str.length() > 0) {
 					map = (Map<String, Object>) JsonUtils.jsonToObj(str, Map.class);
-				} else map = new HashMap<>();
-	
+				} else
+					map = new HashMap<>();
+
 				Map<String, Object> dbmap = null;
 				if (map.containsKey("doingDB")) {
 					dbmap = (Map<String, Object>) map.get("doingDB");

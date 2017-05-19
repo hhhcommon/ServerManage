@@ -53,7 +53,7 @@ public class AddCacheDBInfoThread extends Thread {
 				}
 				CacheDBPo cacheDBPo = new CacheDBPo();
 				cacheDBPo.setId("SEQU_"+smaId+"_INFO");
-				cacheDBPo.setResTableName("SEQU");
+				cacheDBPo.setResTableName("wt_SeqMediaAsset");
 				cacheDBPo.setResId(smaId);
 				cacheDBPo.setValue(JsonUtils.objToJson(oneDate));
 				cacheDBService.insertCacheDBPo(cacheDBPo);
@@ -71,7 +71,7 @@ public class AddCacheDBInfoThread extends Thread {
 				}
 				CacheDBPo cacheDBPo = new CacheDBPo();
 				cacheDBPo.setId("SEQU_"+smaId+"_SUBLIST");
-				cacheDBPo.setResTableName("SEQU");
+				cacheDBPo.setResTableName("wt_SeqMediaAsset");
 				cacheDBPo.setResId(smaId);
 				cacheDBPo.setValue(JsonUtils.objToJson(retMaIds));
 				cacheDBService.insertCacheDBPo(cacheDBPo);
@@ -84,7 +84,7 @@ public class AddCacheDBInfoThread extends Thread {
 					map.put("SeqInfo", smam);
 					CacheDBPo cacheDBPo = new CacheDBPo();
 					cacheDBPo.setId("AUDIO_"+map.get("ContentId")+"_INFO");
-					cacheDBPo.setResTableName("AUDIO");
+					cacheDBPo.setResTableName("wt_MediaAsset");
 					cacheDBPo.setResId(map.get("ContentId")+"");
 					cacheDBPo.setValue(JsonUtils.objToJson(map));
 					cacheDBService.insertCacheDBPo(cacheDBPo);

@@ -49,6 +49,12 @@ public class ResOrgAssetService{
 		return resOrgAssetDao.queryForList("getResOrgAssetList", m);
     }
     
+    public List<ResOrgAssetPo> getResOrgAssetListByAlbumId(String albumId) {
+    	Map<String, Object> m = new HashMap<>();
+    	m.put("alId", albumId);
+    	return resOrgAssetDao.queryForList("getResOrgAssetListByAlbum", m);
+    }
+    
     public List<ResOrgAssetPo> getResOrgAssetPo(Map<String, Object> m) {
     	List<ResOrgAssetPo> resList = resOrgAssetDao.queryForList("getList", m);
     	if (resList!=null) {

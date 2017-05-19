@@ -26,13 +26,19 @@ public class AlbumService {
 		albumDao.insert("insertList", m);
 	}
 	
-	public List<AlbumPo> getAlbumList(int page, int pagesize ,String num){
+	public List<AlbumPo> getAlbumList(int page, int pagesize, String albumPublisher, int num){
 		Map<String, Object> m = new HashMap<String,Object>();
 		m.put("page", page);
 		m.put("pagesize", pagesize);
-		m.put("crawlerNum", num);
+		m.put("isValidate", num);
+		m.put("albumPublisher", albumPublisher);
 		List<AlbumPo> aus = albumDao.queryForList("getAlbumList", m);
 		return aus;
+	}
+	
+	public int getAlbumNum(Map<String, Object> m) {
+		if (m!=null) return albumDao.getCount("getListCount", m);
+		return 0;
 	}
 	
 	public List<AlbumPo> getAlbumListBy(Map<String, Object> m) {
@@ -62,6 +68,12 @@ public class AlbumService {
 	public int countNum(String crawlerNum){
 		int num = albumDao.getCount("count",crawlerNum);
 		return num;
+	}
+	
+	public void updateAlbum(AlbumPo aPo) {
+		if (aPo!=null) {
+			albumDao.update(aPo);
+		}
 	}
 	
 	public void removeAlbumById(String id) {

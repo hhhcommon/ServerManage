@@ -48,6 +48,15 @@ public class ChannelService {
 		ChannelAssetDao.insert("insertList", m);
 	}
 	
+	public List<ChannelAssetPo> getChannelAssetListBy(String channelId, String assetId, String assetType) {
+		Map<String, Object> m = new HashMap<>();
+		if (channelId!=null) m.put("channelId", channelId);
+		if (assetId!=null) m.put("assetId", assetId);
+		if (assetType!=null) m.put("assetType", assetType);
+		return getChannelAssetListBy(m);
+		
+	}
+	
 	public List<ChannelAssetPo> getChannelAssetListBy(Map<String, Object> m) {
 		List<ChannelAssetPo> chas = ChannelAssetDao.queryForList("getList", m);
 		if (chas!=null && chas.size()>0) {
@@ -73,6 +82,10 @@ public class ChannelService {
 		}
 	}
 	
+	public void updateChannelAsset(ChannelAssetPo cha) {
+		ChannelAssetDao.update(cha);
+	}
+	
 	public List<ChannelMapRefPo> getChannelMapRefList(String channelId, String srcDid, int isValidate) {
 		Map<String, Object> m = new HashMap<>();
 		if (channelId!=null) m.put("channelId", channelId);
@@ -90,6 +103,12 @@ public class ChannelService {
 			return chs;
 		}
 		return null;
+	}
+	
+	public ChannelMapRefPo getChannelMapRef(String id) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("id", id);
+		return ChannelMapRefDao.getInfoObject("getList", m);
 	}
 	
 	public void updateChannelList(List<ChannelPo> chs) {

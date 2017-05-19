@@ -40,9 +40,9 @@ import com.woting.crawler.scheme.utils.HttpUtils;
 import com.woting.crawler.scheme.utils.RedisUtils;
 
 public class XMLYEtl1Process {
-	
+
 	@SuppressWarnings("unchecked")
-	public String insertNewAlbum(Map<String, Object> alm, Map<String, Object> map, Scheme scheme) {
+	public int insertNewAlbum(Map<String, Object> alm, Map<String, Object> map, Scheme scheme) {
 		alm = (Map<String, Object>) alm.get("data");
 		Map<String, Object> albummap = (Map<String, Object>) alm.get("album");
 		Map<String, Object> usermap = (Map<String, Object>) alm.get("user");
@@ -50,10 +50,10 @@ public class XMLYEtl1Process {
 		String userId = usermap.get("uid").toString();
 		String albumId = albummap.get("albumId")+"";
 		AlbumService albumService = (AlbumService) SpringShell.getBean("albumService");
+		AlbumAudioRefService aRefService = (AlbumAudioRefService) SpringShell.getBean("albumAudioRefService");
 		String id = "XMLY_ALBUM_"+albumId;
-		RedisUtils.set("connectionFactory", 1, "LOADCRAWLERDB:"+id, System.currentTimeMillis()+"");
 		AlbumPo albumPo = albumService.getAlbumInfo(id);
-		if (albumPo!=null) return null;
+		if (albumPo!=null) return 0;
 		albumPo = new AlbumPo();
 		albumPo.setId(id);
 		albumPo.setAlbumId(albummap.get("albumId")+"");
@@ -64,7 +64,7 @@ public class XMLYEtl1Process {
 			albumPo.setAlbumImg(img);
 			albumPo.setAlbumName(albummap.get("title")+"");
 			albumPo.setAlbumPublisher("喜马拉雅");
-			
+			albumPo.setCategory(map.get(albumPo.getAlbumId()).toString());
 			if (albummap.get("tags")!=null && albummap.get("tags").toString().length()>0) {
 				albumPo.setAlbumTags(albummap.get("tags")+"");
 			}
@@ -76,13 +76,14 @@ public class XMLYEtl1Process {
 			try {data = Long.valueOf(albummap.get("lastUptrackAt")+"");} catch (Exception e) {}
 			try {data = Long.valueOf(albummap.get("updatedAt")+"");} catch (Exception e) {}
 			try {data = Long.valueOf(albummap.get("createdAt")+"");} catch (Exception e) {}
-			albumPo.setcTime(new Timestamp(data));
+			albumPo.setPubTime(new Timestamp(data));
+			albumPo.setcTime(new Timestamp(System.currentTimeMillis()));
 			Map<String, Object> sqlparam = new HashMap<>();
 			sqlparam.put("albumId", albumPo.getAlbumId());
 			sqlparam.put("albumPublisher", albumPo.getAlbumPublisher());
 			List<AlbumPo> albumPos = albumService.getAlbumListBy(sqlparam);
 			if (albumPos!=null && albumPos.size()>0) {
-				return null;
+				return 0;
 			}
 			albumPos = new ArrayList<>();
 			albumPos.add(albumPo);
@@ -202,7 +203,6 @@ public class XMLYEtl1Process {
 			List<Map<String, Object>> ls = (List<Map<String, Object>>) tracks.get("list");
 			if (ls!=null && ls.size()>0) {
 				AudioService audioService = (AudioService) SpringShell.getBean("audioService");
-				AlbumAudioRefService aRefService = (AlbumAudioRefService) SpringShell.getBean("albumAudioRefService");
 				for (int i = 0; i < ls.size(); i++) {
 					Map<String, Object> audiomap = ls.get(i);
 					AudioPo audioPo = new AudioPo();
@@ -335,8 +335,19 @@ public class XMLYEtl1Process {
 				}
 			}
 		}
-		RedisUtils.delete("connectionFactory", 1, "LOADCRAWLERDB:"+id);
-		RedisUtils.set("connectionFactory", 1, "CRAWLERDB:"+id, System.currentTimeMillis()+"");
-		return albumPo.getId();
+		int alaus = aRefService.getAlbumAudioRefNum(id);
+		if (alaus==0) {
+			albumService.removeAlbumById(id);
+//			RedisUtils.keepKeyToOnly("connectionFactory", 1, id, 4);
+			return 0;
+		} else {
+//			RedisUtils.delete("connectionFactory", 1, "LOADCRAWLERDB:"+id);
+//			RedisUtils.set("connectionFactory", 1, "CRAWLERDB:"+id, System.currentTimeMillis()+"");
+			AlbumPo al = new AlbumPo();
+			al.setId(id);
+			al.setIsValidate(1);
+			albumService.updateAlbum(al);
+			return alaus;
+		}
 	}
 }

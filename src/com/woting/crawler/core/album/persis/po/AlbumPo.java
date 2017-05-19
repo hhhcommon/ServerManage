@@ -17,6 +17,7 @@ public class AlbumPo extends BaseObject {
 	private String albumTags;
 	private String descn;
 	private String visitUrl;
+	private String category;
 	private int isValidate;
 	private Timestamp pubTime;
 	private Timestamp cTime;
@@ -93,5 +94,11 @@ public class AlbumPo extends BaseObject {
 	}
 	public void setPubTime(Timestamp pubTime) {
 		this.pubTime = pubTime;
+	}
+	public String getCategory() {
+		return category;
+	}
+	public void setCategory(String category) {
+		this.category = category;
 	}
 }

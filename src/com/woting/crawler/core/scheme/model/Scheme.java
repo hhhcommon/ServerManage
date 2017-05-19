@@ -41,8 +41,8 @@ public class Scheme {
 		this.setQTCachePath(schemePo.getQTCachePath());
 		this.setCralwerSwitch(schemePo.getCralwerSwitch());
 		this.etl1Process = new Etl1Process();
-		this.jedisConnectionFactory = (JedisConnectionFactory) SpringShell.getBean("connectionFactory");
-		this.redisOperService = new RedisOperService(jedisConnectionFactory, this.getRedisDB());
+//		this.jedisConnectionFactory = (JedisConnectionFactory) SpringShell.getBean("connectionFactory");
+//		this.redisOperService = new RedisOperService(jedisConnectionFactory, this.getRedisDB());
 	}
 	
 	public String getCrawlerExtent() {

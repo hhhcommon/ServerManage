@@ -3,21 +3,19 @@ package com.woting.cm.core.oss.utils;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
-import javax.servlet.ServletContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
+import java.net.URLConnection;
+
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.model.GetObjectRequest;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.ObjectMetadata;
-import com.spiritdata.framework.FConstants;
-import com.spiritdata.framework.core.cache.SystemCache;
 import com.spiritdata.framework.util.SequenceUUID;
 import com.woting.cm.core.oss.persis.po.OssConfigPo;
 import com.woting.crawler.ext.SpringShell;
@@ -88,7 +86,7 @@ public class OssUtils {
 						ossClient.putObject(ossConfigPo.getBucketName(), key, file, meta);
 						if (ossClient.doesObjectExist(ossConfigPo.getBucketName(), key)) {
 							if (isOrNoDelete) deleteFile(file);
-							return true;	
+							return true;
 						}
 					}
 				}
@@ -120,7 +118,7 @@ public class OssUtils {
 						meta.setContentLength(in.available());
 						meta.setCacheControl("no-cache");
 						meta.setHeader("Pragma", "no-cache");
-						meta.setContentType("text/html");
+						meta.setContentType(contentType(key.substring(key.lastIndexOf("."))));
 //						meta.setContentDisposition("inline;filename=");
 						ossClient.putObject(ossConfigPo.getBucketName(), key, in, meta);
 						if (ossClient.doesObjectExist(ossConfigPo.getBucketName(), key)) {
@@ -145,20 +143,29 @@ public class OssUtils {
 	 * @param url 网络流地址
 	 * @return
 	 */
-	public static boolean upLoadObject(String key, String url) {
+	public static boolean upLoadObject(String key, String urlStr) {
 		OSSClient ossClient = null;
 		try {
-			if (url!=null && url.length()>0 && key!=null) {
+			if (urlStr!=null && urlStr.length()>0 && key!=null) {
 				OssConfigPo ossConfigPo = (OssConfigPo) SpringShell.getBean("ossconfig");
 				if (ossConfigPo!=null) {
 					ossClient = new OSSClient(ossConfigPo.getEndpoint(), ossConfigPo.getAccessKeyId(), ossConfigPo.getAccessKeySecret());
 					if (ossClient!=null) {
-						InputStream in = new URL(url).openStream();
+						// 构造URL
+						URL url = new URL(urlStr);
+						// 打开连接
+						URLConnection con = url.openConnection();
+						// 设置请求超时为500s
+						con.setConnectTimeout(500 * 1000);
+						con.setReadTimeout(500 * 1000);
+						
+						// 输入流
+						InputStream in = con.getInputStream();
 						if (in != null) {
 							ObjectMetadata meta = new ObjectMetadata();
 							meta.setCacheControl("no-cache");
 							meta.setHeader("Pragma", "no-cache");
-							meta.setContentType("text/html");
+							meta.setContentType(contentType(key.substring(key.lastIndexOf("."))));
 							ossClient.putObject(ossConfigPo.getBucketName(), key, in, meta);
 							if (ossClient.doesObjectExist(ossConfigPo.getBucketName(), key)) {
 								in.close();
@@ -252,9 +259,7 @@ public class OssUtils {
 					return ossClient.doesObjectExist(ossConfigPo.getBucketName(), key);
 				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
+		} catch (Exception e) {} finally {
 			if (ossClient!=null) ossClient.shutdown();
 		}
 		return false;
@@ -284,7 +289,7 @@ public class OssUtils {
 							ObjectMetadata meta = new ObjectMetadata();
 							meta.setCacheControl("no-cache");
 							meta.setHeader("Pragma", "no-cache");
-							meta.setContentType("text/html");
+							meta.setContentType(contentType(key.substring(key.lastIndexOf("."))));
 							ossClient.putObject(ossConfigPo.getBucketName(), newkey, in, meta);
 							if (ossClient.doesObjectExist(ossConfigPo.getBucketName(), newkey)) {
 								in.close();
@@ -295,6 +300,7 @@ public class OssUtils {
 				}
 			}
 		} catch (Exception e) {
+			System.out.println("ac.wotingfm.com/"+key);
 			e.printStackTrace();
 			return false;
 		} finally {
@@ -327,7 +333,7 @@ public class OssUtils {
 							ObjectMetadata meta = new ObjectMetadata();
 							meta.setCacheControl("no-cache");
 							meta.setHeader("Pragma", "no-cache");
-							meta.setContentType("text/html");
+							meta.setContentType(contentType(key.substring(key.lastIndexOf("."))));
 							ossClient.putObject(ossConfigPo.getBucketName(), newkey, in, meta);
 							if (ossClient.doesObjectExist(ossConfigPo.getBucketName(), newkey)) {
 								in.close();
@@ -346,6 +352,51 @@ public class OssUtils {
 		return false;
 	}
 	
+	/**
+	 * 图片格式转换到本地文件
+	 * @param key
+	 * @param newkey
+	 * @param type 默认png
+	 * @return
+	 */
+	public static void makePictureType(String key,String newkey, String type) {
+		OSSClient ossClient = null;
+		try {
+			OssConfigPo ossConfigPo = (OssConfigPo) SpringShell.getBean("ossconfig");
+			if (ossConfigPo!=null) {
+				ossClient = new OSSClient(ossConfigPo.getEndpoint(), ossConfigPo.getAccessKeyId(), ossConfigPo.getAccessKeySecret());
+				if (ossClient!=null) {
+					if (type==null || type.length()==0 || type.equals("null")) type = "png";
+					String style = "image/format,"+type;
+					GetObjectRequest request = new GetObjectRequest(ossConfigPo.getBucketName(), key);
+					request.setProcess(style);
+					ossClient.getObject(request, new File(newkey));
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (ossClient!=null) ossClient.shutdown();
+		}
+	}
+	
+	public static void deleteObject(String key) {
+		OSSClient ossClient = null;
+		try {
+			OssConfigPo ossConfigPo = (OssConfigPo) SpringShell.getBean("ossconfig");
+			if (ossConfigPo!=null) {
+				ossClient = new OSSClient(ossConfigPo.getEndpoint(), ossConfigPo.getAccessKeyId(), ossConfigPo.getAccessKeySecret());
+				if (ossClient!=null) {
+					ossClient.deleteObject(ossConfigPo.getBucketName(), key);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (ossClient!=null) ossClient.shutdown();
+		}
+	}
+	
 	private static boolean writeFile(String jsonstr, File file) {
 		try {
 			OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
@@ -360,18 +411,35 @@ public class OssUtils {
 	}
 	
 	private static boolean writeFile(InputStream is, File file) {
-		try {
-			OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
-			BufferedWriter writer = new BufferedWriter(write);
-			BufferedReader in = new BufferedReader(new InputStreamReader(is));
-			StringBuffer buffer = new StringBuffer();
-			String line = "";
-			while ((line = in.readLine()) != null){
-				buffer.append(line);
+		try { //TODO
+			// 1K的数据缓冲
+			byte[] bs = new byte[1024];
+			// 读取到的数据长度
+			int len;
+			// 输出的文件流
+			if (!file.exists()) {
+				file.mkdirs();
 			}
-			writer.write(buffer.toString());
-			writer.close();
+			OutputStream os = new FileOutputStream(file.getName());
+			// 开始读取
+			while ((len = is.read(bs)) != -1) {
+				os.write(bs, 0, len);
+			}
+			// 完毕，关闭所有链接
+			os.close();
 			is.close();
+			
+//			OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file));//, "UTF-8"
+//			BufferedWriter writer = new BufferedWriter(write);
+//			BufferedReader in = new BufferedReader(new InputStreamReader(is));
+//			StringBuffer buffer = new StringBuffer();
+//			String line = "";
+//			while ((line = in.readLine()) != null) {
+//				buffer.append(line);
+//			}
+//			writer.write(buffer.toString());
+//			writer.close();
+//			is.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
@@ -396,23 +464,6 @@ public class OssUtils {
 		return file;
 	}
 	
-	private static String readFile(File file) {
-		String sb = "";
-		if (!file.exists()) return null;
-		try {
-			InputStreamReader read = new InputStreamReader(new FileInputStream(file), "UTF-8");
-			BufferedReader reader = new BufferedReader(read);
-			String line;
-			while ((line = reader.readLine()) != null) {
-				sb += line;
-			}
-			read.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return sb;
-	}
-	
 	private static void deleteFile(File file) {
 		if (file!=null && file.exists()) {
 			file.delete();
@@ -425,11 +476,12 @@ public class OssUtils {
      * @return String
      */
      public static String contentType(String FilenameExtension){
+    	if (FilenameExtension.contains(".")) FilenameExtension = FilenameExtension.replace(".", "");
     	FilenameExtension = FilenameExtension.toLowerCase();
         if(FilenameExtension.equals("BMP")||FilenameExtension.equals("bmp")){return "image/bmp";}  
         if(FilenameExtension.equals("GIF")||FilenameExtension.equals("gif")){return "image/gif";}  
         if(FilenameExtension.equals("JPEG")||FilenameExtension.equals("jpeg")||FilenameExtension.equals("JPG")||FilenameExtension.equals("jpg")||
-           FilenameExtension.equals("PNG")||FilenameExtension.equals("png")){return "image/jpeg";}  
+           FilenameExtension.equals("PNG")||FilenameExtension.equals("png")){return "image/png";}  
         if(FilenameExtension.equals("HTML")||FilenameExtension.equals("html")){return "text/html";}
         if(FilenameExtension.equals("TXT")||FilenameExtension.equals("txt")){return "text/plain";}  
         if(FilenameExtension.equals("VSD")||FilenameExtension.equals("vsd")){return "application/vnd.visio";}  

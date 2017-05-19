@@ -19,6 +19,7 @@
     <typeAlias alias="cforward"    type="com.woting.crawler.core.cforward.persis.po.CForwardPo"/>
     <typeAlias alias="imagehash"   type="com.woting.crawler.core.imagehash.persis.po.ImageHash"/>
     <typeAlias alias="record"      type="com.woting.crawler.core.record.persis.po.RecordPo"/>
+    <typeAlias alias="samedb"      type="com.woting.crawler.core.samedb.persis.po.SameDBPo"/>
   </typeAliases>
   <!-- SQL文件设置 -->
   <mappers>
@@ -37,5 +38,6 @@
     <mapper resource="com/woting/crawler/core/cforward/persis/sql/CForward.mapper.xml"/>
     <mapper resource="com/woting/crawler/core/imagehash/persis/sql/ImageHash.mapper.xml"/>
     <mapper resource="com/woting/crawler/core/record/persis/sql/Record.mapper.xml"/>
+    <mapper resource="com/woting/crawler/core/samedb/persis/sql/SameDB.mapper.xml"/>
   </mappers>
 </configuration>

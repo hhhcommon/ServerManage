@@ -11,6 +11,7 @@
     <result  column="albumPublisher" property="albumPublisher" jdbcType="VARCHAR"/>
     <result  column="albumImg"       property="albumImg"       jdbcType="VARCHAR"/>
     <result  column="albumTags"      property="albumTags"      jdbcType="VARCHAR"/>
+    <result  column="category"       property="category"       jdbcType="VARCHAR"/>
     <result  column="descn"          property="descn"          jdbcType="VARCHAR"/>
     <result  column="isValidate"     property="isValidate"     jdbcType="INTEGER"/>
     <result  column="visitUrl"       property="visitUrl"       jdbcType="VARCHAR"/>
@@ -26,6 +27,7 @@
         <if test="albumName!=null">and albumName=#{albumName,jdbcType=VARCHAR}</if>
         <if test="albumImg!=null">and albumImg=#{albumImg,jdbcType=VARCHAR}</if>
         <if test="albumTags!=null">and albumTags=#{albumTags,jdbcType=VARCHAR}</if>
+        <if test="category!=null">and category=#{category,jdbcType=VARCHAR}</if>
         <if test="albumPublisher!=null">and albumPublisher=#{albumPublisher,jdbcType=VARCHAR}</if>
         <if test="descn!=null">and descn=#{descn,jdbcType=VARCHAR}</if>
         <if test="isValidate!=null">and isValidate=#{isValidate,jdbcType=INTEGER}</if>
@@ -34,15 +36,44 @@
     </where>
   </sql>
 
+	  <!-- 新增数据 -->
+	  <insert id="insert" parameterType="java.util.Map">
+	    insert into c_Album
+	    <trim prefix="(" suffix=")" suffixOverrides=",">
+	      <if test="id!=null">id,</if>
+	      <if test="albumId!=null">albumId,</if>
+	      <if test="albumName!=null">albumName,</if>
+	      <if test="albumImg!=null">albumImg,</if>
+	      <if test="albumTags!=null">albumTags,</if>
+	      <if test="category!=null">category,</if>
+	      <if test="albumPublisher!=null">albumPublisher,</if>
+	      <if test="descn!=null">descn,</if>
+	      <if test="isValidate!=null">isValidate,</if>
+	      <if test="visitUrl!=null">visitUrl,</if>
+	    </trim>
+	    <trim prefix="values (" suffix=")" suffixOverrides=",">
+	      <if test="id!=null">#{id,jdbcType=VARCHAR},</if>
+	      <if test="albumId!=null">#{albumId,jdbcType=VARCHAR},</if>
+	      <if test="albumName!=null">#{albumName,jdbcType=VARCHAR},</if>
+	      <if test="albumImg!=null">#{albumImg,jdbcType=INTEGER},</if>
+	      <if test="albumTags!=null">#{albumTags,jdbcType=INTEGER},</if>
+	      <if test="category!=null">#{category,jdbcType=VARCHAR},</if>
+	      <if test="albumPublisher!=null">#{albumPublisher,jdbcType=VARCHAR},</if>
+	      <if test="descn!=null">#{descn,jdbcType=VARCHAR},</if>
+	      <if test="isValidate!=null">#{isValidate,jdbcType=VARCHAR},</if>
+	      <if test="visitUrl!=null">#{visitUrl,jdbcType=VARCHAR},</if>
+	    </trim>
+	  </insert>
+
   <!-- 所有列 -->
   <sql id="Base_Column_List">
-    id, albumId, albumName, albumPublisher, albumImg, albumTags, descn, isValidate, visitUrl, pubTime, cTime
+    id, albumId, albumName, albumPublisher, albumImg, albumTags, category, descn, isValidate, visitUrl, pubTime, cTime
   </sql>
 
   <insert id="insertList" parameterType="java.util.List">
-    Insert into c_Album (id, albumId, albumName, albumPublisher, albumImg, albumTags, descn, isValidate, visitUrl, pubTime, cTime) values
+    Insert into c_Album (id, albumId, albumName, albumPublisher, albumImg, albumTags, category, descn, isValidate, visitUrl, pubTime, cTime) values
     <foreach collection="list" item="list" index="index" separator=",">
-     (#{list.id},#{list.albumId},#{list.albumName},#{list.albumPublisher},#{list.albumImg},#{list.albumTags},#{list.descn},#{list.isValidate},#{list.visitUrl},#{list.pubTime},#{list.cTime})
+     (#{list.id},#{list.albumId},#{list.albumName},#{list.albumPublisher},#{list.albumImg},#{list.albumTags},#{list.category},#{list.descn},#{list.isValidate},#{list.visitUrl},#{list.pubTime},#{list.cTime})
     </foreach>
   </insert>
   
@@ -66,22 +97,29 @@
       <if test="albumPublisher!=null">albumPublisher=#{albumPublisher,jdbcType=VARCHAR},</if>
       <if test="albumImg!=null">albumImg=#{albumImg,jdbcType=VARCHAR},</if>
       <if test="albumTags!=null">albumTags=#{albumTags,jdbcType=VARCHAR},</if>
+      <if test="category!=null">category=#{category,jdbcType=VARCHAR},</if>
       <if test="isValidate!=null and isValidate!=0">isValidate=#{isValidate,jdbcType=INTEGER},</if>
       <if test="descn!=null">descn=#{descn,jdbcType=VARCHAR},</if>
       <if test="visitUrl!=null">visitUrl=#{visitUrl,jdbcType=VARCHAR},</if>
-      <if test="pubImg!=null">pubImg=#{pubImg,jdbcType=VARCHAR},</if>
-      <if test="pubTime!=null">pubTime=#{pubTime,jdbcType=TIMESTAMP},</if>
-      <if test="cTime!=null">cTime=#{cTime,jdbcType=TIMESTAMP},</if>
     </set>
     where id=#{id,jdbcType=VARCHAR}
   </update>
   
   <select id="getAlbumList" parameterType="java.util.Map" resultMap="BaseResultMap">
-    select * from c_Album where crawlerNum=#{crawlerNum,jdbcType=VARCHAR} limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
+    select * from c_Album where isValidate=#{isValidate,jdbcType=INTEGER} limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
   </select>
   
   <select id="getList" resultMap="BaseResultMap" parameterType="java.util.Map">
     select <include refid="Base_Column_List"/> from c_Album
+    <if test="_parameter!=null">
+      <include refid="WhereClauseByEntiey"/>
+      <if test="sortByClause!=null"> order by ${sortByClause}</if>
+    </if>
+    <if test="pageByClause!=null"> limit ${pageByClause}</if>
+  </select>
+  
+  <select id="getListCount" resultType="java.lang.Integer" parameterType="java.util.Map">
+    select count(*) from c_Album
     <if test="_parameter!=null">
       <include refid="WhereClauseByEntiey"/>
       <if test="sortByClause!=null"> order by ${sortByClause}</if>

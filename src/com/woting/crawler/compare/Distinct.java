@@ -268,7 +268,7 @@ public class Distinct {
 		mediaService = (MediaService) SpringShell.getBean("mediaService");
 		List<AlbumPo> newlist = new ArrayList<>();
 		List<Map<String, Object>> samelist = new ArrayList<>();
-		CompareAttribute compareAttribute = new CompareAttribute(crawlernum);
+		CompareAttribute compareAttribute = new CompareAttribute();
 		if (allist != null && allist.size() > 0) {
 			int processnum = 0;
 			logger.info("相似专辑抓取进度[{}]%", 0);

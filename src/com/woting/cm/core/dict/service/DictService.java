@@ -224,6 +224,18 @@ public class DictService {
     	dictDDao.update("update", dd.toHashMap());
     }
     
+    public List<DictRefResPo> getDictRefs(String dictDid, String resId, String resTableName) {
+    	Map<String, Object> m = new HashMap<>();
+    	m.put("dictDid", dictDid);
+    	m.put("resId", resId);
+    	m.put("resTableName", resTableName);
+    	List<DictRefResPo> ddrs = dictRefDao.queryForList("getList", m);
+    	if (ddrs!=null && ddrs.size()>0) {
+			return ddrs;
+		}
+    	return null;
+    }
+    
     public void insertDictDList(List<DictDetailPo> dds) {
     	Map<String, Object> m = new HashMap<>();
     	m.put("list", dds);

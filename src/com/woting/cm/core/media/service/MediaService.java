@@ -130,7 +130,18 @@ public class MediaService {
 	public SeqMaRefPo getOneSmarefOrderByColumnNum(String sId) {
 		Map<String, Object> m = new HashMap<>();
 		m.put("sId", sId);
-		return seqrefDao.getInfoObject("getSmafOrderByColumnNum", m);
+		return seqrefDao.getInfoObject("getMaxColumnSeqMaRefBySid", m);
+	}
+	
+	public SeqMaRefPo getSeqMaRefBy(String sId, String mId) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("sId", sId);
+		m.put("mId", mId);
+		return seqrefDao.getInfoObject("getSeqMaRefBySidMid", m);
+	}
+	
+	public void updateSeqMaRef(SeqMaRefPo seqMaRefPo) {
+		seqrefDao.update("updateSeqMaRef", seqMaRefPo);
 	}
 
 	public void insertSeq(SeqMediaAssetPo seq) {
@@ -250,9 +261,21 @@ public class MediaService {
 	public List<MaSourcePo> getMaSources(String maId) {
 		Map<String, Object> m = new HashMap<>();
 		m.put("maId", maId);
-		List<MaSourcePo> mas = maSourceDao.queryForList("getMaSources", m);
+		List<MaSourcePo> mas = maSourceDao.queryForList("getMasourceBymaId", m);
 		if (mas!=null && mas.size()>0) {
 			return mas;
+		}
+		return null;
+	}
+	
+	public List<SeqMaRefPo> getSeqMaRefBySIdAndMIdOrPlayUrl(String sId, String mId,String playURI) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("sId", sId);
+		m.put("mId", mId);
+		m.put("playURI", playURI);
+		List<SeqMaRefPo> seqMaRefPos = seqrefDao.queryForList("getSeqMaRefBySIdAndMIdOrPlayURI", m);
+		if (seqMaRefPos!=null && seqMaRefPos.size()>0) {
+			return seqMaRefPos;
 		}
 		return null;
 	}
@@ -277,6 +300,12 @@ public class MediaService {
 		m.put("list", ns);
 		m.put("sId", sId);
 		return mediaAssetDao.queryForList("getMaBySmaId", m);
+	}
+	
+	public List<MediaAssetPo> getMasByAlbumId(String alId) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("alId", alId);
+		return mediaAssetDao.queryForList("getMaListByAlbumId", m);
 	}
 	
 	public List<MediaAssetPo> getMaByPublisher(String publisher, int page, int pagesize) {
@@ -340,6 +369,10 @@ public class MediaService {
 	}
 	
 	public void removeSeqMediaAssetAll(Map<String, Object> m) {
-		mediaAssetDao.delete("multiSmaAllById", m);
+		try {
+			mediaAssetDao.delete("multiSmaAllById", m);
+		} catch (Exception e) {
+			if (!e.getCause().getMessage().contains("Query was empty")) e.printStackTrace();
+		}
 	}
 }

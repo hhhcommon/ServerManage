@@ -93,8 +93,8 @@ public abstract class SolrUtils {
 	 * @return
 	 */
 	public static String makeQueryStr(String str, boolean searorans) {
-		String[] allergicField   = {"[","]",":","（","）","\"","“","”","/","{","}","-"," ","《","》"};
-		String[] reallergicField = {"" ,"" ,"" ,"(",")" ,""  ,"" ,"" ,"" ,"" ,"" ,"" ,"" ,"" ,"" };
+		String[] allergicField   = {"[","]",":","（","）","\"","“","”","/","{","}","-"," ","《","》","~"};
+		String[] reallergicField = {"" ,"" ,"" ,"(",")" ,""  ,"" ,"" ,"" ,"" ,"" ,"" ,"" ,"" , "", "" };
 		String[] analysis = {"第","集"};
 		String[] reanalysis = {"",""};
 		if (searorans) { // 整理待查询字段
@@ -103,8 +103,8 @@ public abstract class SolrUtils {
 					str = str.replace(allergicField[i], reallergicField[i]);
 				}
 				if (str.contains("(") && !str.contains(")")) str = str.replace("(", "");
-				if (str.contains(")") && !str.contains("(")) str = str.replace(")", ""); 
-				return str;
+				if (str.contains(")") && !str.contains("(")) str = str.replace(")", "");
+				return cleanStrNum(str);
 			}
 		} else { // 整理待搜索字段
 			if (str!=null && str.length()>0) {
@@ -116,10 +116,9 @@ public abstract class SolrUtils {
 				for (int i = 0; i < analysis.length; i++) {
 					str = str.replace(analysis[i], reanalysis[i]);
 				}
-				return str;
+				return cleanStrNum(str);
 			}
 		}
-		
 		return null;
 	}
 	
@@ -131,6 +130,86 @@ public abstract class SolrUtils {
 				sorts.add(new SortClause(sortts[0], sortts[1]));
 			}
 			return sorts;
+		}
+		return null;
+	}
+	
+	public static String cleanStrNum(String title) {
+		String queryStr = "item_title:"+title;
+    	String _title = title;
+    	String strNum = getStrNum(title);
+    	if (strNum!=null && strNum.length()>0) {
+			queryStr += " item_title:"+strNum;
+			while(true) {
+        		String _title_ = makeStrNum(_title);
+        		if (_title_.length()==_title.length()) break;
+        		else {
+        			queryStr += " item_title:"+_title_;
+        			_title = _title_;
+        		}
+        	}
+		}
+		return queryStr;
+	}
+	
+	public static String makeStrNum(String title) {
+		title = title.trim();
+		int begNum = 0;
+		int begStr = -1;
+		int endStr = title.length();
+		boolean isCon_1 = false;
+		boolean isCon = false;
+		String numStr = "";
+		for (int i = 0; i < title.length(); i++) {
+			if(title.charAt(i)>=48 && title.charAt(i)<=57){
+				if (title.charAt(i)==48 && begNum==0 && isCon_1==false && isCon == false) {
+					begStr = i;
+					isCon = true;
+				}
+				if (isCon_1==false) isCon_1 = true;
+			} else {
+				isCon_1 = false;
+				if (begNum>=0 && isCon==true) {
+					endStr = i;
+					isCon = false;
+				}
+			}
+		}
+		if (begStr>=0 && endStr>=0 && begStr < endStr) {
+			numStr = title.substring(begStr, endStr);
+			String _numStr = numStr.substring(1);
+			title = title.replace(numStr, _numStr);
+		}
+		return title;
+	}
+	
+	public static String getStrNum(String title) {
+		title = title.trim();
+		int begNum = 0;
+		int begStr = -1;
+		int endStr = title.length();
+		boolean isCon_1 = false;
+		boolean isCon = false;
+		String numStr = "";
+		for (int i = 0; i < title.length(); i++) {
+			if(title.charAt(i)>=48 && title.charAt(i)<=57){
+				if (title.charAt(i)==48 && begNum==0 && isCon_1==false && isCon == false) {
+					begStr = i;
+					isCon = true;
+					endStr = title.length();
+				}
+				if (isCon_1==false) isCon_1 = true;
+			} else {
+				isCon_1 = false;
+				if (begNum>=0 && isCon==true) {
+					endStr = i;
+					isCon = false;
+				}
+			}
+		}
+		if (begStr>=0 && endStr>=0 && begStr < endStr) {
+			numStr = title.substring(begStr, endStr);
+			return numStr;
 		}
 		return null;
 	}

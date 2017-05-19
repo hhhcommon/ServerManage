@@ -77,6 +77,10 @@
     select * from wt_ResOrgAsset_Ref limit #{page,jdbcType=INTEGER},#{pagesize,jdbcType=INTEGER}
   </select>
   
+  <select id="getResOrgAssetListByAlbum" parameterType="java.util.Map" resultMap="resOrgAssetMap">
+    SELECT * FROM wt_ResOrgAsset_Ref where origId IN (SELECT auId FROM crawlerDB.c_AlbumAudio_Ref where alId = #{alId,jdbcType=VARCHAR})
+  </select>
+  
   <select id="count" resultType="java.lang.Integer">
     select count(*) from wt_ResOrgAsset_Ref
   </select>
