@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
-Implementation-Title: WtCrawlerHotSpot
+Implementation-Title: ServerManage
 Implementation-Version: 0.0.1
 Archiver-Version: Plexus Archiver
-Built-By: wangbingqiong
+Built-By: wbq
 Implementation-Vendor-Id: com.wotingfm
 Class-Path: runlib/spring-boot-starter-1.3.2.RELEASE.jar runlib/spring
  -boot-1.3.2.RELEASE.jar runlib/spring-context-4.2.4.RELEASE.jar runli

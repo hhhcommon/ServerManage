@@ -1,13 +1,27 @@
 package com.woting.crawler;
+
+import java.util.List;
+
+import org.quartz.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.spiritdata.framework.core.cache.CacheEle;
 import com.spiritdata.framework.core.cache.SystemCache;
-import com.woting.crawler.core.timer.UpdateCrawlerSrcTimerJob;
+import com.woting.cm.cachedb.cachedb.persis.po.CacheDBPo;
+import com.woting.cm.cachedb.cachedb.service.CacheDBService;
+import com.woting.crawler.core.album.persis.po.AlbumPo;
+import com.woting.crawler.core.album.service.AlbumService;
+import com.woting.crawler.core.contentinfo.AddContentInfoThread;
+import com.woting.crawler.core.cplaycount.persis.po.CPlayCountPo;
+import com.woting.crawler.core.cplaycount.service.CPlayCountService;
+import com.woting.crawler.core.timer.model.Timer;
 import com.woting.crawler.ext.SpringShell;
-import com.woting.crawler.scheme.crawlerdb.crawler.EtlProcess;
-import com.woting.crawler.scheme.crawlerdb.qt.UpdateQTSrc;
+import com.woting.crawler.scheme.crawlercategory.QT.QTCrawler;
+import com.woting.crawler.scheme.crawlercategory.TB.TBCrawler;
+import com.woting.crawler.scheme.crawlercategory.XMLY.XMLYCrawler;
+import com.woting.crawler.scheme.crawlercategory.crawler.Crawler;
+import com.woting.crawler.scheme.crawlerplaynum.XMLY.XMLYPlayNumCrawler;
+import com.woting.crawler.scheme.isvalidate.PlayUrlValid;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -71,39 +85,26 @@ public class Booter {
 //        	logger.info("定时加载出错，结束抓取服务");
 //        	return;
 //        }
-        try {
+//        try {
 //			scheduler.start();
-//			logger.info("资源抓取定时功能已加载[{}]", timer.getUpdateCrawlerSrcExpression());
-//			logger.info("首页资源抓取定时功能已加载[{}]", timer.getSrcCronExpression());
 //			logger.info("点击量抓取定时功能已加载[{}]", timer.getPlayCountCronExpression());
 //			logger.info("分类抓取定时功能已加载[{}]", timer.getCategoryCronExpression());
 //			logger.info("电台播放地址检测[{}]", timer.getBCPlayIsValidateCronExpression());
 //			logger.info("更新分享临时票据已加载[{}]", timer.getShareCronExpression());
 //			logger.info("更新栏目状态[{}]", timer.getCacheRefreshExpression());
-//			logger.info("同步Solr和Redis数据[{}]", timer.getRedisRefreshExpression());
-//			new CrawlerSearch().start();
-//			long beg = System.currentTimeMillis();
-        	
-//        	UpdateXMLYSrc updateXMLYSrc = new UpdateXMLYSrc();
-//        	updateXMLYSrc.updateSrc();
-        	
-//        	UpdateQTSrc updateQTSrc = new UpdateQTSrc();
-//        	updateQTSrc.updateSrc();
-//        	Map<String, Object> map = updateQTSrc.getZJData("100498", "30");
-//        	System.out.println(JsonUtils.objToJson(map));
-        	
-            EtlProcess etlProcess = new EtlProcess();
-            etlProcess.convertToWT();
-			while(true) {
-				Thread.sleep(10*60*60*1000);
-				UpdateCrawlerSrcTimerJob uJob = new UpdateCrawlerSrcTimerJob();
-				boolean isok = uJob.beginCrawler();
-				if (isok) {
-					logger.info("各平台栏目下新增内容入中间库完成");
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//        XMLYPlayNumCrawler xPlayNumCrawler = new XMLYPlayNumCrawler();
+//        xPlayNumCrawler.parseSmaPlayNum("456020");
+        
+//        CPlayCountService cPlayCountService = (CPlayCountService) SpringShell.getBean("CPlayCountService");
+//        try {
+//			CPlayCountPo cPos = cPlayCountService.getCPlayCountPo("QT_ALBUM_196860", "c_Album");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+        
+        
 	}
 }

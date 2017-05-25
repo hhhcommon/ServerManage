@@ -48,6 +48,20 @@ public class CrawlerDictService {
 		return dictDDao.getInfoObject("getDictDInfo", m);
 	}
 	
+	public DictDPo getDictDInfoBySourceIdAndPublisher(String sourceId, String publisher) {
+		Map<String, Object> m = new HashMap<>();
+		if (sourceId!=null) m.put("sourceId", sourceId);
+		if (publisher!=null) m.put("publisher",publisher);
+		return dictDDao.getInfoObject("getDictDInfo", m);
+	}
+	
+	public List<DictDPo> getDictDs(String pId, String publisher) {
+		Map<String, Object> m = new HashMap<>();
+		if (pId!=null) m.put("pId", pId);
+		if (publisher!=null) m.put("publisher", publisher);
+		return dictDDao.queryForList(m);
+	}
+	
 	public DictMPo getDictMList(String id){
 		DictMPo dictm = dictmDao.getInfoObject("getListById", id);
 		return dictm;

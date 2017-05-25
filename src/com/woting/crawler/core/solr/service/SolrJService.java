@@ -15,6 +15,9 @@ import org.apache.solr.client.solrj.request.FieldAnalysisRequest;
 import org.apache.solr.client.solrj.response.AnalysisResponseBase.AnalysisPhase;
 import org.apache.solr.client.solrj.response.AnalysisResponseBase.TokenInfo;
 import org.apache.solr.client.solrj.response.FieldAnalysisResponse;
+import org.apache.solr.client.solrj.response.Group;
+import org.apache.solr.client.solrj.response.GroupCommand;
+import org.apache.solr.client.solrj.response.GroupResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -23,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.spiritdata.framework.util.JsonUtils;
 import com.woting.crawler.core.solr.persis.po.SolrInputPo;
 import com.woting.crawler.core.solr.persis.po.SolrSearchResult;
 import com.woting.crawler.scheme.utils.SolrUtils;
@@ -101,7 +105,7 @@ public class SolrJService {
 		return null;
 	}
 	
-	public SolrSearchResult solrSearch(String querystr, List<SortClause> sorts, String flstr, int page, int pageSize, String... fqstr) throws Exception {
+	public SolrSearchResult solrSearch(String querystr, List<SortClause> sorts, String flstr, int page, int pageSize, String groupFile, String... fqstr) throws Exception {
 		//创建一个查询对象
 		SolrQuery solrQuery = new SolrQuery();
 		//查询条件
@@ -123,29 +127,64 @@ public class SolrJService {
 		if (fqstr!=null && fqstr.length>0) {
 			solrQuery.addFilterQuery(fqstr);
 		}
+		if (groupFile!=null) {
+			solrQuery.add("group", "true");
+			solrQuery.add("group.field", groupFile);
+		}
 		//根据查询条件搜索索引库
 		QueryResponse response = httpSolrServer.query(solrQuery);
-		//获取内容列表
-		SolrDocumentList documentList = response.getResults();
 		//内容列表
 		List<SolrInputPo> solrs = new ArrayList<>();
-		for (SolrDocument solrDocument : documentList) {
-			SolrInputPo sPo = new SolrInputPo();
-			sPo.setId(solrDocument.get("id").toString());
-			sPo.setItem_id((String) solrDocument.get("item_id"));
-			sPo.setItem_title((String) solrDocument.get("item_title"));
-			sPo.setItem_type((String) solrDocument.get("item_type"));
-			sPo.setItem_publisher((String) solrDocument.get("item_publisher"));
-			if (solrDocument.containsKey("item_meidasize")) {
-				sPo.setItem_mediasize((long) solrDocument.get("item_meidasize"));
+		SolrDocumentList documentList = new SolrDocumentList();
+		if (groupFile!=null) {
+			GroupResponse groupResponse = response.getGroupResponse();
+			List<GroupCommand> groupCommands = groupResponse.getValues();
+			for (GroupCommand groupCommand : groupCommands) {
+				List<Group> group = groupCommand.getValues();
+				if (group!=null && group.size()>0) {
+					for (Group group2 : group) {
+						documentList = group2.getResult();
+						for (SolrDocument solrDocument : documentList) {
+							SolrInputPo sPo = new SolrInputPo();
+							sPo.setId(solrDocument.get("id").toString());
+							sPo.setItem_id((String) solrDocument.get("item_id"));
+							sPo.setItem_title((String) solrDocument.get("item_title"));
+							sPo.setItem_type((String) solrDocument.get("item_type"));
+							sPo.setItem_publisher((String) solrDocument.get("item_publisher"));
+							if (solrDocument.containsKey("item_meidasize")) {
+								sPo.setItem_mediasize((long) solrDocument.get("item_meidasize"));
+							}
+							if (solrDocument.containsKey("item_timelong")) {
+								sPo.setItem_timelong((long) solrDocument.get("item_timelong"));
+							}
+							sPo.setItem_persons((String) solrDocument.get("item_persons"));
+							sPo.setItem_channel((String) solrDocument.get("item_channel"));
+							solrs.add(sPo);
+						}
+					}
+				}
 			}
-			if (solrDocument.containsKey("item_timelong")) {
-				sPo.setItem_timelong((long) solrDocument.get("item_timelong"));
+		} else {
+			documentList = response.getResults();
+			for (SolrDocument solrDocument : documentList) {
+				SolrInputPo sPo = new SolrInputPo();
+				sPo.setId(solrDocument.get("id").toString());
+				sPo.setItem_id((String) solrDocument.get("item_id"));
+				sPo.setItem_title((String) solrDocument.get("item_title"));
+				sPo.setItem_type((String) solrDocument.get("item_type"));
+				sPo.setItem_publisher((String) solrDocument.get("item_publisher"));
+				if (solrDocument.containsKey("item_meidasize")) {
+					sPo.setItem_mediasize((long) solrDocument.get("item_meidasize"));
+				}
+				if (solrDocument.containsKey("item_timelong")) {
+					sPo.setItem_timelong((long) solrDocument.get("item_timelong"));
+				}
+				sPo.setItem_persons((String) solrDocument.get("item_persons"));
+				sPo.setItem_channel((String) solrDocument.get("item_channel"));
+				solrs.add(sPo);
 			}
-			sPo.setItem_persons((String) solrDocument.get("item_persons"));
-			sPo.setItem_channel((String) solrDocument.get("item_channel"));
-			solrs.add(sPo);
 		}
+		
 		SolrSearchResult result = new SolrSearchResult();
 		//列表
 		result.setSolrInputPos(solrs);

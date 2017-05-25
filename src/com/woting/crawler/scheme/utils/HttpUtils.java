@@ -1,6 +1,7 @@
 package com.woting.crawler.scheme.utils;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -211,4 +212,16 @@ public abstract class HttpUtils {
         catch(NumberFormatException e){return asciicode;}
         return nativeValue;
     }
+	
+	public static void updatePlayCount(String mediaType, String contentId, String publisher) {
+		Map<String, String> m = new HashMap<>();
+		m.put("MediaType", mediaType);
+		m.put("ContentId", contentId);
+		m.put("Publisher", publisher);
+		try {
+			Jsoup.connect("").data(m).ignoreContentType(true).timeout(2000).post();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

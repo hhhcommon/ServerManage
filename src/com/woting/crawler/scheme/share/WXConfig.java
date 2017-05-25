@@ -30,12 +30,9 @@ public class WXConfig {
 								Map<String, Object> ret2 = (Map<String, Object>) JsonUtils.jsonToObj(jsonstr, Map.class);
 								if (ret2.containsKey("ticket")) {
 									String jsapi_ticket = ret2.get("ticket")+"";
-									JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean("connectionFactorySearch");
-									RedisOperService ros = new RedisOperService(conn,share.getRedisDB());
-									ros.set("WX_JSAPI_TICKET", jsapi_ticket, 7200*1000);
-									ros.set("WX_TICKET_CTIME", System.currentTimeMillis()+"", 7200*1000);
-									ros.close();
-									conn.destroy();
+									updateWXRedis("connectionFactory_182", share.getRedisDB(), jsapi_ticket);
+									updateWXRedis("connectionFactory_123", share.getRedisDB(), jsapi_ticket);
+									updateWXRedis("connectionFactory_7_2", share.getRedisDB(), jsapi_ticket);
 								}
 							}
 						}
@@ -45,5 +42,14 @@ public class WXConfig {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void updateWXRedis(String JedisConnectionFactoryName, int redisDB, String jsapi_ticket) {
+		JedisConnectionFactory conn = (JedisConnectionFactory) SpringShell.getBean(JedisConnectionFactoryName);
+		RedisOperService ros = new RedisOperService(conn,redisDB);
+		ros.set("WX_JSAPI_TICKET", jsapi_ticket, 7200*1000);
+		ros.set("WX_TICKET_CTIME", System.currentTimeMillis()+"", 7200*1000);
+		ros.close();
+		conn.destroy();
 	}
 }

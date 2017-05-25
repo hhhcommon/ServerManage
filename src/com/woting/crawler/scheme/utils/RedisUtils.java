@@ -14,7 +14,6 @@ import com.spiritdata.framework.ext.spring.redis.RedisOperService;
 import com.spiritdata.framework.util.JsonUtils;
 import com.woting.cm.core.media.persis.po.MediaAssetPo;
 import com.woting.cm.core.media.persis.po.SeqMediaAssetPo;
-import com.woting.crawler.compare.SolrServer;
 import com.woting.crawler.core.album.persis.po.AlbumPo;
 import com.woting.crawler.core.audio.persis.po.AudioPo;
 import com.woting.crawler.ext.SpringShell;
@@ -300,38 +299,6 @@ public class RedisUtils {
 			if(!rs.exist(ma.getMaPublisher()+"_Ma_"+ma.getId()+"_Participle"))
 			rs.set(ma.getMaPublisher()+"_Ma_"+ma.getId()+"_Participle", str, 24*60*60*1000);
 		}
-	}
-	
-	@SuppressWarnings("unchecked")
-	public static List<String> getSrcParticiple(RedisOperService rs, Object o) {
-		try {
-			if(o instanceof SeqMediaAssetPo) {
-				SeqMediaAssetPo sma = (SeqMediaAssetPo) o;
-				if (rs.exist(sma.getSmaPublisher()+"_Sma_"+sma.getId()+"_Participle")) {
-					String str = rs.get(sma.getSmaPublisher()+"_Sma_"+sma.getId()+"_Participle");
-					return (List<String>) JsonUtils.jsonToObj(str, List.class);
-				} else {
-					List<String> list = SolrServer.getAnalysis(sma.getSmaTitle());
-					writeSrcParticiple(rs, sma, JsonUtils.objToJson(list));
-					return list;
-				}
-			}
-			if (o instanceof MediaAssetPo) {
-				MediaAssetPo ma = (MediaAssetPo) o;
-				if(rs.exist(ma.getMaPublisher()+"_Ma_"+ma.getId()+"_Participle")) {
-					String str = rs.get(ma.getMaPublisher()+"_Ma_"+ma.getId()+"_Participle");
-					return (List<String>) JsonUtils.jsonToObj(str, List.class);
-				} else {
-					List<String> list = SolrServer.getAnalysis(ma.getMaTitle());
-					writeSrcParticiple(rs, ma, JsonUtils.objToJson(list));
-					return list;
-				}
-			}
-		} catch (Exception e){
-			e.printStackTrace();
-			return null;
-		}
-		return null;
 	}
 
 	public static void set(String JedisConnectionFactory,int redisDB, String key, String value) {

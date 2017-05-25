@@ -48,6 +48,10 @@ public class CPlayCountService {
 		return null;
 	}
 	
+	public void updateCPlayCountPo(CPlayCountPo countPo) {
+		cplayCountDao.update(countPo);
+	}
+	
 	public void insertCPlayCount(CPlayCountPo cPo) {
 		cplayCountDao.insert(cPo);
 	}

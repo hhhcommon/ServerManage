@@ -30,6 +30,12 @@ public class AlbumAudioRefService {
 		return albumAudioRefDao.queryForList("getList", m);
 	}
 	
+	public List<Map<String, Object>> getAudioRefAndPlayCount(String alId) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("albumId", alId);
+		return albumAudioRefDao.queryForListAutoTranform("getListBy", m);
+	}
+	
 	public int getAlbumAudioRefNum(String alId) {
 		Map<String, Object> m = new HashMap<>();
 		m.put("alId", alId);

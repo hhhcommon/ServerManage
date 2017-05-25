@@ -70,6 +70,13 @@
     </if>
   </select>
   
+  <select id="getListBy" parameterType="java.util.Map" resultMap="java.util.Map">
+    SELECT aref.auId,cp.playCount FROM c_AlbumAudio_Ref aref 
+	LEFT JOIN c_PlayCount cp
+	ON cp.resId = aref.auId
+	WHERE aref.alId = 'XMLY_ALBUM_${albumId}'
+  </select>
+  
   <select id="getRefInfo" parameterType="java.util.Map" resultMap="BaseResultMap">
     select * from c_AlbumAudio_Ref <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
   </select>

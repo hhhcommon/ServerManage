@@ -105,6 +105,17 @@ public class ChannelService {
 		return null;
 	}
 	
+	public List<ChannelPo> getChannelListRef() {
+		String whereSql = "id not IN (SELECT channelId FROM wt_ChannelAsset)";
+		Map<String, Object> m = new HashMap<>();
+		m.put("whereSql", whereSql);
+		List<ChannelPo> chs = channelDao.queryForList("getList", m);
+		if (chs!=null && chs.size()>0) {
+			return chs;
+		}
+		return null;
+	}
+	
 	public ChannelMapRefPo getChannelMapRef(String id) {
 		Map<String, Object> m = new HashMap<>();
 		m.put("id", id);

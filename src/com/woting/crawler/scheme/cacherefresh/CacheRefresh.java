@@ -25,6 +25,17 @@ public class CacheRefresh {
 					channelService.updateChannel(upch);
 				}
 			}
+			chs = channelService.getChannelListRef();
+			if (chs!=null) {
+				for (ChannelPo channelPo : chs) {
+					if (channelPo.getIsValidate()==2) {
+						ChannelPo upch = new ChannelPo();
+						upch.setId(channelPo.getId());
+						upch.setIsValidate(1);
+						channelService.updateChannel(upch);
+					}
+				}
+			}
 		}
 		return null;
 	}

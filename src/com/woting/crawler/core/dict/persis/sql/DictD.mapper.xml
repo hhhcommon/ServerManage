@@ -59,6 +59,10 @@
     </foreach>
   </insert>
   
+  <select id="getList" resultMap="BaseResultMap" parameterType="java.util.Map">
+    select <include refid="Base_Column_List"/> from c_DictD <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if>
+  </select>
+  
   <select id="getDictdValidNum" resultMap="BaseResultMap" parameterType="java.lang.String">
     select * from c_DictD where isValidate='1' and publisher=#{publisher,jdbcType=VARCHAR}
   </select>

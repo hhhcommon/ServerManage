@@ -1,6 +1,6 @@
-#Æô¶¯ÅÀ³æ
+#ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 echo start crawl
 _heapMem="-Xms256m -Xmx512m"
-#java $_heapMem -jar WtCrawlerHotSpot.jar
-nohup java $_heapMem -jar WtCrawlerHotSpot.jar > crawler.log 2>&1 &
+#java $_heapMem -jar ServerManage.jar
+nohup java $_heapMem -jar ServerManage.jar > crawler.log 2>&1 &

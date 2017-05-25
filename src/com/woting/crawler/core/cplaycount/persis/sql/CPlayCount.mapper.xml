@@ -49,7 +49,19 @@
     </trim>
   </insert>
   
-  <select id="getList" resultMap="BaseResultMap" parameterType="java.util.Map">
+  <!-- 修改 根据主键 -->
+  <update id="update" parameterType="java.util.Map">
+    update c_PlayCount
+    <set>
+      <if test="resId!=null">resId=#{resId,jdbcType=VARCHAR},</if>
+      <if test="resTableName!=null">resTableName=#{resTableName,jdbcType=VARCHAR},</if>
+      <if test="publisher!=null">publisher=#{publisher,jdbcType=VARCHAR},</if>
+      <if test="playCount!=null and playCount!=0">playCount=#{playCount,jdbcType=INTEGER},</if>
+    </set>
+    where id=#{id,jdbcType=VARCHAR}
+  </update>
+  
+  <select id="getList" parameterType="java.util.Map" resultMap="BaseResultMap">
     select <include refid="Base_Column_List"/>  from c_PlayCount
     <if test="_parameter!=null"><include refid="WhereClauseByEntiey"/></if> 
     <if test="orderSql!=null"> order by ${orderSql}</if>

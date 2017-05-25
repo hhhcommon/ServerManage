@@ -3,13 +3,10 @@ package com.woting.crawler.core.scheme.persis.po;
 public class SchemePo {
 	private String Schemenum;
 	private String CrawlerExtent;
-	private String NumberOfCrawlers;
 	private String RedisSnapShootDB;
 	private String RedisDB;
 	private int XMLYThread_Limit_Size;
 	private int QTThread_Limit_Size;
-	private String XMLYCachePath;
-	private String QTCachePath;
 	private String CralwerSwitch;
 	public String getSchemenum() {
 		return Schemenum;
@@ -22,12 +19,6 @@ public class SchemePo {
 	}
 	public void setCrawlerExtent(String crawlerExtent) {
 		CrawlerExtent = crawlerExtent;
-	}
-	public String getNumberOfCrawlers() {
-		return NumberOfCrawlers;
-	}
-	public void setNumberOfCrawlers(String numberOfCrawlers) {
-		this.NumberOfCrawlers = numberOfCrawlers;
 	}
 	public String getRedisDB() {
 		return RedisDB;
@@ -53,18 +44,7 @@ public class SchemePo {
 	public void setQTThread_Limit_Size(int qTThread_Limit_Size) {
 		QTThread_Limit_Size = qTThread_Limit_Size;
 	}
-	public String getXMLYCachePath() {
-		return XMLYCachePath;
-	}
-	public void setXMLYCachePath(String xMLYCachePath) {
-		XMLYCachePath = xMLYCachePath;
-	}
-	public String getQTCachePath() {
-		return QTCachePath;
-	}
-	public void setQTCachePath(String qTCachePath) {
-		QTCachePath = qTCachePath;
-	}
+
 	public String getCralwerSwitch() {
 		return CralwerSwitch;
 	}

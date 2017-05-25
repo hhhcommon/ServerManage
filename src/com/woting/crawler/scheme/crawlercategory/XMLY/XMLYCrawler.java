@@ -5,171 +5,146 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.spiritdata.framework.core.cache.SystemCache;
 import com.spiritdata.framework.util.ChineseCharactersUtils;
-import com.spiritdata.framework.util.JsonUtils;
-import com.spiritdata.framework.util.SequenceUUID;
-import com.woting.cm.core.keyword.persis.po.KeyWordPo;
-import com.woting.cm.core.keyword.persis.po.KwResPo;
-import com.woting.cm.core.keyword.service.KeyWordService;
-import com.woting.crawler.CrawlerConstants;
 import com.woting.crawler.core.dict.persis.po.DictDPo;
 import com.woting.crawler.core.dict.service.CrawlerDictService;
+import com.woting.crawler.core.record.persis.po.RecordPo;
+import com.woting.crawler.core.record.service.RecordService;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.utils.ConvertUtils;
-import com.woting.crawler.scheme.utils.FileUtils;
 import com.woting.crawler.scheme.utils.HttpUtils;
 
 public class XMLYCrawler extends Thread {
 	private Logger logger = LoggerFactory.getLogger(XMLYCrawler.class);
 	private static String CategoryLink = "http://www.ximalaya.com/dq/all/";
-
+	private CrawlerDictService crawlerDictService;
+	private int insertNum_1 = 0;
+	private int insertNum_2 = 0;
+	
 	public void getXMLYCategory() {
-		List<Map<String, Object>> cate2dictdlist = FileUtils
-				.readFileByJson(SystemCache.getCache(CrawlerConstants.APP_PATH).getContent() + "conf/craw.txt");
 		logger.info("喜马拉雅分类抓取开始 ");
+		long begTime = System.currentTimeMillis();
 		List<DictDPo> listd = new ArrayList<DictDPo>();
 		Elements eles = null;
 		Element el = null;
 		Document doc;
-		int isValidate = 2;
-		int crawlerNum = 1;
-		CrawlerDictService crawlerDictService = (CrawlerDictService) SpringShell.getBean("crawlerDictService");
-//		KeyWordService kwService = (KeyWordService) SpringShell.getBean("keyWordService");
-		if (crawlerDictService.getDictdValidNum("喜马拉雅") == 0) {
-			isValidate = 1;
-			crawlerNum = 1;
-		} else {
-			isValidate = 2;
-			crawlerNum = crawlerDictService.getMaxCrawlerNum("喜马拉雅") + 1;
-		}
-		try {
-//			doc = Jsoup.connect(CategoryLink).timeout(10000).ignoreContentType(true).get();
-			DictDPo dd = new DictDPo();
-			dd.setId(SequenceUUID.getPureUUID());
-			dd.setSourceId("ximalaya");
-			dd.setDdName("喜马拉雅");
-			dd.setmId("3");
-			dd.setpId("0");
-			dd.setPublisher("喜马拉雅");
-			dd.setnPy("XiMaLaYa");
-			dd.setVisitUrl(CategoryLink);
-			dd.setIsValidate(isValidate);
-			dd.setCrawlerNum(crawlerNum);
-			dd.setcTime(new Timestamp(System.currentTimeMillis()));
-			listd.add(dd);
-			doc = HttpUtils.getJsonStrForUrl(CategoryLink);
-			// 加载分类信息
-			List<Map<String, Object>> catelist = new ArrayList<Map<String, Object>>();
-			// 加载一级分类信息
-			eles = doc.select("ul[class=sort_list]");
-			if (eles != null && !eles.isEmpty()) {
-				el = eles.get(0);
-				eles = el.select("li[cid]");
-				for (Element ele : eles) {
-					Map<String, Object> m = new HashMap<String, Object>();
-					m.put("id", ele.attr("cid"));
-					m.put("nPy", ele.attr("cname"));
-					Elements els = ele.select("a");
-					if (els != null && !els.isEmpty()) {
-						ele = els.get(0);
-						m.put("visitUrl", "http://www.ximalaya.com" + ele.attr("href"));
-						m.put("name", els.html());
-						m.put("pid", dd.getSourceId());
-						catelist.add(m);
+		
+		crawlerDictService = (CrawlerDictService) SpringShell.getBean("crawlerDictService");
+		List<DictDPo> dictDs = crawlerDictService.getDictDs("0", null);
+		String xmlyPid = null;
+		if (dictDs!=null && dictDs.size()>0) {
+			for (DictDPo dictDPo : dictDs) {
+				if (dictDPo.getPublisher().equals("喜马拉雅")) {
+					xmlyPid = dictDPo.getId();
+					listd.add(dictDPo);
+				}
+			}
+			if (xmlyPid!=null) {
+				List<DictDPo> dictDPos_1 = crawlerDictService.getDictDs(xmlyPid, "喜马拉雅");
+				Map<String, Object> xmlyMap = new HashMap<>();
+				if (dictDPos_1!=null && dictDPos_1.size()>0) {
+					for (DictDPo dictDPo : dictDPos_1) {
+						xmlyMap.put("1_"+dictDPo.getDdName(), dictDPo.getId());
 					}
 				}
-				listd.addAll(ConvertUtils.convert2DictD(catelist, listd, "喜马拉雅", "3", isValidate, crawlerNum));
-				catelist.clear();
-				// 加载二级分类信息
+				xmlyMap.put("1_喜马拉雅", xmlyPid);
+				doc = HttpUtils.getJsonStrForUrl(CategoryLink);
+				// 加载分类信息
+				List<Map<String, Object>> catelist = new ArrayList<Map<String, Object>>();
+				// 加载一级分类信息
+				eles = doc.select("ul[class=sort_list]");
+				if (eles != null && !eles.isEmpty()) {
+					el = eles.get(0);
+					eles = el.select("li[cid]");
+					for (Element ele : eles) {
+						Map<String, Object> m = new HashMap<String, Object>();
+						m.put("id", ele.attr("cid"));
+						m.put("nPy", ele.attr("cname"));
+						Elements els = ele.select("a");
+						if (els != null && !els.isEmpty()) {
+							ele = els.get(0);
+							String name = els.html();
+							if (xmlyMap.containsKey("1_"+name)) continue;
+							else {
+								m.put("visitUrl", "http://www.ximalaya.com" + ele.attr("href"));
+								m.put("name", els.html());
+								m.put("pid", "ximalaya");
+								catelist.add(m);
+							}
+						}
+					}
+				}
+				if (catelist!=null && catelist.size()>0) {
+					listd.addAll(ConvertUtils.convert2DictD(catelist, listd, "喜马拉雅", "3", 1, 1));
+				}
+				if (listd!=null && listd.size()>0) listd.remove(0);
+				insertDicts(listd, 1);
+				listd.clear();
+				//加载二级分类信息
 				eles = doc.select("div[data-cache]");
 				if (eles != null && !eles.isEmpty()) {
 					for (Element ele : eles) {
+						catelist.clear();
 						Elements els = ele.select("a[hashlink]");
+						String pid = ele.attr("data-cache");
+						DictDPo dictDPo = crawlerDictService.getDictDInfoBySourceIdAndPublisher(pid, "喜马拉雅");
+						if (dictDPo==null) continue;
+						String cpid = dictDPo.getId();
+						List<DictDPo> dDs = crawlerDictService.getDictDs(cpid, "喜马拉雅");
+						Map<String, Object> dDsMap = new HashMap<>();
+						if (dDs!=null && dDs.size()>0) {
+							for (DictDPo dictDPo2 : dDs) {
+								dDsMap.put(dictDPo2.getSourceId(), null);
+							}
+						}
+						listd.add(dictDPo);
 						for (Element element : els) {
 							Map<String, Object> m = new HashMap<String, Object>();
 							m.put("visitUrl", "http://www.ximalaya.com" + element.attr("href"));
 							m.put("name", element.attr("tid")); // 喜马拉雅二级分类只给出名称信息
-							m.put("pid", ele.attr("data-cache"));
-							m.put("id", ele.attr("data-cache") + "_"
-									+ ChineseCharactersUtils.getFullSpellFirstUp(element.attr("tid")));
-							catelist.add(m);
+							m.put("pid", pid);
+							String sourceId = ele.attr("data-cache") + "_" + ChineseCharactersUtils.getFullSpellFirstUp(element.attr("tid"));
+							m.put("id", sourceId);
+							if (!dDsMap.containsKey(sourceId)) catelist.add(m);
 						}
+						listd.addAll(ConvertUtils.convert2DictD(catelist, listd, "喜马拉雅", "3", 1, 1));
+						if (listd!=null && listd.size()>0) listd.remove(0);
+						insertDicts(listd, 2);
+						listd.clear();
 					}
-				}
-				listd.addAll(ConvertUtils.convert2DictD(catelist, listd, "喜马拉雅", "3", isValidate, crawlerNum));
-				logger.info("喜马拉雅分类抓取数目[{}]", listd.size());
-				System.out.println(JsonUtils.objToJson(listd));
-				if (listd != null && listd.size() > 0) {
-					if (isValidate == 1) {
-						crawlerDictService.insertDictD(listd);
-						logger.info("首次喜马拉雅分类抓取，数据全部入库，并生效");
-					} else {
-						if (!crawlerDictService.compareDictIsOrNoNew(listd)) {
-							logger.info("发现喜马拉雅有新的分类产生,开始和中间库比较");
-							crawlerDictService.insertDictD(listd);
-						} else {
-							logger.info("未发现喜马拉雅新分类,抓取数据作废");
-						}
-					}
-//					List<KeyWordPo> kws = new ArrayList<>();
-//					List<KwResPo> krs = new ArrayList<>();
-//					for (DictDPo m : listd) {
-//						if (!m.getpId().equals("0")) {
-//							if (kwService.KeyWordIsNull(m.getDdName())) {
-//								KeyWordPo kw = new KeyWordPo();
-//								kw.setId(SequenceUUID.getPureUUID());
-//								kw.setOwnerId("cm");
-//								kw.setOwnerType(0);
-//								kw.setKwName(m.getDdName());
-//								kw.setIsValidate(1);
-//								kw.setnPy(ChineseCharactersUtils.getFullSpellFirstUp(m.getDdName()));
-//								kw.setSort(0);
-//								kw.setDescn("喜马拉雅");
-//								kw.setcTime(new Timestamp(System.currentTimeMillis()));
-//								kws.add(kw);
-//								for (DictDPo mm : listd) {
-//									if (m.getpId().equals(mm.getId())) {
-//										for (Map<String, Object> cate : cate2dictdlist) {
-//											if (cate.get("publisher").equals("喜马拉雅")
-//													&& mm.getDdName().equals(cate.get("crawlerDictdName"))) {
-//												KwResPo kr = new KwResPo();
-//												kr.setId(SequenceUUID.getPureUUID());
-//												kr.setRefName("标签-栏目");
-//												kr.setKwId(kw.getId());
-//												kr.setResTableName("wt_ChannelAsset");
-//												if (!cate.get("dictdId").equals("")) {
-//													kr.setResId(cate.get("dictdId") + "");
-//													kr.setcTime(new Timestamp(System.currentTimeMillis()));
-//													krs.add(kr);
-//												}
-//											}
-//										}
-//									}
-//								}
-//							}
-//						}
-//					}
-//					if (kws.size() > 0 && krs.size() > 0) {
-//						kwService.insertKeyWords(kws);
-//						kwService.insertKwRefs(krs);
-//					}
 				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		}
+		if (insertNum_1 > 0 || insertNum_2 > 0) {
+			RecordService recordService = (RecordService) SpringShell.getBean("recordService");
+			RecordPo rPo = new RecordPo();
+			rPo.setBeginTime(new Timestamp(begTime));
+			long endTime = System.currentTimeMillis();
+			rPo.setEndTime(new Timestamp(endTime));
+			rPo.setDuration((int)(endTime-begTime));
+			rPo.setRecordType("XMLY_CATEGORY_ADD");
+			rPo.setDescn("定时扫描，喜马拉雅新增1级栏目  " + insertNum_1 + " 喜马拉雅新增2级栏目 " + insertNum_2);
+			rPo.setRecordCount(insertNum_1+insertNum_2);
+			recordService.insertRecord(rPo);
 		}
 	}
 
 	@Override
 	public void run() {
 		getXMLYCategory();
+	}
+	
+	public void insertDicts(List<DictDPo> listd, int num) {
+		if (listd != null && listd.size() > 0) {
+			crawlerDictService.insertDictD(listd);
+			if (num==1) insertNum_1++;
+			if (num==2) insertNum_2++;
+		}
 	}
 }

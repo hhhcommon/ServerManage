@@ -5,10 +5,15 @@ import java.util.List;
 import java.util.Map;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+
+import com.woting.cm.cachedb.cachedb.AddCacheDBThread;
+import com.woting.cm.cachedb.cachedb.service.CacheDBService;
 import com.woting.cm.core.broadcast.persis.po.BCLiveFlowPo;
 import com.woting.cm.core.broadcast.persis.po.BroadcastPo;
 import com.woting.cm.core.broadcast.service.BcLiveFlowService;
 import com.woting.cm.core.broadcast.service.BroadcastService;
+import com.woting.cm.core.channel.persis.po.ChannelAssetPo;
+import com.woting.cm.core.channel.service.ChannelService;
 import com.woting.crawler.core.m3u8.persis.po.M3U8;
 import com.woting.crawler.ext.SpringShell;
 import com.woting.crawler.scheme.utils.M3U8Utils;
@@ -18,46 +23,80 @@ public class PlayUrlValid {
 	public void verifyUrlValid() {
 		BroadcastService broadcastService = (BroadcastService) SpringShell.getBean("broadcastService");
 		BcLiveFlowService bcLiveFlowService = (BcLiveFlowService) SpringShell.getBean("bcLiveFlowService");
+		ChannelService channelService = (ChannelService) SpringShell.getBean("channelService");
+		CacheDBService cacheDBService = (CacheDBService) SpringShell.getBean("cacheDBService");
 		List<BroadcastPo> bcs = broadcastService.getBroadcastList();
+		int num = 0;
 		if (bcs!=null && bcs.size()>0) {
 			for (BroadcastPo bc : bcs) {
-				List<BCLiveFlowPo> bcls = bcLiveFlowService.getBCLiveFlowListByBcId(bc.getId());
-				if (bcls!=null) {
-					Map<Long, Object> m = new HashMap<>();
-					long[] times = new long[bcls.size()];
-					for (int i=0;i<bcls.size();i++) {
-						long time = isValid(bcls.get(i).getFlowURI());
-						m.put(time, bcls.get(i));
-						times[i] = time;
-					}
-					M3U8Utils.bubble_sort(times);
-					boolean isok = false;
-					String ismainId = null;
-					for (int i=0;i<times.length;i++) {
-						if (times[i]==0) {
-							continue;
-						} else {
-							if (!isok) {
-								BCLiveFlowPo bclf = (BCLiveFlowPo) m.get(times[i]);
-							    ismainId = bclf.getId();
-							    isok = true;
+				System.out.println(num++);
+				try {
+					boolean isToUpdateCache = false;
+					List<BCLiveFlowPo> bcls = bcLiveFlowService.getBCLiveFlowListByBcId(bc.getId());
+					if (bcls!=null) {
+						Map<Long, Object> m = new HashMap<>();
+						long[] times = new long[bcls.size()];
+						for (int i=0;i<bcls.size();i++) {
+							long time = 0;
+							try {time = isValid(bcls.get(i).getFlowURI());} catch (Exception e) {}
+							m.put(time, bcls.get(i));
+							times[i] = time;
+						}
+						M3U8Utils.bubble_sort(times);
+						boolean isok = false;
+						String ismainId = null;
+						for (int i=0;i<times.length;i++) {
+							if (times[i]==0) {
+								continue;
+							} else {
+								if (!isok) {
+									BCLiveFlowPo bclf = (BCLiveFlowPo) m.get(times[i]);
+									ismainId = bclf.getId();
+									isok = true;
+								}
 							}
 						}
-					}
-					for (BCLiveFlowPo bcpo : bcls) {
-						if (ismainId!=null && ismainId.equals(bcpo.getId())) {
-							if (bcpo.getIsMain()!=1) {
-								bcpo.setIsMain(1);
-								bcLiveFlowService.updateBCLiveFlow(bcpo);
-							}
-						} else {
-							if (bcpo.getIsMain()!=0) {
-								bcpo.setIsMain(0);
-								bcLiveFlowService.updateBCLiveFlow(bcpo);
+						for (BCLiveFlowPo bcpo : bcls) {
+							if (ismainId!=null && ismainId.equals(bcpo.getId())) {
+								if (bcpo.getIsMain()!=1) {
+									bcpo.setIsMain(1);
+									bcLiveFlowService.updateBCLiveFlow(bcpo);
+									isToUpdateCache = true;
+								}
+							} else {
+							    if (bcpo.getIsMain()!=0) {
+									bcpo.setIsMain(0);
+									bcLiveFlowService.updateBCLiveFlow(bcpo);
+									isToUpdateCache = true;
+								}
 							}
 						}
+						if (ismainId!=null) {
+							List<ChannelAssetPo> chas = channelService.getChannelAssetListBy(null, bc.getId(), "wt_Broadcast");
+							if (chas!=null && chas.size()>0) {
+								for (ChannelAssetPo chaPo : chas) {
+									if (chaPo.getIsValidate()!=1) {
+										chaPo.setIsValidate(1);
+										channelService.updateChannelAsset(chaPo);
+									}
+								}
+							}
+							isToUpdateCache = true;
+						} else {
+							List<ChannelAssetPo> chas = channelService.getChannelAssetListBy(null, bc.getId(), "wt_Broadcast");
+							if (chas!=null && chas.size()>0) {
+								for (ChannelAssetPo chaPo : chas) {
+									if (chaPo.getIsValidate()!=2) {
+										chaPo.setIsValidate(2);
+										channelService.updateChannelAsset(chaPo);
+									}
+								}
+							}
+							cacheDBService.deleteById("RADIO_"+bc.getId()+"_INFO");
+						}
+						if (ismainId!=null) new AddCacheDBThread(bc.getId(), "RADIO").run();
 					}
-				}
+				} catch (Exception e) {}
 			}
 		}
 	}
@@ -77,8 +116,7 @@ public class PlayUrlValid {
 					return 0;
 				}
 			} catch (Exception e) {
-				System.out.println("package com.woting.crawler.scheme.isvalidate");
-				System.out.println(e.toString());
+				e.getMessage();
 				return 0;
 			}
 		}
